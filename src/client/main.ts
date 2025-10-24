@@ -1,7 +1,7 @@
 /* eslint-disable n/global-require */
 /* eslint @stylistic/comma-spacing:error*/
 import * as local_storage from 'glov/client/local_storage.js'; // eslint-disable-line import/order
-local_storage.setStoragePrefix('crawler'); // Before requiring anything else that might load from this
+local_storage.setStoragePrefix('dcexjam2025'); // Before requiring anything else that might load from this
 
 import { platformRegister } from 'glov/common/platform'; // eslint-disable-line import/order
 platformRegister('discord', {

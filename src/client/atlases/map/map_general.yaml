@@ -1,5 +1,5 @@
 ---
-tile_res: 7
+tile_res: 12
 tiles:
   bg: [0,0]
   floor_visible_lit: [1,0]
