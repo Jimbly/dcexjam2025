@@ -1,0 +1,25 @@
+---
+open_vis: true
+map_view_detail_frame: icon_exclamation
+visuals:
+- pass: bg
+  type: simple_floor
+  opts:
+    atlas: demo
+    tile: cobble_blood1
+- pass: default
+  type: simple_floor
+  opts:
+    atlas: demo
+    tile: dngn_mirrored_wall
+    scale: 0.5
+    color: '#FFFF'
+    detail_layer: 1
+- pass: bg
+  type: simple_ceiling
+  opts:
+    atlas: demo
+    tile: grey_dirt0
+replace:
+  - func: KEY
+    name: floorswitch_on

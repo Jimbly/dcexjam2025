@@ -1,0 +1,14 @@
+---
+open_move: true
+open_vis: true
+visuals:
+- type: simple_filler
+  opts:
+    atlas: spireish
+    tile: filler
+- type: simple_filler
+  opts:
+    atlas: spireish
+    tile: filler
+    offs: [0, 1]
+
