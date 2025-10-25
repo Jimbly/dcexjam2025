@@ -2,6 +2,7 @@ import assert from 'assert';
 import { autoAtlas } from 'glov/client/autoatlas';
 import { cmd_parse } from 'glov/client/cmds';
 import * as engine from 'glov/client/engine';
+import { EntityPredictionID } from 'glov/client/entity_base_client';
 import {
   ALIGN,
   Font,
@@ -41,6 +42,7 @@ import {
 } from 'glov/client/ui';
 import * as urlhash from 'glov/client/urlhash';
 import { webFSAPI } from 'glov/client/webfs';
+import { EntityManagerEvent } from 'glov/common/entity_base_common';
 import {
   EntityID,
 } from 'glov/common/types';
@@ -48,9 +50,11 @@ import { clamp } from 'glov/common/util';
 import {
   Vec2,
 } from 'glov/common/vmath';
+import { damage } from '../common/combat';
 import {
   crawlerLoadData,
 } from '../common/crawler_state';
+import { ActionAttackPayload, BroadcastDataDstat } from '../common/entity_game_common';
 import { gameEntityTraitsCommonStartup } from '../common/game_entity_traits_common';
 import {
   aiDoFloor, aiTraitsClientStartup,
@@ -63,8 +67,10 @@ import {
 import {
   crawlerCommStart,
   crawlerCommWant,
+  getChatUI,
 } from './crawler_comm';
 import {
+  controllerOnBumpEntity,
   CrawlerController,
   crawlerControllerTouchHotzonesAuto,
 } from './crawler_controller';
@@ -73,10 +79,12 @@ import {
   crawlerEntityClientStartupEarly,
   crawlerEntityManager,
   crawlerEntityTraitsClientStartup,
+  crawlerMyActionSend,
   crawlerMyEnt,
   crawlerMyEntOptional,
   isLocal,
   isOnline,
+  myEntID,
 } from './crawler_entity_client';
 import {
   crawlerMapViewDraw,
@@ -369,7 +377,8 @@ function drawEnemyStats(ent: Entity): void {
   if (!stats) {
     return;
   }
-  let { hp, hp_max } = stats;
+  let hp = ent.getData('stats.hp', 0);
+  let hp_max = ent.getData('stats.hp_max', 0);
   let bar_h = ENEMY_HP_BAR_H;
   let show_text = false;
   drawHealthBar(ENEMY_HP_BAR_X, ENEMY_HP_BAR_Y, Z.UI, ENEMY_HP_BAR_W, bar_h, hp, hp_max, show_text);
@@ -401,7 +410,6 @@ function moveBlocked(): boolean {
 }
 
 // TODO: move into crawler_play?
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function addFloater(ent_id: EntityID, message: string | null, anim: string): void {
   let ent = crawlerEntityManager().getEnt(ent_id);
   if (ent) {
@@ -417,6 +425,59 @@ function addFloater(ent_id: EntityID, message: string | null, anim: string): voi
     if (ent.triggerAnimation) {
       ent.triggerAnimation(anim);
     }
+  }
+}
+
+function onBroadcast(update: EntityManagerEvent): void {
+  let { from, msg, data } = update;
+  let chat_ui = getChatUI();
+  if (msg === 'dstat') {
+    assert(from);
+    let target = from;
+    let { hp, source, action, type, fatal, pred_id } = data as BroadcastDataDstat;
+    if (source === myEntID()) {
+      // I did this
+      let target_ent = crawlerEntityManager().getEnt(target);
+      if (target_ent && pred_id) {
+        target_ent.predictedClear(pred_id);
+      }
+    } else {
+      // someone else did
+      if (hp) {
+        addFloater(target, `${hp}`, 'damage');
+        addFloater(source, null, 'attack');
+      }
+    }
+
+    if (action === 'attack') {
+      if (source === myEntID()) {
+        chat_ui.addChat(`You ${type} the beast for ${-hp} damage${fatal ? ', killing it' : ''}.`);
+      } else if (target === myEntID()) {
+        if (type === 'opportunity') {
+          chat_ui.addChat(`The beast opportunity attacks you for ${-hp} damage.`);
+        } else {
+          chat_ui.addChat(`The beast hits you with ${type} for ${-hp} damage.`);
+        }
+      } else {
+        chat_ui.addChat(`${source} hits ${target} with ${type} for ${-hp} damage${fatal ? ', killing it' : ''}.`);
+      }
+    }
+  // } else if (msg === 'pickup') {
+  //   let { contents } = data as BroadcastDataPickup;
+  //   for (let ii = 0; ii < contents.length; ++ii) {
+  //     let item = contents[ii];
+  //     if (item.type === 'essence') {
+  //       chat_ui.addChat('You add some essence to your refinery\'s input funnel.');
+  //     } else if (itemIsAllowedInInventory(item)) {
+  //       chat_ui.addChat(`Picked up a new ${item.type}`);
+  //     } else {
+  //       assert(false, `Unknown item type "${item.type}"`);
+  //     }
+  //   }
+  // } else if (msg === 'pickup_failed') {
+  //   statusPush('Could not pick up essence, refinery inputs full!');
+  } else {
+    assert(false, `Unknown broadcast type "${msg}"`);
   }
 }
 
@@ -442,6 +503,48 @@ function moveBlockDead(): boolean {
   }
 
   return true;
+}
+
+function bumpEntityCallback(ent_id: EntityID): void {
+  let me = myEnt();
+  let all_entities = entityManager().entities;
+  let target_ent = all_entities[ent_id]!;
+  if (!target_ent || !target_ent.isAlive() || !me.isAlive()) {
+    return;
+  }
+  let target_hp = target_ent.getData('stats.hp', 0);
+  if (!target_hp) {
+    return;
+  }
+  let attacker_stats = me.data.stats;
+  let target_stats = target_ent.data.stats;
+  let { dam, style } = damage(attacker_stats, target_stats);
+  addFloater(ent_id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}`, '');
+  let pred_ids: EntityPredictionID[] = [];
+  target_ent.predictedSet(pred_ids, 'stats.hp', max(0, target_hp - dam));
+  assert.equal(pred_ids.length, 1);
+  let pred_id = pred_ids[0][1];
+  let payload: ActionAttackPayload = {
+    target_ent_id: ent_id,
+    type: style,
+    dam,
+    pred_id,
+  };
+  crawlerMyActionSend({
+    action_id: 'attack',
+    payload,
+  }, function (err, resp) {
+    if (err) {
+      target_ent.predictedClear(pred_id);
+      if (err === 'ERR_INVALID_ENT_ID') {
+        // already dead, silently ignore
+      } else {
+        getChatUI().addChat(`Error attacking: ${err}`, 'error');
+      }
+    }
+  });
+  // TODO:
+  // crawlerTurnBasedScheduleStep(250);
 }
 
 const BUTTON_W = 18;
@@ -938,7 +1041,7 @@ export function playStartup(): void {
   font = uiGetFont();
   crawlerScriptAPIDummyServer(true); // No script API running on server
   crawlerPlayStartup({
-    // on_broadcast: onBroadcast,
+    on_broadcast: onBroadcast,
     play_init_online: playInitEarly,
     play_init_offline: playInitOffline,
     offline_data: {
@@ -1062,6 +1165,8 @@ export function playStartup(): void {
       name: 'frame-v',
     }),
   };
+
+  controllerOnBumpEntity(bumpEntityCallback);
 
   renderAppStartup();
   dialogStartup({

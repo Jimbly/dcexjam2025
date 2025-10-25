@@ -5,20 +5,24 @@ import {
 } from 'glov/common/entity_base_common';
 import {
   DataObject,
+  ErrorCallback,
 } from 'glov/common/types';
 import { JSVec3, v3copy } from 'glov/common/vmath';
 import {
+  ActionHandlerParam,
   EntityBaseServer,
   entityServerRegisterActions,
   entityServerRegisterFieldDefs,
 } from 'glov/server/entity_base_server';
 import {
+  ActionAttackPayload,
+  BroadcastDataDstat,
   entityGameCommonClass,
   EntityGameDataCommon,
 } from '../common/entity_game_common';
 import { EntityCrawlerDataServer, EntityCrawlerServer } from './crawler_entity_server';
 
-const { floor } = Math;
+const { max, floor } = Math;
 
 // TODO: move when common/util is moved to TypeScript?
 type Integer = { _opaque: 'integer' } & number;
@@ -168,4 +172,78 @@ entityServerRegisterActions<EntityCrawlerServer>([{
     });
     resp_func(); // Action must always be synchronous, has a predicate
   }
+}]);
+
+function handleActionAttack(
+  this: EntityServer,
+  { self, payload }: ActionHandlerParam,
+  resp_func: ErrorCallback<unknown, string>
+): void {
+  if (!self && this.is_player) {
+    return void resp_func('ERR_NOT_SELF');
+  }
+  let { target_ent_id, type, dam, pred_id } = payload as ActionAttackPayload;
+  let target = this.entity_manager.entities[target_ent_id];
+  if (!target) {
+    return void resp_func('ERR_INVALID_ENT_ID');
+  }
+  if (target.is_player && this.is_player) {
+    return void resp_func('ERR_INVALID_TARGET_TYPE');
+  }
+  if (!this.isAlive()) {
+    return void resp_func('ERR_DEAD');
+  }
+  if (!target.isAlive()) {
+    return void resp_func('ERR_TARGET_DEAD');
+  }
+
+  let target_stats = target.data.stats;
+  assert(target_stats.hp);
+  let new_hp = max(0, target_stats.hp - dam);
+  target.setDataSub('stats', 'hp', new_hp);
+  let ret: BroadcastDataDstat = { hp: -dam, source: this.id, action: 'attack', type, pred_id };
+  if (!target_stats.hp) {
+    ret.fatal = true;
+    if (target.is_player) {
+      // client should respawn somewhere, eventually
+    } else {
+      // TODO: loot drop
+      // this.entity_manager.addEntityFromSerialized({
+      //   type: 'container',
+      //   floor: target.data.floor,
+      //   pos: target.data.pos.slice(0),
+      //   contents: [{
+      //     type: 'essence',
+      //     list: [{
+      //       level: (target_stats.level || 0),
+      //       essence: floor(random() * 6),
+      //       amount: 10 + floor(random() * 100),
+      //     }, {
+      //       level: (target_stats.level || 0),
+      //       essence: floor(random() * 6),
+      //       amount: 10 + floor(random() * 100),
+      //     }],
+      //   }],
+      // });
+      this.entity_manager.deleteEntity(target_ent_id, 'killed');
+    }
+  }
+  this.entity_manager.broadcast(target, 'dstat', ret);
+  resp_func(null, ret); // broadcasting, but could send back as a response too?
+}
+entityServerRegisterActions([{
+  action_id: 'attack',
+  self_only: true,
+  handler: handleActionAttack,
+}, {
+  // Same handler, but allow on non-self with data assignments
+  action_id: 'ai_attack',
+  self_only: false,
+  allowed_data_assignments: {
+    seq_ai_update: 'string',
+    ready: 'null',
+    ready_start: 'null',
+    action_dur: 'null',
+  },
+  handler: handleActionAttack,
 }]);

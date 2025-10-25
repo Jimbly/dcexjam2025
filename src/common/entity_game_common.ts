@@ -2,9 +2,25 @@ import {
   EntityBaseCommon,
   EntityBaseDataCommon,
 } from 'glov/common/entity_base_common';
-// import { EntityID } from 'glov/common/types';
+import { EntityID } from 'glov/common/types';
 
 // import type { JSVec3 } from './crawler_state';
+
+export type BroadcastDataDstat = {
+  hp: number;
+  source: EntityID;
+  action: string;
+  type: string;
+  fatal?: boolean;
+  pred_id?: number;
+};
+
+export type ActionAttackPayload = {
+  target_ent_id: EntityID;
+  type: string;
+  dam: number;
+  pred_id: number;
+};
 
 export type StatsData = {
   hp: number;
