@@ -48,6 +48,7 @@ import {
 } from 'glov/common/types';
 import { clamp } from 'glov/common/util';
 import {
+  v2distSq,
   Vec2,
 } from 'glov/common/vmath';
 import { damage } from '../common/combat';
@@ -57,7 +58,8 @@ import {
 import { ActionAttackPayload, BroadcastDataDstat } from '../common/entity_game_common';
 import { gameEntityTraitsCommonStartup } from '../common/game_entity_traits_common';
 import {
-  aiDoFloor, aiTraitsClientStartup,
+  aiStepFloor,
+  aiTraitsClientStartup,
 } from './ai';
 // import './client_cmds';
 import {
@@ -105,6 +107,7 @@ import {
   crawlerPrepAndRenderFrame,
   crawlerSaveGame,
   crawlerScriptAPI,
+  crawlerTurnBasedScheduleStep,
   getScaledFrameDt,
 } from './crawler_play';
 import {
@@ -167,7 +170,7 @@ type Entity = EntityClient;
 
 let font: Font;
 
-let loading_level = false;
+// let loading_level = false;
 
 let controller: CrawlerController;
 
@@ -310,6 +313,52 @@ class PauseMenuAction extends UIAction {
 }
 PauseMenuAction.prototype.name = 'PauseMenu';
 PauseMenuAction.prototype.is_overlay_menu = true;
+
+function cloestPlayerTo(ent: Entity): EntityID | null {
+  // TODO: do actual path searching
+  let entity_manager = entityManager();
+  let game_state = crawlerGameState();
+  let entities = entity_manager.entities;
+  let { floor_id } = game_state;
+  // let level = game_state.levels[floor_id];
+  let best: EntityID | null = null;
+  let best_dist = Infinity;
+  for (let ent_id in entities) {
+    let other_ent = entities[ent_id]!;
+    if (other_ent.data.floor !== floor_id || other_ent.fading_out) {
+      // not on current floor
+      continue;
+    }
+    if (!other_ent.isPlayer()) {
+      continue;
+    }
+    let dist = v2distSq(ent.data.pos, other_ent.data.pos);
+    if (dist < best_dist) {
+      best = other_ent.id;
+      best_dist = dist;
+    }
+  }
+  return best;
+}
+
+function aiStep(): void {
+  if (buildModeActive() || settings.ai_pause || engine.defines.LEVEL_GEN) {
+    return;
+  }
+  playUISound('button_click');
+  let game_state = crawlerGameState();
+  let script_api = crawlerScriptAPI();
+  script_api.is_visited = true; // Always visited for AI
+
+  let my_ent_id = myEntID();
+  function entityFilter(ent: Entity): boolean {
+    return cloestPlayerTo(ent) === my_ent_id;
+  }
+
+  aiStepFloor(game_state.floor_id, game_state, entityManager(), engine.defines,
+    script_api,
+    entityFilter);
+}
 
 function drawBar(
   bar: BarSprite,
@@ -543,8 +592,7 @@ function bumpEntityCallback(ent_id: EntityID): void {
       }
     }
   });
-  // TODO:
-  // crawlerTurnBasedScheduleStep(250);
+  crawlerTurnBasedScheduleStep(250);
 }
 
 const BUTTON_W = 18;
@@ -968,12 +1016,13 @@ export function play(dt: number): void {
   }
   crawlerPrepAndRenderFrame();
 
-  if (!loading_level && !buildModeActive()) {
-    let script_api = crawlerScriptAPI();
-    script_api.is_visited = true; // Always visited for AI
-    aiDoFloor(game_state.floor_id, game_state, entityManager(), engine.defines,
-      settings.ai_pause || engine.defines.LEVEL_GEN || overlay_menu_up, script_api);
-  }
+  // TODO
+  // if (!loading_level && !buildModeActive()) {
+  //   let script_api = crawlerScriptAPI();
+  //   script_api.is_visited = true; // Always visited for AI
+  //   aiDoFloor(game_state.floor_id, game_state, entityManager(), engine.defines,
+  //     settings.ai_pause || engine.defines.LEVEL_GEN || overlay_menu_up, script_api);
+  // }
 
   crawlerPlayBottomOfFrame();
 }
@@ -1044,6 +1093,7 @@ export function playStartup(): void {
     on_broadcast: onBroadcast,
     play_init_online: playInitEarly,
     play_init_offline: playInitOffline,
+    turn_based_step: aiStep,
     offline_data: {
       new_player_data: {
         type: 'player',

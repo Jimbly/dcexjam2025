@@ -35,10 +35,12 @@ export type EntityGameDataServer = EntityCrawlerDataServer & EntityGameDataCommo
 entityServerRegisterFieldDefs<EntityGameDataServer>({
   type: { encoding: EntityFieldEncoding.AnsiString },
   pos: { encoding: EntityFieldEncoding.IVec3 },
+  last_pos: { encoding: EntityFieldEncoding.IVec3, ephemeral: true },
   state: { ephemeral: true, encoding: EntityFieldEncoding.AnsiString },
   floor: { encoding: EntityFieldEncoding.Int },
   costume: { encoding: EntityFieldEncoding.Int },
   stats: { sub: EntityFieldSub.Record, encoding: EntityFieldEncoding.Int },
+  seq_ai_update: { encoding: EntityFieldEncoding.AnsiString },
   seq_player_move: { encoding: EntityFieldEncoding.AnsiString },
   vis_data: { server_only: true },
 });
@@ -107,6 +109,7 @@ entityServerRegisterActions<EntityCrawlerServer>([{
   allowed_data_assignments: {
     seq_ai_update: 'string',
     pos: 'array',
+    last_pos: 'array',
   },
 }, {
   action_id: 'set_debug',

@@ -106,8 +106,8 @@ export type EntityHunter = EntityClient & {
 };
 
 
-function ignoreErrors(): void {
-  // nothing
+function ignoreErrors(err: unknown): void {
+  console.log(`Ignoring error sending AI update: ${err}`);
 }
 
 function isEnemy(ent: Entity): boolean {
@@ -217,7 +217,7 @@ export function aiTraitsClientStartup(): void {
 
         // in range?
         let pos = this.getData<JSVec3>('pos')!;
-        let player_pos = myEnt().data.pos;
+        let player_pos = myEnt().getData<JSVec3>('pos')!;
         let floor_id = this.getData<number>('floor');
         assert(typeof floor_id === 'number');
         let level = game_state.levels[floor_id];
@@ -314,6 +314,9 @@ export function aiTraitsClientStartup(): void {
           }
           return false;
         }
+        // if (engine.defines.HUNTER) {
+        //   statusPush(`${this.id}: Moving from ${pos} to ${new_pos}`);
+        // }
         this.applyAIUpdate('ai_move', {
           pos: new_pos,
           last_pos: pos,
@@ -340,7 +343,7 @@ function foeNear<T extends Entity>(game_state: CrawlerState, ent: T, script_api:
   // search, needs game_state, returns list of foes
   let ents: T[] = entitiesAdjacentTo(game_state,
     ent.entity_manager as unknown as EntityManager<T>,
-    ent.data.floor, ent.data.pos, script_api);
+    ent.data.floor, ent.getData('pos')!, script_api);
   ents = ents.filter(isLivingPlayer);
   if (ents.length) {
     return randomFrom(ents);
@@ -425,12 +428,9 @@ export function aiStepFloor(
   game_state: CrawlerState,
   entity_manager: EntityManager<Entity>,
   defines: Partial<Record<string, true>>,
-  ai_pause: boolean,
   script_api: CrawlerScriptAPI,
+  filter: (ent: Entity) => boolean,
 ): void {
-  if (ai_pause) {
-    return;
-  }
   let entities = entity_manager.entities;
   let level = game_state.levels[floor_id];
   script_api.setLevel(level);
@@ -438,6 +438,10 @@ export function aiStepFloor(
     let ent = entities[ent_id]!;
     if (ent.data.floor !== floor_id || ent.fading_out) {
       // not on current floor
+      continue;
+    }
+
+    if (!filter(ent)) {
       continue;
     }
 

@@ -23,6 +23,7 @@ import {
   EntityDraw2DOpts,
   EntityDrawOpts,
   EntityOnDeleteSubParam,
+  entityPosManager,
   Floater,
 } from './crawler_entity_client';
 
@@ -50,6 +51,8 @@ export type EntityDataClient = {
   stats: StatsData;
   // Player:
   events_done?: Partial<Record<string, boolean>>;
+  // AI state
+  last_pos: JSVec3;
 } & EntityCrawlerDataCommon;
 
 
@@ -96,11 +99,18 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
     payload?: unknown,
     resp_func?: NetErrorCallback,
   ): void {
-    this.actionSend({
+    this.applyBatchUpdate({
+      field: 'seq_ai_update',
       action_id,
       data_assignments,
       payload,
-    }, resp_func);
+    });
+    entityPosManager().otherEntityChanged(this.id);
+    // this.actionSend({
+    //   action_id,
+    //   data_assignments,
+    //   payload,
+    // }, resp_func);
   }
   aiLastUpdatedBySomeoneElse(): boolean {
     return false;

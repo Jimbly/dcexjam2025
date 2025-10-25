@@ -125,6 +125,7 @@ export function crawlerEntityTraitsServerStartup<TBaseClass extends EntityCrawle
       allowed_data_assignments: {
         seq_ai_update: 'string',
         pos: 'array',
+        last_pos: 'array',
       },
     }, {
       action_id: 'set_debug',

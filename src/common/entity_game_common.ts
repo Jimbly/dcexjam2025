@@ -3,6 +3,7 @@ import {
   EntityBaseDataCommon,
 } from 'glov/common/entity_base_common';
 import { EntityID } from 'glov/common/types';
+import { JSVec3 } from 'glov/common/vmath';
 
 // import type { JSVec3 } from './crawler_state';
 
@@ -38,15 +39,16 @@ export type EntityGameDataCommon = {
   // costume?: number;
   // inventory?: ItemInventory[];
   // refinery?: Refinery;
-  // seq_player_move?: string;
+  seq_player_move?: string;
   // seq_refinery?: string;
   // keys?: Partial<Record<string, true>>;
 
   // // AI state
-  // seq_ai_update?: string;
+  seq_ai_update?: string;
   // ready?: boolean;
   // action_dur?: number;
   // ready_start?: number;
+  last_pos: JSVec3;
 
   // // Chests
   // contents?: Item[];
