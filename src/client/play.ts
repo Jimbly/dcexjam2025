@@ -104,6 +104,7 @@ import {
   renderViewportShear,
 } from './crawler_render';
 import {
+  crawlerEntInFront,
   crawlerRenderEntitiesStartup,
 } from './crawler_render_entities';
 import { crawlerScriptAPIDummyServer } from './crawler_script_api_client';
@@ -121,6 +122,11 @@ import {
 } from './globals';
 import { levelGenTest } from './level_gen_test';
 import { tickMusic } from './music';
+import {
+  PAL_BLACK,
+  PAL_WHITE,
+  palette_font,
+} from './palette';
 import { renderAppStartup } from './render_app';
 import {
   statusPush,
@@ -164,7 +170,7 @@ let button_sprites_notext_down: Record<ButtonStateString, Sprite>;
 type BarSprite = {
   bg: Sprite;
   hp: Sprite;
-  empty: Sprite;
+  empty?: Sprite;
 };
 let bar_sprites: {
   healthbar: BarSprite;
@@ -175,10 +181,11 @@ let frame_sprites: {
   vert: Sprite;
 };
 
+const outline_width = 2.5;
 const style_text = fontStyle(null, {
-  color: 0xFFFFFFff,
-  outline_width: 4,
-  outline_color: 0x000000ff,
+  color: palette_font[PAL_WHITE],
+  outline_width,
+  outline_color: palette_font[PAL_BLACK],
 });
 
 export function myEnt(): Entity {
@@ -319,7 +326,7 @@ function drawBar(
       z: z + 1,
     }, bar.hp, 1);
   }
-  if (empty_w) {
+  if (empty_w && bar.empty) {
     let temp_x = x + full_w;
     if (full_w) {
       temp_x -= 2;
@@ -346,6 +353,49 @@ export function drawHealthBar(
       w, h, `${hp}`);
   }
 }
+
+const HP_BAR_H = 12;
+
+function drawStats(): void {
+  // TODO
+}
+
+const ENEMY_HP_BAR_W = 100;
+const ENEMY_HP_BAR_X = VIEWPORT_X0 + (render_width - ENEMY_HP_BAR_W)/2;
+const ENEMY_HP_BAR_Y = VIEWPORT_Y0 + 8;
+const ENEMY_HP_BAR_H = HP_BAR_H;
+function drawEnemyStats(ent: Entity): void {
+  let stats = ent.data.stats;
+  if (!stats) {
+    return;
+  }
+  let { hp, hp_max } = stats;
+  let bar_h = ENEMY_HP_BAR_H;
+  let show_text = false;
+  drawHealthBar(ENEMY_HP_BAR_X, ENEMY_HP_BAR_Y, Z.UI, ENEMY_HP_BAR_W, bar_h, hp, hp_max, show_text);
+  if (ent.display_name) {
+    font.drawSizedAligned(style_text, ENEMY_HP_BAR_X, ENEMY_HP_BAR_Y + bar_h, Z.UI,
+      uiTextHeight(), ALIGN.HVCENTERFIT,
+      ENEMY_HP_BAR_W, bar_h, ent.display_name);
+  }
+}
+
+function doEngagedEnemy(): void {
+  let game_state = crawlerGameState();
+  let level = game_state.level;
+  if (!level || crawlerController().controllerIsAnimating(0.75)) {
+    return;
+  }
+  let entities = entityManager().entities;
+  let ent_in_front = crawlerEntInFront();
+  if (ent_in_front && myEnt().isAlive()) {
+    let target_ent = entities[ent_in_front]!;
+    if (target_ent) {
+      drawEnemyStats(target_ent);
+    }
+  }
+}
+
 function moveBlocked(): boolean {
   return false;
 }
@@ -639,6 +689,21 @@ function playCrawl(): void {
 
   cur_action?.tick();
 
+  // Note from #moraff: moved earlier so player motion doesn't interrupt it
+  if (!frame_map_view) {
+    if (!build_mode) {
+      // Do game UI/stats here
+      drawStats();
+
+      doEngagedEnemy();
+    }
+    // Do modal UIs here
+  } else {
+    if (input.click({ button: 2 })) {
+      mapViewToggle();
+    }
+  }
+
   button_x0 = MOVE_BUTTONS_X0;
   button_y0 = MOVE_BUTTONS_Y0;
 
@@ -704,16 +769,6 @@ function playCrawl(): void {
     }
   }
 
-  if (!frame_map_view) {
-    if (!build_mode) {
-      // Do game UI/stats here
-    }
-    // Do modal UIs here
-  } else {
-    if (input.click({ button: 2 })) {
-      mapViewToggle();
-    }
-  }
   if (!overlay_menu_up && (keyDownEdge(KEYS.M) || padButtonUpEdge(PAD.BACK))) {
     playUISound('button_click');
     mapViewToggle();
@@ -982,27 +1037,10 @@ export function playStartup(): void {
     disabled: button_sprites_notext.disabled,
   };
 
-  let bar_param = {
-    filter_min: gl.NEAREST,
-    filter_mag: gl.NEAREST,
-    ws: [2, 4, 2],
-    hs: [2, 4, 2],
-  };
-  let healthbar_bg = spriteCreate({
-    name: 'crawler_healthbar_bg',
-    ...bar_param,
-  });
   bar_sprites = {
     healthbar: {
-      bg: healthbar_bg,
-      hp: spriteCreate({
-        name: 'crawler_healthbar_hp',
-        ...bar_param,
-      }),
-      empty: spriteCreate({
-        name: 'crawler_healthbar_empty',
-        ...bar_param,
-      }),
+      bg: autoAtlas('ui', 'bar-frame'),
+      hp: autoAtlas('ui', 'bar-fill-red'),
     },
   };
 

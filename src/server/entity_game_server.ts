@@ -67,6 +67,12 @@ export class EntityServer extends entityGameCommonClass(EntityBaseServer) implem
       // if (!inventory) {
       //   inventory = this.data.inventory = [];
       // }
+      if (!this.data.stats) {
+        this.data.stats = {
+          hp: 10,
+          hp_max: 10,
+        };
+      }
     }
     if ((this.data.pos as number[]).length === 2) {
       // enemies don't have a rotation, but are serialized to the client as a Vec3, so need one here

@@ -126,7 +126,7 @@ export function titleStartup(): void {
   crawlerCommStartup({
     channel_type: 'game',
     lobby_state: titleInit,
-    title_func: (value: string) => `MiniMMO Crawler | "${value}"`,
+    title_func: (value: string) => 'MiniMMO Crawler', //  | "${value}"`,
     chat_ui: main.chat_ui,
   });
 }

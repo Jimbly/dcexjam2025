@@ -26,7 +26,6 @@ import {
   markdownImageRegisterAutoAtlas,
 } from 'glov/client/markdown_renderables';
 import { netInit } from 'glov/client/net';
-import * as settings from 'glov/client/settings';
 import { settingsSet } from 'glov/client/settings';
 import { shadersSetInternalDefines } from 'glov/client/shaders';
 import { spriteSetGet } from 'glov/client/sprite_sets';
@@ -167,7 +166,7 @@ export function main(): void {
   // const font_info_04b03x2 = require('./img/font/04b03_8x2.json');
   // const font_info_04b03x1 = require('./img/font/04b03_8x1.json');
   // const font_info_palanquin32 = require('./img/font/palanquin32.json');
-  let pixely = settings.pixely === 2 ? 'strict' : settings.pixely ? 'on' : false;
+  // let pixely = settings.pixely === 2 ? 'strict' : settings.pixely ? 'on' : false;
   // let font;
   // if (pixely === 'strict') {
   //   font = { info: font_info_04b03x1, texture: 'font/04b03_8x1' };
@@ -188,7 +187,7 @@ export function main(): void {
   if (!engine.startup({
     game_width,
     game_height,
-    pixely,
+    pixely: 'on',
     font,
     title_font,
     viewport_postprocess: true,
