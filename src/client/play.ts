@@ -7,6 +7,7 @@ import {
   ALIGN,
   Font,
   fontStyle,
+  fontStyleColored,
 } from 'glov/client/font';
 import * as input from 'glov/client/input';
 import {
@@ -33,6 +34,7 @@ import {
   ButtonStateString,
   buttonText,
   drawBox,
+  drawRect,
   menuUp,
   modalDialog,
   playUISound,
@@ -53,7 +55,7 @@ import {
   v2distSq,
   Vec2,
 } from 'glov/common/vmath';
-import { damage } from '../common/combat';
+import { damage, xpToLevelUp } from '../common/combat';
 import {
   BLOCK_MOVE,
   crawlerLoadData,
@@ -143,6 +145,7 @@ import { tickMusic } from './music';
 import {
   PAL_BLACK,
   PAL_WHITE,
+  palette,
   palette_font,
 } from './palette';
 import { renderAppStartup } from './render_app';
@@ -172,6 +175,8 @@ const FULLMAP_STEP_SIZE = MINIMAP_STEP_SIZE;
 const FULLMAP_TILE_SIZE = FULLMAP_STEP_SIZE * 12/12;
 const COMPASS_X = MINIMAP_X;
 const COMPASS_Y = MINIMAP_Y + MINIMAP_H;
+const BUTTON_W = 18;
+const FONT_HEIGHT = 11;
 
 type Entity = EntityClient;
 
@@ -192,6 +197,8 @@ type BarSprite = {
 };
 let bar_sprites: {
   healthbar: BarSprite;
+  mpbar: BarSprite;
+  xpbar: BarSprite;
 };
 
 let frame_sprites: {
@@ -534,8 +541,65 @@ export function drawHealthBar(
 
 const HP_BAR_H = 12;
 
+const STATS_BAR_W = BUTTON_W * 3 + 4;
+const STATS_X_INDENT = 2;
+const STATS_Y_PAD = 4;
+const STATS_XP_BAR_H = 4;
+const STATS_BAR_H = 12;
+const style_stats = fontStyleColored(null, palette_font[PAL_WHITE + 1]);
 function drawStats(): void {
-  // TODO
+  let me = myEnt();
+  let x = VIEWPORT_X0 + render_width + 16;
+  let y = 86;
+  let z = Z.UI;
+  drawRect(332, 80, 411, 243, z - 1, palette[PAL_BLACK]);
+  let level = me.getData('stats.level', 0);
+  let xp = me.getData('stats.xp', 0);
+  let next_xp = xpToLevelUp(level);
+  let hp = me.getData('stats.hp', 0);
+  let hp_max = me.getData('stats.hp_max', 1);
+  let mp = me.getData('stats.hp', 0);
+  let mp_max = me.getData('stats.hp_max', 1);
+  font.draw({
+    style: style_stats,
+    x: x + STATS_X_INDENT,
+    y,
+    text: `Level ${level}`,
+  });
+  y += FONT_HEIGHT - 2;
+  font.draw({
+    style: style_stats,
+    x: x + STATS_X_INDENT,
+    y,
+    text: `XP ${xp}/${next_xp}`,
+  });
+  y += FONT_HEIGHT;
+  drawBar(bar_sprites.xpbar, x, y, z, STATS_BAR_W, STATS_XP_BAR_H, xp/next_xp);
+  y += STATS_XP_BAR_H;
+  y += STATS_Y_PAD;
+
+  font.draw({
+    style: style_stats,
+    x: x + STATS_X_INDENT,
+    y,
+    text: `HP ${hp}/${hp_max}`,
+  });
+  y += FONT_HEIGHT;
+  drawBar(bar_sprites.healthbar, x, y, z, STATS_BAR_W, STATS_BAR_H, hp/hp_max);
+  y += STATS_BAR_H;
+  y += STATS_Y_PAD;
+
+  font.draw({
+    style: style_stats,
+    x: x + STATS_X_INDENT,
+    y,
+    text: `MP ${mp}/${mp_max}`,
+  });
+  y += FONT_HEIGHT;
+  drawBar(bar_sprites.mpbar, x, y, z, STATS_BAR_W, STATS_BAR_H, mp/mp_max);
+  y += STATS_BAR_H;
+  y += STATS_Y_PAD;
+
 }
 
 const ENEMY_HP_BAR_W = 100;
@@ -715,8 +779,6 @@ function bumpEntityCallback(ent_id: EntityID): void {
   });
   crawlerTurnBasedScheduleStep(250);
 }
-
-const BUTTON_W = 18;
 
 const MOVE_BUTTONS_X0 = 343;
 const MOVE_BUTTONS_Y0 = 197;
@@ -1314,6 +1376,14 @@ export function playStartup(): void {
     healthbar: {
       bg: autoAtlas('ui', 'bar-frame'),
       hp: autoAtlas('ui', 'bar-fill-red'),
+    },
+    mpbar: {
+      bg: autoAtlas('ui', 'bar-frame'),
+      hp: autoAtlas('ui', 'bar-fill-blue'),
+    },
+    xpbar: {
+      bg: autoAtlas('ui', 'minibar-frame'),
+      hp: autoAtlas('ui', 'minibar-fill-yellow'),
     },
   };
 

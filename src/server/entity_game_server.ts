@@ -20,6 +20,7 @@ import {
   BroadcastDataDstat,
   entityGameCommonClass,
   EntityGameDataCommon,
+  StatsData,
 } from '../common/entity_game_common';
 import { EntityCrawlerDataServer, EntityCrawlerServer } from './crawler_entity_server';
 
@@ -45,6 +46,15 @@ entityServerRegisterFieldDefs<EntityGameDataServer>({
   seq_player_move: { encoding: EntityFieldEncoding.AnsiString },
   vis_data: { server_only: true },
 });
+
+const default_player_stats: StatsData = {
+  hp: 100,
+  hp_max: 100,
+  mp: 10,
+  mp_max: 10,
+  xp: 0,
+  level: 1,
+};
 
 export class EntityServer extends entityGameCommonClass(EntityBaseServer) implements EntityCrawlerServer {
   // declare entity_manager: EntityManager;
@@ -75,10 +85,13 @@ export class EntityServer extends entityGameCommonClass(EntityBaseServer) implem
       //   inventory = this.data.inventory = [];
       // }
       if (!this.data.stats) {
-        this.data.stats = {
-          hp: 10,
-          hp_max: 10,
-        };
+        this.data.stats = {} as StatsData;
+      }
+      let key: keyof StatsData;
+      for (key in default_player_stats) {
+        if (this.data.stats[key] === undefined) {
+          this.data.stats[key] = default_player_stats[key];
+        }
       }
     }
     if ((this.data.pos as number[]).length === 2) {

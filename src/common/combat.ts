@@ -40,3 +40,7 @@ export function damage(attacker: StatsData, defender: StatsData): {
     style: 'hit',
   };
 }
+
+export function xpToLevelUp(level: number): number {
+  return 100;
+}

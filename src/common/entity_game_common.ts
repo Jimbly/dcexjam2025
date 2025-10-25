@@ -26,6 +26,10 @@ export type ActionAttackPayload = {
 export type StatsData = {
   hp: number;
   hp_max: number;
+  mp: number;
+  mp_max: number;
+  xp: number;
+  level: number;
 };
 
 export type EntityGameDataCommon = {
