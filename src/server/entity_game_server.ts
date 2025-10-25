@@ -13,6 +13,7 @@ import {
   EntityBaseServer,
   entityServerRegisterActions,
   entityServerRegisterFieldDefs,
+  VAID,
 } from 'glov/server/entity_base_server';
 import {
   ActionAttackPayload,
@@ -84,6 +85,14 @@ export class EntityServer extends entityGameCommonClass(EntityBaseServer) implem
       // enemies don't have a rotation, but are serialized to the client as a Vec3, so need one here
       this.data.pos.push(0);
     }
+  }
+
+  visibleAreaGet(): VAID {
+    return this.data.floor as VAID;
+  }
+
+  visibleAreaSees(): VAID[] {
+    return [this.data.floor as VAID];
   }
 }
 

@@ -6,6 +6,7 @@ import {
 } from 'glov/common/entity_base_common';
 import {
   DataObject,
+  EntityID,
   NetErrorCallback,
 } from 'glov/common/types.js';
 import type { ROVec2 } from 'glov/common/vmath';
@@ -63,6 +64,11 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
 
   floaters: Floater[];
   delete_reason?: string;
+
+  // for calculating closest player
+  closest_ent: EntityID = 0;
+  closest_ent_dist: number = Infinity;
+  last_closest_ent: EntityID = 0;
 
   declare onDelete: (reason: string) => number;
   declare draw2D: (param: EntityDraw2DOpts) => void;

@@ -10,7 +10,7 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
     * party leader leaves/changes
     * non-ready person leaves
     * ready person leaves
-
+* aiHunter should follow a player through a door (or: if they arrive at last know spot, should enter a random door? or doors are open vis for hunter?)
 
 Assets to replace
 * scroll bar

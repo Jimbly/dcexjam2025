@@ -723,7 +723,7 @@ export function crawlerTurnBasedScheduleStep(delay: number): void {
   turn_based_step_countdown = delay;
 }
 
-function crawlerTurnBasedMovePreStart(/*old_pos, new_pos, move_dir*/): void {
+export function crawlerTurnBasedMovePreStart(/*old_pos, new_pos, move_dir*/): void {
   executeStep();
 }
 

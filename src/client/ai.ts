@@ -14,6 +14,7 @@ import {
 import { entSamePos } from '../common/crawler_entity_common';
 import type { CrawlerScriptAPI } from '../common/crawler_script';
 import {
+  BLOCK_MOVE,
   BLOCK_OPEN,
   CrawlerState,
   dirFromDelta,
@@ -126,7 +127,7 @@ export function aiTraitsClientStartup(): void {
         assert(typeof floor_id === 'number');
         let level = game_state.levels[floor_id];
         script_api.setPos(pos);
-        if (level.wallsBlock(pos, dir, script_api) !== BLOCK_OPEN) {
+        if (level.wallsBlock(pos, dir, script_api) & BLOCK_MOVE) {
           return false;
         }
         let new_pos: JSVec3 = [pos[0] + DX[dir], pos[1] + DY[dir], pos[2]];
@@ -274,14 +275,14 @@ export function aiTraitsClientStartup(): void {
         let xdir: DirType;
         if (dx) {
           xdir = dirFromDelta([sign(dx), 0]);
-          if (level.wallsBlock(pos, xdir, script_api) !== BLOCK_OPEN) {
+          if (level.wallsBlock(pos, xdir, script_api) & BLOCK_MOVE) {
             dx = 0;
           }
         }
         let ydir: DirType;
         if (dy) {
           ydir = dirFromDelta([0, sign(dy)]);
-          if (level.wallsBlock(pos, ydir, script_api) !== BLOCK_OPEN) {
+          if (level.wallsBlock(pos, ydir, script_api) & BLOCK_MOVE) {
             dy = 0;
           }
         }

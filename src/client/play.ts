@@ -48,12 +48,18 @@ import {
 } from 'glov/common/types';
 import { clamp } from 'glov/common/util';
 import {
+  JSVec2,
+  JSVec3,
   v2distSq,
   Vec2,
 } from 'glov/common/vmath';
 import { damage } from '../common/combat';
 import {
+  BLOCK_MOVE,
   crawlerLoadData,
+  DirType,
+  DX,
+  DY,
 } from '../common/crawler_state';
 import { ActionAttackPayload, BroadcastDataDstat } from '../common/entity_game_common';
 import { gameEntityTraitsCommonStartup } from '../common/game_entity_traits_common';
@@ -107,6 +113,7 @@ import {
   crawlerPrepAndRenderFrame,
   crawlerSaveGame,
   crawlerScriptAPI,
+  crawlerTurnBasedMovePreStart,
   crawlerTurnBasedScheduleStep,
   getScaledFrameDt,
 } from './crawler_play';
@@ -314,15 +321,15 @@ class PauseMenuAction extends UIAction {
 PauseMenuAction.prototype.name = 'PauseMenu';
 PauseMenuAction.prototype.is_overlay_menu = true;
 
-function cloestPlayerTo(ent: Entity): EntityID | null {
-  // TODO: do actual path searching
+function closestPlayerToIgnoreWalls(ent: Entity): EntityID {
   let entity_manager = entityManager();
   let game_state = crawlerGameState();
   let entities = entity_manager.entities;
   let { floor_id } = game_state;
-  // let level = game_state.levels[floor_id];
-  let best: EntityID | null = null;
+  let { last_closest_ent } = ent;
+  let best: EntityID = 0;
   let best_dist = Infinity;
+  let pos = ent.getData<JSVec3>('pos')!;
   for (let ent_id in entities) {
     let other_ent = entities[ent_id]!;
     if (other_ent.data.floor !== floor_id || other_ent.fading_out) {
@@ -332,13 +339,126 @@ function cloestPlayerTo(ent: Entity): EntityID | null {
     if (!other_ent.isPlayer()) {
       continue;
     }
-    let dist = v2distSq(ent.data.pos, other_ent.data.pos);
-    if (dist < best_dist) {
+    let dist = v2distSq(pos, other_ent.getData<JSVec3>('pos')!);
+    if (
+      !best || dist < best_dist ||
+      dist === best_dist && other_ent.id === last_closest_ent ||
+      dist === best_dist && best !== last_closest_ent && other_ent.id < best
+    ) {
       best = other_ent.id;
       best_dist = dist;
     }
   }
+  if (best) {
+    ent.last_closest_ent = best;
+  }
   return best;
+}
+
+export function closestPlayerPrep(): void {
+  let script_api = crawlerScriptAPI();
+  script_api.is_visited = true; // Always visited for AI
+  let entity_manager = entityManager();
+  let game_state = crawlerGameState();
+  let entities = entity_manager.entities;
+  let { floor_id } = game_state;
+  let level = game_state.levels[floor_id]!;
+  let stride = level.w + 100;
+  // for each player, claim closest entities
+  let players: Entity[] = [];
+  let enemy_pos_map: Entity[][] = [];
+  for (let ent_id in entities) {
+    let other_ent = entities[ent_id]!;
+    if (other_ent.data.floor !== floor_id || other_ent.fading_out) {
+      // not on current floor
+      continue;
+    }
+    if (other_ent.isPlayer()) {
+      players.push(other_ent);
+    } else if (other_ent.isEnemy()) {
+
+      let pos = other_ent.getData<JSVec3>('pos')!;
+      let idx = pos[0] + pos[1] * stride;
+      let cell = enemy_pos_map[idx];
+      if (!cell) {
+        cell = enemy_pos_map[idx] = [];
+      }
+      cell.push(other_ent);
+      other_ent.closest_ent_dist = Infinity;
+      other_ent.closest_ent = 0;
+    }
+  }
+  let todo: JSVec3[] = []; // x, y, dist
+  let done: Partial<Record<number, true>>;
+  let player_ent_id: EntityID;
+  function push(pos: JSVec3): void {
+    let idx = pos[0] + pos[1] * stride;
+    let dist = pos[2];
+    let cell = enemy_pos_map[idx];
+    if (cell) {
+      for (let ii = 0; ii < cell.length; ++ii) {
+        let enemy_ent = cell[ii];
+        if (
+          !enemy_ent.closest_ent || dist < enemy_ent.closest_ent_dist ||
+          dist === enemy_ent.closest_ent_dist && (
+            player_ent_id === enemy_ent.last_closest_ent ||
+            enemy_ent.closest_ent !== enemy_ent.last_closest_ent && player_ent_id < enemy_ent.closest_ent
+          )
+        ) {
+          enemy_ent.closest_ent = player_ent_id;
+          enemy_ent.closest_ent_dist = dist;
+        }
+
+      }
+    }
+    todo.push(pos);
+    done[idx] = true;
+    assert(todo.length < level.w * level.h * 2);
+  }
+  for (let ii = 0; ii < players.length; ++ii) {
+    let player = players[ii];
+    player_ent_id = player.id;
+    todo.length = 0;
+    let todo_idx = 0;
+    done = {};
+    let player_pos = player.getData<JSVec2>('pos')!;
+    push([player_pos[0], player_pos[1], 0]);
+
+    while (todo_idx < todo.length) {
+      let pos = todo[todo_idx++];
+      for (let dir = 0 as DirType; dir < 4; ++dir) {
+        let target: JSVec3 = [pos[0] - DX[dir], pos[1] - DY[dir], pos[2] + 1];
+        if (target[0] < 0 || target[0] >= level.w || target[1] < 0 || target[1] >= level.h) {
+          continue;
+        }
+        let target_idx = target[0] + target[1] * stride;
+        if (done[target_idx]) {
+          continue;
+        }
+        // check _from_ target to us, only want paths a monster could follow to get to us
+        if (level.wallsBlock(target, dir, script_api) & BLOCK_MOVE) {
+          continue;
+        }
+        push(target);
+      }
+    }
+  }
+
+  // store best on entities
+  for (let key in enemy_pos_map) {
+    let cell = enemy_pos_map[key];
+    if (cell) {
+      for (let ii = 0; ii < cell.length; ++ii) {
+        let enemy_ent = cell[ii];
+        if (enemy_ent.closest_ent !== 0) {
+          enemy_ent.last_closest_ent = enemy_ent.closest_ent;
+        } else {
+          // *no* player can be walked to from this entity (but it may be visible), take absolute distance
+          closestPlayerToIgnoreWalls(enemy_ent);
+        }
+      }
+    }
+  }
 }
 
 function aiStep(): void {
@@ -351,8 +471,9 @@ function aiStep(): void {
   script_api.is_visited = true; // Always visited for AI
 
   let my_ent_id = myEntID();
+  closestPlayerPrep();
   function entityFilter(ent: Entity): boolean {
-    return cloestPlayerTo(ent) === my_ent_id;
+    return ent.last_closest_ent === my_ent_id;
   }
 
   aiStepFloor(game_state.floor_id, game_state, entityManager(), engine.defines,
@@ -970,7 +1091,7 @@ function playCrawl(): void {
     });
   }
 
-  if (!build_mode) {
+  if (!build_mode && !frame_map_view) {
     drawFrames();
   }
 
@@ -1028,9 +1149,8 @@ export function play(dt: number): void {
 }
 
 function onPlayerMove(old_pos: Vec2, new_pos: Vec2): void {
-  // let game_state = crawlerGameState();
-  // aiOnPlayerMoved(game_state, myEnt(), old_pos, new_pos,
-  //   settings.ai_pause || engine.defines.LEVEL_GEN, script_api);
+  closestPlayerPrep(); // if we are the closest to anyone right now, they haven't been ticked
+  crawlerTurnBasedMovePreStart();
 }
 
 function onInitPos(): void {
