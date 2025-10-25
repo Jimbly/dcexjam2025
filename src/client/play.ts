@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { autoAtlas } from 'glov/client/autoatlas';
 import { cmd_parse } from 'glov/client/cmds';
 import * as engine from 'glov/client/engine';
@@ -155,8 +156,6 @@ let loading_level = false;
 
 let controller: CrawlerController;
 
-let pause_menu_up = false;
-
 let button_sprites: Record<ButtonStateString, Sprite>;
 let button_sprites_down: Record<ButtonStateString, Sprite>;
 let button_sprites_notext: Record<ButtonStateString, Sprite>;
@@ -193,85 +192,108 @@ export function myEntOptional(): Entity | undefined {
 //   return crawlerEntityManager() as ClientEntityManagerInterface<Entity>;
 // }
 
-const PAUSE_MENU_W = 160;
+abstract class UIAction {
+  abstract tick(): void;
+  declare name: string;
+  declare is_overlay_menu: boolean;
+}
+UIAction.prototype.name = 'UnknownAction';
+UIAction.prototype.is_overlay_menu = false;
+
+let cur_action: UIAction | null = null;
+
+function uiAction(action: UIAction | null): void {
+  if (action) {
+    assert(!cur_action);
+    cur_action = action;
+  } else {
+    cur_action = null;
+  }
+}
+
+const PAUSE_MENU_W = floor(160/346*game_width);
 let pause_menu: SimpleMenu;
-function pauseMenu(): void {
-  if (!pause_menu) {
-    pause_menu = simpleMenuCreate({
-      x: floor((game_width - PAUSE_MENU_W)/2),
-      y: 50,
-      z: Z.MODAL + 2,
-      width: PAUSE_MENU_W,
-    });
-  }
-  let items: MenuItem[] = [{
-    name: 'Return to game',
-    cb: function () {
-      pause_menu_up = false;
-    },
-  }, {
-    name: 'SFX Vol',
-    slider: true,
-    value_inc: 0.05,
-    value_min: 0,
-    value_max: 1,
-  }, {
-    name: 'Mus Vol',
-    slider: true,
-    value_inc: 0.05,
-    value_min: 0,
-    value_max: 1,
-  }, {
-    name: `Turn: ${settings.turn_toggle ? 'A/S/4/6/←/→': 'Q/E/7/9/LB/RB'}`,
-    cb: () => {
-      settingsSet('turn_toggle', 1 - settings.turn_toggle);
-    },
-  }];
-  if (isLocal()) {
-    items.push({
-      name: 'Save game',
+class PauseMenuAction extends UIAction {
+  tick(): void {
+    if (!pause_menu) {
+      pause_menu = simpleMenuCreate({
+        x: floor((game_width - PAUSE_MENU_W)/2),
+        y: 50,
+        z: Z.MODAL + 2,
+        width: PAUSE_MENU_W,
+      });
+    }
+    let items: MenuItem[] = [{
+      name: 'Return to game',
       cb: function () {
-        crawlerSaveGame('manual');
-        statusPush('Game saved.');
-        pause_menu_up = false;
+        uiAction(null);
       },
-    });
-  }
-  items.push({
-    name: isOnline() ? 'Return to Title' : 'Save and Exit',
-    cb: function () {
-      if (!isOnline()) {
-        crawlerSaveGame('manual');
-      }
-      urlhash.go('');
-    },
-  });
-  if (isLocal()) {
+    }, {
+      name: 'SFX Vol',
+      slider: true,
+      value_inc: 0.05,
+      value_min: 0,
+      value_max: 1,
+    }, {
+      name: 'Mus Vol',
+      slider: true,
+      value_inc: 0.05,
+      value_min: 0,
+      value_max: 1,
+    }, {
+      name: `Turn: ${settings.turn_toggle ? 'A/S/4/6/←/→': 'Q/E/7/9/LB/RB'}`,
+      cb: () => {
+        settingsSet('turn_toggle', 1 - settings.turn_toggle);
+      },
+    }];
+    if (isLocal()) {
+      items.push({
+        name: 'Save game',
+        cb: function () {
+          crawlerSaveGame('manual');
+          statusPush('Game saved.');
+          uiAction(null);
+        },
+      });
+    }
     items.push({
-      name: 'Exit without saving',
+      name: isOnline() ? 'Return to Title' : 'Save and Exit',
       cb: function () {
+        if (!isOnline()) {
+          crawlerSaveGame('manual');
+        }
         urlhash.go('');
       },
     });
+    if (isLocal()) {
+      items.push({
+        name: 'Exit without saving',
+        cb: function () {
+          urlhash.go('');
+        },
+      });
+    }
+
+    let volume_item = items[1];
+    volume_item.value = settings.volume_sound;
+    volume_item.name = `SFX Vol: ${(settings.volume_sound * 100).toFixed(0)}`;
+    volume_item = items[2];
+    volume_item.value = settings.volume_music;
+    volume_item.name = `Mus Vol: ${(settings.volume_music * 100).toFixed(0)}`;
+
+    pause_menu.run({
+      slider_w: floor(PAUSE_MENU_W/2),
+      items,
+    });
+
+    settingsSet('volume_sound', pause_menu.getItem(1).value as number);
+    settingsSet('volume_music', pause_menu.getItem(2).value as number);
+
+    menuUp();
   }
-
-  let volume_item = items[1];
-  volume_item.value = settings.volume_sound;
-  volume_item.name = `SFX Vol: ${(settings.volume_sound * 100).toFixed(0)}`;
-  volume_item = items[2];
-  volume_item.value = settings.volume_music;
-  volume_item.name = `Mus Vol: ${(settings.volume_music * 100).toFixed(0)}`;
-
-  pause_menu.run({
-    slider_w: 80,
-    items,
-  });
-
-  settingsSet('volume_sound', pause_menu.getItem(1).value as number);
-  settingsSet('volume_music', pause_menu.getItem(2).value as number);
-
-  menuUp();
 }
+PauseMenuAction.prototype.name = 'PauseMenu';
+PauseMenuAction.prototype.is_overlay_menu = true;
 
 function drawBar(
   bar: BarSprite,
@@ -371,10 +393,10 @@ function moveBlockDead(): boolean {
   return true;
 }
 
-const BUTTON_W = 26;
+const BUTTON_W = 18;
 
-const MOVE_BUTTONS_X0 = MINIMAP_X;
-const MOVE_BUTTONS_Y0 = 179;
+const MOVE_BUTTONS_X0 = 343;
+const MOVE_BUTTONS_Y0 = 197;
 
 
 function useNoText(): boolean {
@@ -479,10 +501,14 @@ function playCrawl(): void {
 
   let down = {
     menu: 0,
+    inv: 0,
+    heal: 0,
   };
   type ValidKeys = keyof typeof down;
   let up_edge = {
     menu: 0,
+    inv: 0,
+    heal: 0,
   } as Record<ValidKeys, number>;
 
   let dt = getScaledFrameDt();
@@ -510,7 +536,7 @@ function playCrawl(): void {
 
   const build_mode = buildModeActive();
   let locked_dialog = dialogMoveLocked();
-  const overlay_menu_up = pause_menu_up; // || inventory_up
+  const overlay_menu_up = cur_action?.is_overlay_menu || false;
   let minimap_display_h = build_mode ? BUTTON_W : MINIMAP_H;
   let show_compass = !build_mode && false;
   let compass_h = show_compass ? 11 : 0;
@@ -547,7 +573,7 @@ function playCrawl(): void {
       no_visible_ui = false;
       if (frame_map_view) {
         z = Z.MAP + 1;
-      } else if (pause_menu_up) {
+      } else if (cur_action?.name === 'PauseMenu') {
         z = Z.MODAL + 1;
       } else {
         z = Z.MENUBUTTON;
@@ -583,25 +609,24 @@ function playCrawl(): void {
 
 
   // Escape / open/close menu button - *before* pauseMenu()
-  button_x0 = 317;
-  button_y0 = 3;
+  button_x0 = 343;
+  button_y0 = 172;
   let menu_up = frame_map_view || build_mode || overlay_menu_up;
   let menu_keys = [KEYS.ESC];
   let menu_pads = [PAD.START];
   if (menu_up) {
     menu_pads.push(PAD.B, PAD.BACK);
   }
-  button(0, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads);
-  // if (!build_mode) {
-  //   button(0, 1, 7, 'inv', [KEYS.I], [PAD.Y], inventory_up);
-  //   if (up_edge.inv) {
-  //     inventory_up = !inventory_up;
-  //   }
-  // }
-
-  if (pause_menu_up) {
-    pauseMenu();
+  button(2, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, cur_action?.name === 'PauseMenu');
+  if (!build_mode) {
+    button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]); // , inventory_up);
+    button(1, 0, 7, 'inv', [KEYS.I], [PAD.Y]); // , inventory_up);
+    // if (up_edge.inv) {
+    //   inventory_up = !inventory_up;
+    // }
   }
+
+  cur_action?.tick();
 
   button_x0 = MOVE_BUTTONS_X0;
   button_y0 = MOVE_BUTTONS_Y0;
@@ -660,9 +685,11 @@ function playCrawl(): void {
         mapViewSetActive(false);
         // inventory_up = false;
       }
-      pause_menu_up = false;
+      if (cur_action?.name === 'PauseMenu') {
+        uiAction(null);
+      }
     } else {
-      pause_menu_up = true;
+      uiAction(new PauseMenuAction());
     }
   }
 
@@ -741,7 +768,7 @@ export function play(dt: number): void {
     return;
   }
 
-  let overlay_menu_up = pause_menu_up || dialogMoveLocked(); // || inventory_up
+  let overlay_menu_up = Boolean(cur_action?.is_overlay_menu || dialogMoveLocked());
 
   tickMusic(game_state.level?.props.music as string || null); // || 'default_music'
   crawlerPlayTopOfFrame(overlay_menu_up);
@@ -796,8 +823,7 @@ function playInitShared(online: boolean): void {
   controller.setOnPlayerMove(onPlayerMove);
   controller.setOnInitPos(onInitPos);
 
-  pause_menu_up = false;
-  // inventory_up = false;
+  uiAction(null);
 }
 
 
@@ -888,8 +914,8 @@ export function playStartup(): void {
   let button_param = {
     filter_min: gl.NEAREST,
     filter_mag: gl.NEAREST,
-    ws: [26, 26, 26],
-    hs: [26, 26, 26, 26],
+    ws: [18, 18, 18],
+    hs: [18, 18, 18, 18],
   };
   button_sprites = {
     regular: spriteCreate({
