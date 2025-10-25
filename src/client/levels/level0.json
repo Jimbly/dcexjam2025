@@ -1,9 +1,9 @@
 {
   "special_pos": {
     "stairs_in": [
-      1,
-      8,
-      0
+      3,
+      12,
+      3
     ],
     "stairs_out": [
       3,
@@ -1710,7 +1710,7 @@
       "id": "open",
       "walls": [
         "open",
-        "solid",
+        "stairs_in",
         "open",
         "open"
       ]
@@ -1851,12 +1851,18 @@
       ]
     },
     {
-      "id": "solid",
+      "id": "stairs_in",
       "walls": [
         "solid",
         "solid",
         "solid",
-        "solid"
+        "door"
+      ],
+      "events": [
+        {
+          "id": "floor_delta",
+          "param": "-1"
+        }
       ]
     },
     {
@@ -2286,7 +2292,7 @@
       "id": "open",
       "walls": [
         "open",
-        "demo_walldetail2",
+        "dcex_solid3",
         "open",
         "open"
       ]
@@ -2462,7 +2468,7 @@
     }
   ],
   "state": {},
-  "vstyle": "demo",
+  "vstyle": "dcex",
   "seed": "32845502",
   "props": {},
   "paths": {}

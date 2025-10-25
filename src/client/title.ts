@@ -8,6 +8,7 @@ import {
   print,
   uiButtonHeight,
   uiButtonWidth,
+  uiGetTitleFont,
   uiTextHeight,
 } from 'glov/client/ui';
 import * as urlhash from 'glov/client/urlhash';
@@ -57,9 +58,13 @@ function title(dt: number): void {
   }
 
   let x = 10;
-  print(null, x, y, Z.UI, 'Crawler Demo');
+  uiGetTitleFont().draw({
+    size: 14,
+    x, y,
+    text: 'Crawler Demo',
+  });
   x += 10;
-  y += uiTextHeight() + 2;
+  y += 14 + 2;
   // @ts-expect-error truthy
   for (let ii = 0; ii < 3 && !'onlinedemo'; ++ii) {
     let slot = ii + 1;

@@ -34,7 +34,6 @@ import { textureDefaultFilters } from 'glov/client/textures';
 import { uiSetPanelColor } from 'glov/client/ui';
 import * as ui from 'glov/client/ui';
 import { getURLBase } from 'glov/client/urlhash';
-import * as urlhash from 'glov/client/urlhash';
 import { v4copy, vec4 } from 'glov/common/vmath';
 // import './client_cmds.js'; // for side effects
 import { crawlerBuildModeStartup } from './crawler_build_mode';
@@ -61,12 +60,13 @@ Z.FLOATERS = 125;
 Z.DIALOG = 140;
 Z.STATUS = 160;
 Z.CHAT_FOCUSED = 100;
+Z.FRAMES = Z.MAP + 5;
 
 let fonts: Font[] | undefined;
 
 crawlerOnPixelyChange(function (new_value: number): void {
-  assert(fonts);
-  engine.setFonts(fonts[new_value] || fonts[2]);
+  // assert(fonts);
+  // engine.setFonts(fonts[new_value] || fonts[2]);
 });
 
 const clear_color = vec4(0, 0, 0, 1);
@@ -83,10 +83,6 @@ export function main(): void {
       name: 'discord',
       api_path: `${getURLBase()}.proxy/api/`,
     }], cmd_parse, 'discord');
-  }
-
-  if (!urlhash.get('c')) {
-    urlhash.set('c', 'build');
   }
 
   if (engine.DEBUG || true) {
@@ -168,18 +164,22 @@ export function main(): void {
     settingsSet('entity_split', 1);
   }
 
-  const font_info_04b03x2 = require('./img/font/04b03_8x2.json');
-  const font_info_04b03x1 = require('./img/font/04b03_8x1.json');
-  const font_info_palanquin32 = require('./img/font/palanquin32.json');
+  // const font_info_04b03x2 = require('./img/font/04b03_8x2.json');
+  // const font_info_04b03x1 = require('./img/font/04b03_8x1.json');
+  // const font_info_palanquin32 = require('./img/font/palanquin32.json');
   let pixely = settings.pixely === 2 ? 'strict' : settings.pixely ? 'on' : false;
-  let font;
-  if (pixely === 'strict') {
-    font = { info: font_info_04b03x1, texture: 'font/04b03_8x1' };
-  } else if (pixely && pixely !== 'off') {
-    font = { info: font_info_04b03x2, texture: 'font/04b03_8x2' };
-  } else {
-    font = { info: font_info_palanquin32, texture: 'font/palanquin32' };
-  }
+  // let font;
+  // if (pixely === 'strict') {
+  //   font = { info: font_info_04b03x1, texture: 'font/04b03_8x1' };
+  // } else if (pixely && pixely !== 'off') {
+  //   font = { info: font_info_04b03x2, texture: 'font/04b03_8x2' };
+  // } else {
+  //   font = { info: font_info_palanquin32, texture: 'font/palanquin32' };
+  // }
+  const font_info_celtic = require('./img/font/celtictime.json');
+  let font = { info: font_info_celtic, texture: 'font/celtictime' };
+  const font_info_fancy = require('./img/font/fancypixels.json');
+  let title_font = { info: font_info_fancy, texture: 'font/fancypixels' };
   settingsSet('use_fbos', use_fbos); // If needed for our effects
 
   autoAtlasTextureOpts('whitebox', { force_mipmaps: true });
@@ -190,12 +190,14 @@ export function main(): void {
     game_height,
     pixely,
     font,
+    title_font,
     viewport_postprocess: true,
     antialias,
     znear: 11,
     zfar: 2000,
     do_borders: false,
     show_fps: false,
+    pixel_perfect: 1,
     ui_sprites: {
       ...spriteSetGet('pixely'),
       // color_set_shades: [1, 1, 1],
@@ -226,9 +228,8 @@ export function main(): void {
     assert(gl.getExtension('OES_standard_derivatives'), 'GL_OES_standard_derivatives not supported!');
   }
   fonts = [
-    fontCreate(font_info_palanquin32, 'font/palanquin32'),
-    fontCreate(font_info_04b03x2, 'font/04b03_8x2'),
-    fontCreate(font_info_04b03x1, 'font/04b03_8x1'),
+    fontCreate(font_info_celtic, 'font/celtictime'),
+    // fontCreate(font_info_04b03x2, 'font/04b03_8x2'),
   ];
 
   let build_font = fonts[0];
@@ -239,15 +240,17 @@ export function main(): void {
   crawlerRenderSetUIClearColor(clear_color);
 
   // Actually not too bad:
-  if (settings.filter === 1) {
-    textureDefaultFilters(gl.LINEAR_MIPMAP_LINEAR, gl.LINEAR);
-  } else if (settings.filter === 2) {
-    textureDefaultFilters(gl.LINEAR_MIPMAP_LINEAR, gl.NEAREST);
-  }
+  // if (settings.filter === 1) {
+  //   textureDefaultFilters(gl.LINEAR_MIPMAP_LINEAR, gl.LINEAR);
+  // } else if (settings.filter === 2) {
+  //   textureDefaultFilters(gl.LINEAR_MIPMAP_LINEAR, gl.NEAREST);
+  // }
+  textureDefaultFilters(gl.NEAREST, gl.NEAREST);
 
   ui.scaleSizes(13 / 32);
   ui.setModalSizes(0, round(game_width * 0.8), round(game_height * 0.23), 0, 0);
-  ui.setFontHeight(8);
+  ui.setFontHeight(11);
+  ui.setButtonHeight(16);
   ui.setPanelPixelScale(1);
   uiSetPanelColor([1, 1, 1, 1]);
   // ui.uiSetFontStyleFocused(fontStyle(ui.uiGetFontStyleFocused(), {
@@ -257,8 +260,8 @@ export function main(): void {
 
   chat_ui = chatUICreate({
     max_len: 1000,
-    w: 256,
-    h: 38,
+    w: 252,
+    h: 96,
     outline_width: 3,
     fade_start_time: [10000, 5000],
     fade_time: [1000, 1000],

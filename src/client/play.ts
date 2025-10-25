@@ -1,3 +1,4 @@
+import { autoAtlas } from 'glov/client/autoatlas';
 import { cmd_parse } from 'glov/client/cmds';
 import * as engine from 'glov/client/engine';
 import {
@@ -134,16 +135,17 @@ declare module 'glov/client/settings' {
 }
 
 // const ATTACK_WINDUP_TIME = 1000;
-const MINIMAP_RADIUS = 3;
-const MINIMAP_X = VIEWPORT_X0 + render_width + 2;
-const MINIMAP_Y = 3;
-const MINIMAP_W = 5+7*(MINIMAP_RADIUS*2 + 1);
+// const MINIMAP_RADIUS = 3;
+const MINIMAP_X = 332;
+const MINIMAP_Y = 8;
+const MINIMAP_W = 80;
+const MINIMAP_H = 68;
 const MINIMAP_STEP_SIZE = 12;
 const MINIMAP_TILE_SIZE = MINIMAP_STEP_SIZE * 12/12;
 const FULLMAP_STEP_SIZE = MINIMAP_STEP_SIZE;
 const FULLMAP_TILE_SIZE = FULLMAP_STEP_SIZE * 12/12;
 const COMPASS_X = MINIMAP_X;
-const COMPASS_Y = MINIMAP_Y + MINIMAP_W;
+const COMPASS_Y = MINIMAP_Y + MINIMAP_H;
 
 type Entity = EntityDemoClient;
 
@@ -166,6 +168,11 @@ type BarSprite = {
 };
 let bar_sprites: {
   healthbar: BarSprite;
+};
+
+let frame_sprites: {
+  horiz: Sprite;
+  vert: Sprite;
 };
 
 const style_text = fontStyle(null, {
@@ -374,6 +381,91 @@ function useNoText(): boolean {
   return input.inputTouchMode() || input.inputPadMode() || settings.turn_toggle;
 }
 
+let sprite_corner = autoAtlas('ui', 'frame-corner-silver');
+function drawFrames(): void {
+  let z = Z.FRAMES;
+
+  [0, 240, game_height - 12].forEach(function (y) {
+    sprite_corner.draw({
+      x: 0, y, z: z + 1,
+      w: 12, h: 12,
+    });
+    if (y !== 240) {
+      sprite_corner.draw({
+        x: game_width - 12, y, z: z + 1,
+        w: 12, h: 12,
+      });
+    }
+    frame_sprites.horiz.draw({
+      x: 12,
+      y,
+      z,
+      w: game_width - 24,
+      h: 12,
+      uvs: [0, 0, (game_width - 24)/512, 1],
+    });
+  });
+  frame_sprites.horiz.draw({
+    x: 324+12,
+    y: 72,
+    z,
+    w: game_width - 324 - 24,
+    h: 12,
+    uvs: [0, 0, (game_width - 324 - 24)/512, 1],
+  });
+  [
+    [0, 12, game_height - 24],
+    [324, 12, 228],
+    [game_width - 12, 12, game_height - 24],
+    [264, 252-6, 96+6, 6/512],
+  ].forEach(function (coords) {
+    frame_sprites.vert.draw({
+      x: coords[0],
+      y: coords[1],
+      z,
+      w: 12,
+      h: coords[2],
+      uvs: [0, coords[3] || 0, 1, coords[2]/512],
+    });
+  });
+
+  [
+    [324,0],
+    [264, game_height - 12],
+  ].forEach(function (coords) {
+    sprite_corner.draw({
+      x: coords[0],
+      y: coords[1],
+      z: z + 1,
+      w: 12,
+      h: 12,
+    });
+  });
+
+  let gems: [number, number, string][] = [
+    [324,72,'frame-t-right'],
+    [game_width - 12,72,'frame-t-left'],
+    [324,240,'frame-t-up'],
+    [game_width - 12,240,'frame-t-left'],
+  ];
+  gems.forEach(function (coords) {
+    autoAtlas('ui', coords[2]).draw({
+      x: coords[0],
+      y: coords[1],
+      z: z + 1,
+      w: 12,
+      h: 12,
+    });
+    autoAtlas('ui', 'frame-gem-0').draw({
+      x: coords[0],
+      y: coords[1],
+      z: z + 2,
+      w: 12,
+      h: 12,
+    });
+  });
+}
+
 function playCrawl(): void {
   profilerStartFunc();
 
@@ -419,8 +511,8 @@ function playCrawl(): void {
   const build_mode = buildModeActive();
   let locked_dialog = dialogMoveLocked();
   const overlay_menu_up = pause_menu_up; // || inventory_up
-  let minimap_display_h = build_mode ? BUTTON_W : MINIMAP_W;
-  let show_compass = !build_mode;
+  let minimap_display_h = build_mode ? BUTTON_W : MINIMAP_H;
+  let show_compass = !build_mode && false;
   let compass_h = show_compass ? 11 : 0;
 
   if (build_mode && !controller.ignoreGameplay()) {
@@ -634,6 +726,8 @@ function playCrawl(): void {
     });
   }
 
+  drawFrames();
+
   statusTick(dialog_viewport);
 
   profilerStopFunc();
@@ -767,8 +861,8 @@ export function playStartup(): void {
     default_vstyle: 'demo',
     allow_offline_console: engine.DEBUG,
     chat_ui_param: {
-      x: 3,
-      y_bottom: game_height,
+      x: 12,
+      y_bottom: 347,
       border: 2,
       scroll_grow: 2,
       cuddly_scroll: true,
@@ -868,6 +962,25 @@ export function playStartup(): void {
         ...bar_param,
       }),
     },
+  };
+
+  frame_sprites = {
+    horiz: spriteCreate({
+      filter_min: gl.NEAREST,
+      filter_mag: gl.NEAREST,
+      wrap_s: gl.CLAMP_TO_EDGE,
+      wrap_t: gl.CLAMP_TO_EDGE,
+      force_mipmaps: false,
+      name: 'frame-h',
+    }),
+    vert: spriteCreate({
+      filter_min: gl.NEAREST,
+      filter_mag: gl.NEAREST,
+      wrap_s: gl.CLAMP_TO_EDGE,
+      wrap_t: gl.CLAMP_TO_EDGE,
+      force_mipmaps: false,
+      name: 'frame-v',
+    }),
   };
 
   renderAppStartup();

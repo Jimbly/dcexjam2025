@@ -77,6 +77,7 @@ glov_server.startup({
   app,
   server,
   server_https,
+  font: 'celtictime',
 });
 
 // Opt-in to the permissions token system (Note: make sure config/server.json:forward_depth is correct!)
