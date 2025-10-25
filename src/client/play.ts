@@ -51,6 +51,7 @@ import {
 import {
   crawlerLoadData,
 } from '../common/crawler_state';
+import { gameEntityTraitsCommonStartup } from '../common/game_entity_traits_common';
 import {
   aiDoFloor, aiTraitsClientStartup,
 } from './ai';
@@ -68,6 +69,7 @@ import {
   crawlerControllerTouchHotzonesAuto,
 } from './crawler_controller';
 import {
+  crawlerEntFactory,
   crawlerEntityClientStartupEarly,
   crawlerEntityManager,
   crawlerEntityTraitsClientStartup,
@@ -108,8 +110,7 @@ import { crawlerScriptAPIDummyServer } from './crawler_script_api_client';
 import { crawlerOnScreenButton } from './crawler_ui';
 import { dialogNameRender } from './dialog_data';
 import { dialogMoveLocked, dialogRun, dialogStartup } from './dialog_system';
-import { EntityDemoClient, entityManager } from './entity_demo_client';
-// import { EntityDemoClient } from './entity_demo_client';
+import { EntityClient, entityManager } from './entity_game_client';
 import {
   game_height,
   game_width,
@@ -148,7 +149,7 @@ const FULLMAP_TILE_SIZE = FULLMAP_STEP_SIZE * 12/12;
 const COMPASS_X = MINIMAP_X;
 const COMPASS_Y = MINIMAP_Y + MINIMAP_H;
 
-type Entity = EntityDemoClient;
+type Entity = EntityClient;
 
 let font: Font;
 
@@ -478,7 +479,17 @@ function drawFrames(): void {
       w: 12,
       h: 12,
     });
-    autoAtlas('ui', 'frame-gem-0').draw({
+    let dist = coords[0] + coords[1];
+    const ANIM_DIST_PER_MS = 0.5;
+    let anim = engine.getFrameTimestamp() * ANIM_DIST_PER_MS % 6000; // 12 second period
+    anim = clamp((anim - dist)/100, 0, 1);
+    if (anim === 1) {
+      anim = 0;
+    } else {
+      anim = floor(anim * 4);
+    }
+
+    autoAtlas('ui', `frame-gem-${anim}`).draw({
       x: coords[0],
       y: coords[1],
       z: z + 2,
@@ -644,7 +655,7 @@ function playCrawl(): void {
     dt,
     button_x0: MOVE_BUTTONS_X0,
     button_y0: build_mode ? game_height - 16 : MOVE_BUTTONS_Y0,
-    no_visible_ui: frame_map_view,
+    no_visible_ui: frame_map_view || build_mode,
     button_w: build_mode ? 6 : BUTTON_W,
     button_sprites: useNoText() ? button_sprites_notext : button_sprites,
     disable_move: moveBlocked() || overlay_menu_up,
@@ -753,7 +764,9 @@ function playCrawl(): void {
     });
   }
 
-  drawFrames();
+  if (!build_mode) {
+    drawFrames();
+  }
 
   statusTick(dialog_viewport);
 
@@ -896,10 +909,13 @@ export function playStartup(): void {
   });
   crawlerEntityClientStartupEarly();
   aiTraitsClientStartup();
+  let ent_factory = crawlerEntFactory<Entity>();
+  gameEntityTraitsCommonStartup(ent_factory);
   // appTraitsStartup();
   crawlerEntityTraitsClientStartup({
-    name: 'EntityDemoClient',
-    Ctor: EntityDemoClient,
+    name: 'EntityClient',
+    Ctor: EntityClient,
+    channel_type: 'game',
   });
   crawlerRenderEntitiesStartup(font);
   crawlerRenderViewportSet({

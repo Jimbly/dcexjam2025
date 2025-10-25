@@ -66,7 +66,7 @@ export function crawlerEntityAlloc(data: DataObject): Entity {
 }
 
 function onEntDefReload(type_id: string): void {
-  let channels = glov_server.channel_server.getLocalChannelsByType('spire');
+  let channels = glov_server.channel_server.getLocalChannelsByType('game');
   for (let ii = 0; ii < channels.length; ++ii) {
     let channel = channels[ii];
     if (channel.entity_manager) {

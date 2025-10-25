@@ -1511,7 +1511,7 @@
       ]
     },
     {
-      "id": "demo_shopkeeper_static",
+      "id": "open",
       "walls": [
         "solid",
         "solid",
@@ -2082,7 +2082,7 @@
       "id": "open",
       "walls": [
         "open",
-        "demo_walldetail2",
+        "solid",
         "open",
         "open"
       ]
@@ -2106,7 +2106,7 @@
       ]
     },
     {
-      "id": "demo_fountain",
+      "id": "open",
       "walls": [
         "solid",
         "solid",
@@ -2351,22 +2351,7 @@
   ],
   "initial_entities": [
     {
-      "type": "demo_shopkeeper",
-      "pos": [
-        5,
-        12
-      ]
-    },
-    {
-      "type": "demo_wander",
-      "pos": [
-        7,
-        9,
-        2
-      ]
-    },
-    {
-      "type": "demo_shopkeeper",
+      "type": "enemy0",
       "pos": [
         1,
         10,
@@ -2375,7 +2360,7 @@
     }
   ],
   "state": {},
-  "vstyle": "demo",
+  "vstyle": "dcex",
   "seed": "32845502",
   "props": {},
   "paths": {}

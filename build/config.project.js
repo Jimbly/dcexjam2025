@@ -61,5 +61,5 @@ module.exports = function (config) {
     zip: true,
   }];
 
-  config.extra_server_tasks.push('server_fsdata');
+  // config.extra_server_tasks.push('server_fsdata'); - causes server to restart, why was this here?
 };

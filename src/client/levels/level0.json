@@ -2443,22 +2443,6 @@
       ]
     },
     {
-      "type": "demo_shopkeeper",
-      "pos": [
-        0,
-        10,
-        0
-      ]
-    },
-    {
-      "type": "demo_wander",
-      "pos": [
-        0,
-        11,
-        0
-      ]
-    },
-    {
       "type": "enemy0",
       "pos": [
         0,

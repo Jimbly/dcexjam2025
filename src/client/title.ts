@@ -107,13 +107,9 @@ function title(dt: number): void {
     if (buttonText({
       x, y, text: 'Online Test',
     })) {
-      urlhash.go('?c=build');
+      urlhash.go('?c=the');
     }
     y += uiButtonHeight() + 2;
-    // @ts-expect-error truthy
-    if ('onlinedemo') {
-      print(null, x, y, Z.UI, 'Hint: press [B] to enter Build Mode');
-    }
   }
   if (crawlerCommWant()) {
     crawlerCommStart();
@@ -128,8 +124,9 @@ export function titleInit(dt: number): void {
 
 export function titleStartup(): void {
   crawlerCommStartup({
+    channel_type: 'game',
     lobby_state: titleInit,
-    title_func: (value: string) => `Crawler Demo | "${value}"`,
+    title_func: (value: string) => `MiniMMO Crawler | "${value}"`,
     chat_ui: main.chat_ui,
   });
 }

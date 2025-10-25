@@ -12,6 +12,10 @@ import type { ROVec2 } from 'glov/common/vmath';
 import { EntityCrawlerDataCommon, entSamePos } from '../common/crawler_entity_common';
 import type { JSVec3 } from '../common/crawler_state';
 import {
+  entityGameCommonClass,
+  StatsData,
+} from '../common/entity_game_common';
+import {
   crawlerEntClientDefaultDraw2D,
   crawlerEntClientDefaultOnDelete,
   crawlerEntityManager,
@@ -24,7 +28,7 @@ import {
 
 const { random } = Math;
 
-type Entity = EntityDemoClient;
+type Entity = EntityClient;
 
 export function entitiesAt(cem: ClientEntityManagerInterface<Entity>,
   pos: [number, number] | ROVec2,
@@ -38,10 +42,6 @@ export function entityManager(): ClientEntityManagerInterface<Entity> {
   return crawlerEntityManager() as ClientEntityManagerInterface<Entity>;
 }
 
-export type StatsData = {
-  hp: number;
-};
-
 export type EntityDataClient = {
   type: string;
   pos: JSVec3;
@@ -53,7 +53,8 @@ export type EntityDataClient = {
 } & EntityCrawlerDataCommon;
 
 
-export class EntityDemoClient extends EntityBaseClient implements EntityCrawlerClient {
+// export class EntityClient extends EntityBaseClient implements EntityCrawlerClient {
+export class EntityClient extends entityGameCommonClass(EntityBaseClient) implements EntityCrawlerClient {
   declare entity_manager: ClientEntityManagerInterface<Entity>;
   declare data: EntityDataClient;
 
@@ -123,8 +124,8 @@ export class EntityDemoClient extends EntityBaseClient implements EntityCrawlerC
     return is_initial ? 0 : 250;
   }
 }
-EntityDemoClient.prototype.draw2D = crawlerEntClientDefaultDraw2D;
-EntityDemoClient.prototype.onDelete = crawlerEntClientDefaultOnDelete;
-EntityDemoClient.prototype.do_split = true;
-EntityDemoClient.prototype.ai_move_min_time = 500;
-EntityDemoClient.prototype.ai_move_rand_time = 500;
+EntityClient.prototype.draw2D = crawlerEntClientDefaultDraw2D;
+EntityClient.prototype.onDelete = crawlerEntClientDefaultOnDelete;
+EntityClient.prototype.do_split = true;
+EntityClient.prototype.ai_move_min_time = 500;
+EntityClient.prototype.ai_move_rand_time = 500;

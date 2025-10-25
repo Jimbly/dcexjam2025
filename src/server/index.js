@@ -13,7 +13,7 @@ import {
 } from 'glov/server/request_utils';
 import * as glov_server from 'glov/server/server';
 import minimist from 'minimist';
-import { crawlerWorkerInit } from './crawler_worker';
+import { gameWorkerInit } from './game_worker';
 
 platformRegister('discord', {
   devmode: 'off',
@@ -83,7 +83,7 @@ glov_server.startup({
 // Opt-in to the permissions token system (Note: make sure config/server.json:forward_depth is correct!)
 permTokenWorkerInit(glov_server.channel_server, app);
 
-crawlerWorkerInit(glov_server.channel_server);
+gameWorkerInit(glov_server.channel_server);
 
 let port = argv.port || process.env.port || 3000;
 

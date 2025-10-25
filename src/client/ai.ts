@@ -24,13 +24,13 @@ import {
   JSVec3,
 } from '../common/crawler_state';
 import { crawlerEntFactory } from './crawler_entity_client';
-import { EntityDemoClient } from './entity_demo_client';
+import { EntityClient } from './entity_game_client';
 import { myEnt } from './play';
 import { statusSet } from './status';
 
 const { abs, floor, random } = Math;
 
-type Entity = EntityDemoClient;
+type Entity = EntityClient;
 
 function randomFrom<T>(arr: T[]): T {
   return arr[floor(random() * arr.length)];
@@ -76,7 +76,7 @@ export type WanderOpts = Record<never, never>;
 export type WanderState = {
   home_pos: JSVec3;
 };
-export type EntityWander = EntityDemoClient & {
+export type EntityWander = EntityClient & {
   wander_state: WanderState;
   wander_opts: WanderOpts;
   aiWander: (game_state: CrawlerState, script_api: CrawlerScriptAPI) => boolean;
@@ -86,7 +86,7 @@ export type PatrolOpts = Record<never, never>;
 export type PatrolState = {
   last_pos: JSVec3;
 };
-export type EntityPatrol = EntityDemoClient & {
+export type EntityPatrol = EntityClient & {
   patrol_state: PatrolState;
   patrol_opts: PatrolOpts;
   aiPatrol: (game_state: CrawlerState, script_api: CrawlerScriptAPI) => boolean;
@@ -99,7 +99,7 @@ export type HunterState = {
   has_target: boolean;
   target_pos: JSVec3;
 };
-export type EntityHunter = EntityDemoClient & {
+export type EntityHunter = EntityClient & {
   hunter_state: HunterState;
   hunter_opts: HunterOpts;
   aiHunt: (game_state: CrawlerState, script_api: CrawlerScriptAPI) => boolean;
