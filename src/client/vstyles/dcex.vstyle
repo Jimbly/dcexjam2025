@@ -3,8 +3,8 @@ fog_color: '#181425'
 background_color: '#181425'
 # background_img: backdrop_dcex
 fog_params:
-- 0.003
-- 0.0005
+- 0.0035
+- 0.0035
 - 800.0
 cell_swaps:
   open: dcex_open

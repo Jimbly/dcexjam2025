@@ -11,10 +11,9 @@ import {
 } from 'glov/common/types.js';
 import type { ROVec2 } from 'glov/common/vmath';
 import { EntityCrawlerDataCommon, entSamePos } from '../common/crawler_entity_common';
-import type { JSVec3 } from '../common/crawler_state';
 import {
   entityGameCommonClass,
-  StatsData,
+  EntityGameDataCommon,
 } from '../common/entity_game_common';
 import {
   crawlerEntClientDefaultDraw2D,
@@ -45,16 +44,14 @@ export function entityManager(): ClientEntityManagerInterface<Entity> {
 }
 
 export type EntityDataClient = {
-  type: string;
-  pos: JSVec3;
-  state: string;
-  floor: number;
-  stats: StatsData;
+  // type: string;
+  // pos: JSVec3;
+  // state: string;
+  // floor: number;
+  // stats: StatsData;
   // Player:
   events_done?: Partial<Record<string, boolean>>;
-  // AI state
-  last_pos: JSVec3;
-} & EntityCrawlerDataCommon;
+} & EntityGameDataCommon & EntityCrawlerDataCommon;
 
 
 // export class EntityClient extends EntityBaseClient implements EntityCrawlerClient {

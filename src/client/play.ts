@@ -40,6 +40,7 @@ import {
   playUISound,
   uiButtonWidth,
   uiGetFont,
+  uiGetTitleFont,
   uiTextHeight,
 } from 'glov/client/ui';
 import * as urlhash from 'glov/client/urlhash';
@@ -52,7 +53,7 @@ import { clamp } from 'glov/common/util';
 import {
   JSVec2,
   JSVec3,
-  v2distSq,
+  ROVec2,
   Vec2,
 } from 'glov/common/vmath';
 import { damage, xpToLevelUp } from '../common/combat';
@@ -141,6 +142,7 @@ import {
   VIEWPORT_Y0,
 } from './globals';
 import { levelGenTest } from './level_gen_test';
+import { tinyFont } from './main';
 import { tickMusic } from './music';
 import {
   PAL_BLACK,
@@ -155,7 +157,7 @@ import {
 } from './status';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { floor, max, min, round } = Math;
+const { abs, floor, max, min, round } = Math;
 
 declare module 'glov/client/settings' {
   export let ai_pause: 0 | 1; // TODO: move to ai.ts
@@ -177,10 +179,14 @@ const COMPASS_X = MINIMAP_X;
 const COMPASS_Y = MINIMAP_Y + MINIMAP_H;
 const BUTTON_W = 18;
 const FONT_HEIGHT = 11;
+const TINY_FONT_H = 8;
+const TITLE_FONT_H = 14;
 
 type Entity = EntityClient;
 
 let font: Font;
+let title_font: Font;
+let tiny_font: Font;
 
 // let loading_level = false;
 
@@ -197,6 +203,9 @@ type BarSprite = {
 };
 let bar_sprites: {
   healthbar: BarSprite;
+  tinyhealth: BarSprite;
+  doublehp: BarSprite;
+  doublemp: BarSprite;
   mpbar: BarSprite;
   xpbar: BarSprite;
 };
@@ -328,6 +337,10 @@ class PauseMenuAction extends UIAction {
 PauseMenuAction.prototype.name = 'PauseMenu';
 PauseMenuAction.prototype.is_overlay_menu = true;
 
+function v2manhattan(a: ROVec2, b: ROVec2): number {
+  return abs(a[0] - b[0]) + abs(a[1] - b[1]);
+}
+
 function closestPlayerToIgnoreWalls(ent: Entity): EntityID {
   let entity_manager = entityManager();
   let game_state = crawlerGameState();
@@ -346,7 +359,7 @@ function closestPlayerToIgnoreWalls(ent: Entity): EntityID {
     if (!other_ent.isPlayer()) {
       continue;
     }
-    let dist = v2distSq(pos, other_ent.getData<JSVec3>('pos')!);
+    let dist = v2manhattan(pos, other_ent.getData<JSVec3>('pos')!);
     if (
       !best || dist < best_dist ||
       dist === best_dist && other_ent.id === last_closest_ent ||
@@ -600,6 +613,201 @@ function drawStats(): void {
   y += STATS_BAR_H;
   y += STATS_Y_PAD;
 
+}
+
+const BATTLEZONE_W = 134;
+function drawBattleZone(): void {
+  let x = 275;
+  let y = 252;
+  let z = Z.UI;
+
+  tiny_font.draw({
+    color: palette_font[PAL_WHITE + 1],
+    x: x + 1, y, z,
+    size: TINY_FONT_H,
+    text: 'BattleZone',
+  });
+  y += TINY_FONT_H + 1;
+
+  let entity_manager = entityManager();
+  let game_state = crawlerGameState();
+  let entities = entity_manager.entities;
+  let { floor_id } = game_state;
+  let players: Entity[] = [];
+  for (let ent_id in entities) {
+    let other_ent = entities[ent_id]!;
+    if (other_ent.data.floor !== floor_id || other_ent.fading_out) {
+      // not on current floor
+      continue;
+    }
+    if (other_ent.isPlayer()) {
+      players.push(other_ent);
+    }
+  }
+  let me = myEnt();
+  function isInBattleZone(ent: Entity): boolean {
+    return ent === me;
+  }
+  let my_pos = me.getData<JSVec3>('pos')!;
+  players.sort(function (a, b) {
+    if (a === me) {
+      return -1;
+    } else if (b === me) {
+      return 1;
+    }
+    let bza = isInBattleZone(a);
+    let bzb = isInBattleZone(a);
+    if (bza && !bzb) {
+      return -1;
+    }
+    if (bzb && !bza) {
+      return 1;
+    }
+    let d1 = v2manhattan(a.data.pos, my_pos);
+    let d2 = v2manhattan(b.data.pos, my_pos);
+    if (d1 === d2) {
+      return a.id - b.id;
+    }
+    return d1 - d2;
+  });
+
+  let is_bz = true;
+  let my_angle = crawlerController().getEffRot();
+  for (let ii = 0; ii < players.length; ++ii) {
+    let ent = players[ii];
+    if (is_bz && !isInBattleZone(ent)) {
+      y += 2;
+      is_bz = false;
+      tiny_font.draw({
+        color: palette_font[PAL_WHITE + 1],
+        x: x + 1, y, z,
+        size: TINY_FONT_H,
+        text: `Nearby (${players.length - ii})`,
+      });
+      y += TINY_FONT_H + 1;
+    }
+    let is_ready = false;
+    drawBox({
+      x, y, z: z - 1,
+      w: BATTLEZONE_W,
+      h: is_bz ? 25: 23,
+    }, autoAtlas('ui', 'roundpanel'));
+    autoAtlas('ui', 'portraits-0').draw({
+      x: x + 5,
+      y: y + 3, z,
+      w: 12,
+      h: 12,
+    });
+    let sprite = 'star';
+    if (ent !== me) {
+      let dx = ent.data.pos[0] - my_pos[0];
+      let dy = ent.data.pos[1] - my_pos[1];
+      if (my_angle === 0) { // looking east
+        let t = dx;
+        dx = -dy;
+        dy = t;
+      } else if (my_angle === 3) { // looking south
+        dx = -dx;
+        dy = -dy;
+      } else if (my_angle === 2) { // looking west
+        let t = dx;
+        dx = dy;
+        dy = -t;
+      }
+      if (!dx && !dy) {
+        sprite = 'arrow-here';
+      } else if (abs(dx) > abs(dy)) {
+        sprite = dx > 0 ? 'arrow-right' : 'arrow-left';
+      } else {
+        sprite = dy > 0 ? 'arrow-up' : 'arrow-down';
+      }
+    }
+    autoAtlas('ui', sprite).draw({
+      x: x + 5 + 12,
+      y: y + 2,
+      z,
+      w: 12,
+      h: 12,
+    });
+    let icon_x = x + BATTLEZONE_W - 12 - 3;
+    if (is_bz) {
+      autoAtlas('ui', is_ready ? 'check': 'hourglass').draw({
+        x: icon_x,
+        y: y + 2,
+        z,
+        w: 12,
+        h: 12,
+      });
+    }
+    let name_x = x + 32;
+    title_font.draw({
+      size: TITLE_FONT_H,
+      color: palette_font[PAL_WHITE + 1],
+      x: name_x,
+      y,
+      z,
+      w: icon_x - name_x,
+      align: ALIGN.HFIT,
+      text: ent.data.display_name || '???',
+    });
+
+    if (is_bz) {
+      drawBar(bar_sprites.doublehp, x + 5, y + 16, z, 44, 6,
+        ent.getData('stats.hp', 0) / ent.getData('stats.hp_max', 1));
+      drawBar(bar_sprites.doublemp, x + 5, y + 16, z, 44, 6,
+        ent.getData('stats.mp', 0) / ent.getData('stats.mp_max', 1));
+
+      tiny_font.draw({
+        color: palette_font[PAL_WHITE + 1],
+        x, y, z,
+        size: TINY_FONT_H,
+        w: BATTLEZONE_W - 3,
+        h: 22,
+        align: ALIGN.HRIGHT | ALIGN.VBOTTOM,
+        text: is_ready ? 'Ready!' : 'Waiting...',
+      });
+    } else {
+      drawBar(bar_sprites.tinyhealth, x + 5, y + 16, z, 44, 4,
+        ent.getData('stats.hp', 0) / ent.getData('stats.hp_max', 1));
+    }
+
+
+    y += is_bz ? 24 : 22;
+  }
+
+  if (is_bz) {
+    y += 2;
+    is_bz = false;
+    tiny_font.draw({
+      color: palette_font[PAL_WHITE + 1],
+      x: x + 1, y, z,
+      size: TINY_FONT_H,
+      text: 'Nearby (0)',
+    });
+    y += TINY_FONT_H + 1;
+    if (players.length <= 1) {
+      y += 12;
+      font.draw({
+        color: palette_font[PAL_WHITE + 1],
+        x, y, z,
+        w: BATTLEZONE_W,
+        align: ALIGN.HCENTER | ALIGN.HWRAP,
+        text: 'Nearby players will\nappear here.',
+      });
+    }
+  } else {
+    if (players.length <= 2) {
+      font.draw({
+        color: palette_font[PAL_WHITE + 2],
+        x,
+        y: 324,
+        z,
+        w: BATTLEZONE_W,
+        align: ALIGN.HCENTER | ALIGN.HWRAP,
+        text: 'Engage near others to join BattleZones.',
+      });
+    }
+  }
 }
 
 const ENEMY_HP_BAR_W = 100;
@@ -1028,6 +1236,7 @@ function playCrawl(): void {
     if (!build_mode) {
       // Do game UI/stats here
       drawStats();
+      drawBattleZone();
 
       doEngagedEnemy();
     }
@@ -1270,6 +1479,8 @@ settingsRegister({
 
 export function playStartup(): void {
   font = uiGetFont();
+  title_font = uiGetTitleFont();
+  tiny_font = tinyFont();
   crawlerScriptAPIDummyServer(true); // No script API running on server
   crawlerPlayStartup({
     on_broadcast: onBroadcast,
@@ -1376,6 +1587,18 @@ export function playStartup(): void {
     healthbar: {
       bg: autoAtlas('ui', 'bar-frame'),
       hp: autoAtlas('ui', 'bar-fill-red'),
+    },
+    tinyhealth: {
+      bg: autoAtlas('ui', 'minibar-frame-lighter'),
+      hp: autoAtlas('ui', 'minibar-fill-red'),
+    },
+    doublehp: {
+      bg: autoAtlas('ui', 'minibar-frame-lighter'),
+      hp: autoAtlas('ui', 'minibar-fill-red-top'),
+    },
+    doublemp: {
+      bg: autoAtlas('ui', 'minibar-frame-lighter'),
+      hp: autoAtlas('ui', 'minibar-fill-blue-bottom'),
     },
     mpbar: {
       bg: autoAtlas('ui', 'bar-frame'),

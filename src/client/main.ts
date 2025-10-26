@@ -62,6 +62,11 @@ Z.CHAT_FOCUSED = 100;
 Z.FRAMES = Z.MAP + 5;
 
 let fonts: Font[] | undefined;
+let tiny_font: Font;
+
+export function tinyFont(): Font {
+  return tiny_font;
+}
 
 crawlerOnPixelyChange(function (new_value: number): void {
   // assert(fonts);
@@ -179,6 +184,7 @@ export function main(): void {
   let font = { info: font_info_celtic, texture: 'font/celtictime' };
   const font_info_fancy = require('./img/font/fancypixels.json');
   let title_font = { info: font_info_fancy, texture: 'font/fancypixels' };
+  const font_info_tiny = require('./img/font/tiny5x7.json');
   settingsSet('use_fbos', use_fbos); // If needed for our effects
 
   autoAtlasTextureOpts('whitebox', { force_mipmaps: true });
@@ -229,9 +235,11 @@ export function main(): void {
   fonts = [
     fontCreate(font_info_celtic, 'font/celtictime'),
     // fontCreate(font_info_04b03x2, 'font/04b03_8x2'),
+    fontCreate(font_info_tiny, 'font/tiny5x7'),
   ];
 
   let build_font = fonts[0];
+  tiny_font = fonts[1];
 
   gl.clearColor(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
   v4copy(engine.border_clear_color, clear_color);

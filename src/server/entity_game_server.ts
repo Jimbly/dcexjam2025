@@ -36,6 +36,8 @@ export type EntityGameDataServer = EntityCrawlerDataServer & EntityGameDataCommo
 
 entityServerRegisterFieldDefs<EntityGameDataServer>({
   type: { encoding: EntityFieldEncoding.AnsiString },
+  display_name: { encoding: EntityFieldEncoding.String, ephemeral: true },
+  user_id: { encoding: EntityFieldEncoding.String, ephemeral: true },
   pos: { encoding: EntityFieldEncoding.IVec3 },
   last_pos: { encoding: EntityFieldEncoding.IVec3, ephemeral: true },
   state: { ephemeral: true, encoding: EntityFieldEncoding.AnsiString },

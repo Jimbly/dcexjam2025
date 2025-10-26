@@ -40,6 +40,8 @@ export type EntityGameDataCommon = {
   // state: string;
 
   // // Players
+  display_name: string;
+  user_id: string;
   // costume?: number;
   // inventory?: ItemInventory[];
   // refinery?: Refinery;

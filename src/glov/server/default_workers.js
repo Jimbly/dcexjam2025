@@ -42,7 +42,7 @@ deprecate(exports, 'handleChat', 'chattable_worker:handleChat');
 
 const { floor, random } = Math;
 
-const DISPLAY_NAME_WAITING_PERIOD = 23 * 60 * 60 * 1000;
+const DISPLAY_NAME_WAITING_PERIOD = 0; // DCJAM 23 * 60 * 60 * 1000;
 const MAX_FRIENDS = 100; // manually added
 const MAX_RELATIONSHIPS = MAX_FRIENDS + 1000; // including blocked, auto-added, removed auto-added
 const FRIENDS_DATA_KEY = 'private.friends';

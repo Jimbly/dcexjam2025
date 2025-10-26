@@ -2,6 +2,7 @@ import assert from 'assert';
 import {
   ClientHandlerSource,
   DataObject,
+  HandlerSource,
   NetErrorCallback,
   NetResponseCallback,
 } from 'glov/common/types';
@@ -82,6 +83,48 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
     this.initCrawlerState();
   }
 
+  gameWorkerEntitiesOnUserReflectedData(
+    user_id: string,
+    user_data: DataObject,
+    key: string | undefined,
+    value: unknown,
+  ): void {
+    // let do_costume = !key || key.startsWith('public.costume');
+    let do_display_name = !key || key === 'public.display_name';
+    let display_name = key ? value : user_data.display_name;
+    if (/*do_costume || */do_display_name) {
+      // Find all entities associated with this user_id
+      let { entity_manager } = this;
+      let { clients } = entity_manager;
+      for (let client_id in clients) {
+        let client = clients[client_id]!;
+        if (!client.ent_id) {
+          continue;
+        }
+        let ent = entity_manager.getEntityForClient(client);
+        assert(ent);
+        if (ent.data.user_id === user_id) {
+          // if (do_costume) {
+          //   ent.setData('costume', user_data.costume || null);
+          // }
+          if (do_display_name) {
+            ent.setData('display_name', display_name || null);
+          }
+        }
+      }
+    }
+  }
+
+  workerOnChannelData(src: HandlerSource, key: string | undefined, value: DataObject): void {
+    if (src.type !== 'user') {
+      return;
+    }
+    const { id } = src; // Note: `src` is a UserWorker, not a ClientWorker, so `id` is a user_id here
+    if (key || !key && value?.public) {
+      this.gameWorkerEntitiesOnUserReflectedData(id, value?.public as DataObject, key, value);
+    }
+  }
+
   // generator?: LevelGenerator;
   // levelFallbackProvider(floor_id: number, cb: (level_data: CrawlerLevelSerialized)=> void): void {
   //   assert(this.generator);
@@ -106,13 +149,22 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
             floor: 0,
             pos: level.special_pos.stairs_in,
           }, sem, src, join_payload, player_uid, function (err: null | string, ent?: Entity) {
-            if (ent && payload.pos) {
-              // This is only for transitioning from offline-play to online-build mode for the first time in a session
-              assert(typeof payload.floor_id === 'number');
-              v3copy(ent.data.pos, payload.pos);
-              ent.data.floor = payload.floor_id;
-              ent.finishCreation();
+            if (ent) {
+              if (payload.pos) {
+                // This is only for transitioning from offline-play to online-build mode for the first time in a session
+                assert(typeof payload.floor_id === 'number');
+                v3copy(ent.data.pos, payload.pos);
+                ent.data.floor = payload.floor_id;
+                ent.finishCreation();
+              }
+              if (src.display_name) {
+                ent.data.display_name = src.display_name;
+              }
+              if (src.user_id) {
+                ent.data.user_id = src.user_id;
+              }
             }
+
             cb(err, ent);
           });
         });
@@ -147,6 +199,7 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
   //   return gameScriptAPIServerCreate();
   // }
 }
+GameWorker.prototype.user_fields_to_subscribe = ['public.display_name'];
 GameWorker.prototype.overrides_constructor = true;
 
 chattableWorkerInit(GameWorker);
