@@ -21,13 +21,15 @@ Assets to replace
 * chat send/receive/join/leave sounds
 
 TODO
+* damage floaters in 3D at a distance
 * bug: visibility is different before/after turning camera/moving forward and back
   * relatedly: always show monster behind (and diagonals?)
 * Deal with more than 4 players in battlezone list (scrollbar, dither, hide?)
 * click to move - ensure stop when enter (active?) battlezone
 * click to move - stop when threatened (or, always in battlezone?)
-* hide cheating commands like entset
+* hide cheating commands like entset, stat
 
 Credits
 =======
 
+* Art and Sound - The DungeonCrawlers.org Discord

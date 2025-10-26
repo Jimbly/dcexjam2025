@@ -9,9 +9,22 @@ traits:
   biasF: [-0.25, 0]
   biasR: [-0.3, 0.4]
 - id: drawable_sprite
+  anim_directional: true
   anim_data:
     idle:
-      frames: [0]
+      frames: [right]
+      times: 1000
+    idle-right:
+      frames: [right]
+      times: 1000
+    idle-towards:
+      frames: [towards]
+      times: 1000
+    idle-left:
+      frames: [left]
+      times: 1000
+    idle-away:
+      frames: [away]
       times: 1000
     death:
       frames: [0]
@@ -28,12 +41,9 @@ traits:
   #   hs: [256]
   #   origin: [0.5, 1]
   sprite_data:
-    name: sprites/player
-    layers: 2
+    atlas: player
     filter_min: NEAREST
     filter_mag: NEAREST
-    ws: [84]
-    hs: [84]
     origin: [0.5, 1]
   scale: 0.65
   tint_colors:
@@ -52,3 +62,7 @@ traits:
   - - '#80b068'
     - '#a8b068'
     - '#688020'
+  simple_anim:
+    - period: 3000
+      scale: [1, 0.95]
+      easing: 1.5

@@ -213,6 +213,10 @@ export function dynGeomLookAt(cam_pos_in, target_pos, up_in) {
   setGlobalMatrices(mat_view);
 }
 
+export function dynGeomForward() {
+  return forward;
+}
+
 let temp = vec3();
 let target_right = vec3();
 export function dynGeomSpriteSetup(params) {
