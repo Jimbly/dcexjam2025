@@ -3,6 +3,7 @@ export const AI_CLAIM_TIME = 2000;
 import assert from 'assert';
 import * as engine from 'glov/client/engine';
 import { getFrameTimestamp } from 'glov/client/engine';
+import { EntityPredictionID } from 'glov/client/entity_base_client';
 import { EntityManager } from 'glov/common/entity_base_common';
 import { sign } from 'glov/common/util';
 import {
@@ -11,6 +12,7 @@ import {
   v3copy,
   Vec2,
 } from 'glov/common/vmath';
+import { damage } from '../common/combat';
 import { entSamePos } from '../common/crawler_entity_common';
 import type { CrawlerScriptAPI } from '../common/crawler_script';
 import {
@@ -24,12 +26,13 @@ import {
   JSVec2,
   JSVec3,
 } from '../common/crawler_state';
-import { crawlerEntFactory } from './crawler_entity_client';
+import { ActionAttackPayload } from '../common/entity_game_common';
+import { crawlerEntFactory, myEntID } from './crawler_entity_client';
 import { EntityClient } from './entity_game_client';
-import { myEnt } from './play';
+import { addFloater, myEnt } from './play';
 import { statusSet } from './status';
 
-const { abs, floor, random } = Math;
+const { abs, floor, max, random } = Math;
 
 type Entity = EntityClient;
 
@@ -358,13 +361,35 @@ function aiDoEnemy(
   defines: Partial<Record<string, true>>,
   script_api: CrawlerScriptAPI,
 ): boolean {
-  let foe_near = foeNear(game_state, ent, script_api);
+  let target_ent = foeNear(game_state, ent, script_api);
   if (defines?.PEACE || defines?.AIPEACE) {
-    foe_near = null;
+    target_ent = null;
   }
-  if (!foe_near) {
+  if (!target_ent) {
     return false;
   }
+
+  let target_stats = target_ent.data.stats;
+  let attacker_stats = ent.data.stats;
+  let { dam, style } = damage(attacker_stats, target_stats);
+  let target_hp = target_ent.getData('stats.hp', 0);
+  addFloater(target_ent.id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}`, '');
+  let pred_ids: EntityPredictionID[] = [];
+  target_ent.predictedSet(pred_ids, 'stats.hp', max(0, target_hp - dam));
+  assert.equal(pred_ids.length, 1);
+  let pred_id = pred_ids[0][1];
+  let payload: ActionAttackPayload = {
+    target_ent_id: target_ent.id,
+    type: style,
+    dam,
+    pred_id,
+    executor: myEntID(),
+  };
+  ent.applyAIUpdate('ai_attack', {}, payload, function (err) {
+    if (err) {
+      target_ent.predictedClear(pred_id);
+    }
+  });
 
   return true;
 }
@@ -387,7 +412,7 @@ export function aiDoFloor(
   script_api.setLevel(level);
   for (let ent_id in entities) {
     let ent = entities[ent_id]!;
-    if (ent.data.floor !== floor_id || ent.fading_out) {
+    if (ent.data.floor !== floor_id || ent.fading_out || !ent.isAlive()) {
       // not on current floor
       continue;
     }
@@ -437,7 +462,7 @@ export function aiStepFloor(
   script_api.setLevel(level);
   for (let ent_id in entities) {
     let ent = entities[ent_id]!;
-    if (ent.data.floor !== floor_id || ent.fading_out) {
+    if (ent.data.floor !== floor_id || ent.fading_out || !ent.isAlive()) {
       // not on current floor
       continue;
     }

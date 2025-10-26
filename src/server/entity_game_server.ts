@@ -209,7 +209,7 @@ function handleActionAttack(
   if (!self && this.is_player) {
     return void resp_func('ERR_NOT_SELF');
   }
-  let { target_ent_id, type, dam, pred_id } = payload as ActionAttackPayload;
+  let { target_ent_id, type, dam, pred_id, executor } = payload as ActionAttackPayload;
   let target = this.entity_manager.entities[target_ent_id];
   if (!target) {
     return void resp_func('ERR_INVALID_ENT_ID');
@@ -228,7 +228,7 @@ function handleActionAttack(
   assert(target_stats.hp);
   let new_hp = max(0, target_stats.hp - dam);
   target.setDataSub('stats', 'hp', new_hp);
-  let ret: BroadcastDataDstat = { hp: -dam, source: this.id, action: 'attack', type, pred_id };
+  let ret: BroadcastDataDstat = { hp: -dam, source: this.id, action: 'attack', type, pred_id, executor };
   if (!target_stats.hp) {
     ret.fatal = true;
     if (target.is_player) {
@@ -268,9 +268,6 @@ entityServerRegisterActions([{
   self_only: false,
   allowed_data_assignments: {
     seq_ai_update: 'string',
-    ready: 'null',
-    ready_start: 'null',
-    action_dur: 'null',
   },
   handler: handleActionAttack,
 }]);

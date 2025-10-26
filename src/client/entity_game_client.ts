@@ -124,7 +124,7 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
   }
 
   isAlive(): boolean {
-    return this.data.stats ? this.data.stats.hp > 0 : true;
+    return this.data.stats ? this.getData('stats.hp', 0) > 0 : true;
   }
 
   isEnemy(): boolean {

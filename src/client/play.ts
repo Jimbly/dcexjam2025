@@ -7,6 +7,7 @@ import {
   ALIGN,
   Font,
   fontStyle,
+  fontStyleAlpha,
   fontStyleColored,
 } from 'glov/client/font';
 import * as input from 'glov/client/input';
@@ -49,12 +50,14 @@ import { EntityManagerEvent } from 'glov/common/entity_base_common';
 import {
   EntityID,
 } from 'glov/common/types';
-import { clamp } from 'glov/common/util';
+import { clamp, easeOut, ridx } from 'glov/common/util';
 import {
   JSVec2,
   JSVec3,
   ROVec2,
+  v3copy,
   Vec2,
+  vec4,
 } from 'glov/common/vmath';
 import { damage, xpToLevelUp } from '../common/combat';
 import {
@@ -146,6 +149,7 @@ import { tinyFont } from './main';
 import { tickMusic } from './music';
 import {
   PAL_BLACK,
+  PAL_RED,
   PAL_WHITE,
   palette,
   palette_font,
@@ -157,7 +161,7 @@ import {
 } from './status';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { abs, floor, max, min, round } = Math;
+const { abs, ceil, floor, max, min, round } = Math;
 
 declare module 'glov/client/settings' {
   export let ai_pause: 0 | 1; // TODO: move to ai.ts
@@ -571,8 +575,8 @@ function drawStats(): void {
   let next_xp = xpToLevelUp(level);
   let hp = me.getData('stats.hp', 0);
   let hp_max = me.getData('stats.hp_max', 1);
-  let mp = me.getData('stats.hp', 0);
-  let mp_max = me.getData('stats.hp_max', 1);
+  let mp = me.getData('stats.mp', 0);
+  let mp_max = me.getData('stats.mp_max', 1);
   font.draw({
     style: style_stats,
     x: x + STATS_X_INDENT,
@@ -613,6 +617,48 @@ function drawStats(): void {
   y += STATS_BAR_H;
   y += STATS_Y_PAD;
 
+}
+
+let color_temp = vec4();
+function drawStatsOverViewport(): void {
+  let my_ent = myEnt();
+  assert(my_ent.isMe());
+
+  // Draw damage "floaters" on us, but on the UI layer
+  let { floaters } = my_ent;
+  let blink = 1;
+  for (let ii = floaters.length - 1; ii >= 0; --ii) {
+    let floater = floaters[ii];
+    let elapsed = engine.frame_timestamp - floater.start;
+    const FLOATER_TIME = 750; // not including fade
+    const FLOATER_FADE = 250;
+    const BLINK_TIME = 250;
+    let alpha = 1;
+    if (elapsed > FLOATER_TIME) {
+      alpha = 1 - (elapsed - FLOATER_TIME) / FLOATER_FADE;
+      if (alpha <= 0) {
+        ridx(floaters, ii);
+        continue;
+      }
+    }
+    if (elapsed < BLINK_TIME) {
+      blink = min(blink, elapsed / BLINK_TIME);
+    }
+    let float = easeOut(elapsed / (FLOATER_TIME + FLOATER_FADE), 2) * 100;
+    let text_height = uiTextHeight() * 2;
+    font.drawSizedAligned(fontStyleAlpha(style_text, alpha),
+      VIEWPORT_X0 + render_width/2,
+      round(VIEWPORT_Y0 + render_height * 0.9 + float), Z.FLOATERS,
+      text_height, ALIGN.HCENTER|ALIGN.VBOTTOM,
+      0, 0, floater.msg);
+  }
+  if (blink < 1) {
+    blink = easeOut(blink, 2);
+    v3copy(color_temp, palette[PAL_RED]);
+    color_temp[3] = 0.5 * (1 - blink);
+    drawRect(VIEWPORT_X0, VIEWPORT_Y0, VIEWPORT_X0+render_width, VIEWPORT_Y0+render_height,
+      Z.UI - 5, color_temp);
+  }
 }
 
 const BATTLEZONE_W = 134;
@@ -852,7 +898,7 @@ function moveBlocked(): boolean {
 }
 
 // TODO: move into crawler_play?
-function addFloater(ent_id: EntityID, message: string | null, anim: string): void {
+export function addFloater(ent_id: EntityID, message: string | null, anim: string): void {
   let ent = crawlerEntityManager().getEnt(ent_id);
   if (ent) {
     if (message) {
@@ -876,8 +922,8 @@ function onBroadcast(update: EntityManagerEvent): void {
   if (msg === 'dstat') {
     assert(from);
     let target = from;
-    let { hp, source, action, type, fatal, pred_id } = data as BroadcastDataDstat;
-    if (source === myEntID()) {
+    let { hp, source, action, type, fatal, pred_id, executor } = data as BroadcastDataDstat;
+    if (executor === myEntID()) {
       // I did this
       let target_ent = crawlerEntityManager().getEnt(target);
       if (target_ent && pred_id) {
@@ -893,12 +939,12 @@ function onBroadcast(update: EntityManagerEvent): void {
 
     if (action === 'attack') {
       if (source === myEntID()) {
-        chat_ui.addChat(`You ${type} the beast for ${-hp} damage${fatal ? ', killing it' : ''}.`);
+        chat_ui.addChat(`You ${type} it for ${-hp} damage${fatal ? ', killing it' : ''}.`);
       } else if (target === myEntID()) {
         if (type === 'opportunity') {
-          chat_ui.addChat(`The beast opportunity attacks you for ${-hp} damage.`);
+          chat_ui.addChat(`It opportunity attacks you for ${-hp} damage.`);
         } else {
-          chat_ui.addChat(`The beast hits you with ${type} for ${-hp} damage.`);
+          chat_ui.addChat(`It hits you with ${type} for ${-hp} damage.`);
         }
       } else {
         chat_ui.addChat(`${source} hits ${target} with ${type} for ${-hp} damage${fatal ? ', killing it' : ''}.`);
@@ -971,6 +1017,7 @@ function bumpEntityCallback(ent_id: EntityID): void {
     type: style,
     dam,
     pred_id,
+    executor: myEntID(),
   };
   crawlerMyActionSend({
     action_id: 'attack',
@@ -1239,6 +1286,7 @@ function playCrawl(): void {
     if (!build_mode) {
       // Do game UI/stats here
       drawStats();
+      drawStatsOverViewport();
       drawBattleZone();
 
       doEngagedEnemy();

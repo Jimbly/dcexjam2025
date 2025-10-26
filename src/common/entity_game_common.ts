@@ -14,6 +14,7 @@ export type BroadcastDataDstat = {
   type: string;
   fatal?: boolean;
   pred_id?: number;
+  executor: EntityID; // who did the logic / presumably already predicted it
 };
 
 export type ActionAttackPayload = {
@@ -21,6 +22,7 @@ export type ActionAttackPayload = {
   type: string;
   dam: number;
   pred_id: number;
+  executor: EntityID;
 };
 
 export type StatsData = {
