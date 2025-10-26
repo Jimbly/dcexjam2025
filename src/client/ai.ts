@@ -235,13 +235,13 @@ export function aiTraitsClientStartup(): void {
             if (!this.hunter_state.has_target) {
               if (distance) {
                 if (engine.defines.HUNTER) {
-                  statusSet(`edbg${this.id}`, `${this.id}: New target: ${this.hunter_state.target_pos}`).counter = 500;
+                  statusSet(`edbg${this.id}`, `${this.id}: New target: ${player_pos}`).counter = 500;
                 }
                 // playUISound('hunter_seen', volume);
               }
             } else if (v2dist(this.hunter_state.target_pos, player_pos)) {
               if (engine.defines.HUNTER) {
-                statusSet(`edbg${this.id}`, `${this.id}: Target update: ${this.hunter_state.target_pos}`).counter = 500;
+                statusSet(`edbg${this.id}`, `${this.id}: Target update: ${player_pos}`).counter = 500;
               }
             }
             v2copy(this.hunter_state.target_pos, player_pos);
