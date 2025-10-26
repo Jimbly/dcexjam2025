@@ -749,6 +749,7 @@ function crawlerPlayInitShared(): void {
     game_state,
     entity_manager: crawlerEntityManager(),
     script_api,
+    on_pre_move: crawlerTurnBasedMovePreStart,
     on_player_move: crawlerTurnBasedMovePreStart,
     on_init_level: crawlerOnInitHaveLevel,
     on_move_start: crawlerTurnBasedMoveStart,
