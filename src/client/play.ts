@@ -1106,12 +1106,14 @@ function playCrawl(): void {
     menu: 0,
     inv: 0,
     heal: 0,
+    wait: 0,
   };
   type ValidKeys = keyof typeof down;
   let up_edge = {
     menu: 0,
     inv: 0,
     heal: 0,
+    wait: 0,
   } as Record<ValidKeys, number>;
 
   let dt = getScaledFrameDt();
@@ -1222,7 +1224,8 @@ function playCrawl(): void {
   }
   button(2, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, cur_action?.name === 'PauseMenu');
   if (!build_mode) {
-    button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]); // , inventory_up);
+    //button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]); // , inventory_up);
+    button(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B]); // , inventory_up);
     button(1, 0, 7, 'inv', [KEYS.I], [PAD.Y]); // , inventory_up);
     // if (up_edge.inv) {
     //   inventory_up = !inventory_up;
@@ -1258,6 +1261,9 @@ function playCrawl(): void {
   // if (up_edge.inventory) {
   //   inventory_up = !inventory_up;
   // }
+  if (up_edge.wait) {
+    crawlerTurnBasedScheduleStep(1);
+  }
 
   controller.doPlayerMotion({
     dt,

@@ -730,7 +730,7 @@ export function crawlerTurnBasedMovePreStart(/*old_pos, new_pos, move_dir*/): vo
 function crawlerTurnBasedMoveStart(pos: Vec2): void {
   executeStep();
   need_turn_based_step = true;
-  turn_based_step_countdown = 0;
+  turn_based_step_countdown = 0; // fire as soon as we're done animating
   crawlerTurnBasedTick();
 }
 
