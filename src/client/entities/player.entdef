@@ -1,6 +1,7 @@
 ---
 properties:
   do_split: false # Maybe just use non-high-res version instead?
+  map_icon: player_special
 traits:
 - id: player
 - id: drawable

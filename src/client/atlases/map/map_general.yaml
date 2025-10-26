@@ -43,3 +43,7 @@ tiles:
 
   icon_question: [0,6]
   icon_exclamation: [1,6]
+  otherplayerdir0: [0,7]
+  otherplayerdir1: [1,7]
+  otherplayerdir2: [2,7]
+  otherplayerdir3: [3,7]

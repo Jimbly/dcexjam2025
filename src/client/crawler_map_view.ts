@@ -50,7 +50,7 @@ import {
 } from '../common/crawler_state';
 import { pathFind } from '../common/pathfind';
 import { buildModeActive } from './crawler_build_mode';
-import { crawlerEntityManager } from './crawler_entity_client';
+import { crawlerEntityManager, crawlerMyEnt } from './crawler_entity_client';
 import { crawlerController, crawlerSetLevelGenMode } from './crawler_play';
 import { CrawlerScriptAPIClient } from './crawler_script_api_client';
 
@@ -585,8 +585,16 @@ export function crawlerMapViewDraw({
           }
         }
         if (vis) {
+          if (icon === 'player_special') { // DCJAM
+            if (ent === crawlerMyEnt()) {
+              continue;
+            }
+            icon = `otherplayerdir${ent.data.pos[2]}`;
+          } else {
+            vis_entities[xx + yy * level.w] = true;
+          }
+
           // draw it
-          vis_entities[xx + yy * level.w] = true;
           autoAtlas('map', icon).draw({
             x: x0 + xx * step_size,
             y: y1 - yy * step_size,
