@@ -20,11 +20,13 @@ traits:
     idle:
       frames: [monsters-0, monsters-1]
       times: 400
+      times_random: 100
     attack:
       frames: [monsters-2]
       loop: false
       transition_to: idle
       times: 500
+      times_random: 100
     death:
       frames: [monsters-3]
       times: 1000

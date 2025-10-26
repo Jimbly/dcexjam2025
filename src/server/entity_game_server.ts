@@ -40,12 +40,14 @@ entityServerRegisterFieldDefs<EntityGameDataServer>({
   user_id: { encoding: EntityFieldEncoding.String, ephemeral: true },
   pos: { encoding: EntityFieldEncoding.IVec3 },
   last_pos: { encoding: EntityFieldEncoding.IVec3, ephemeral: true },
+  ready: { encoding: EntityFieldEncoding.Boolean },
   state: { ephemeral: true, encoding: EntityFieldEncoding.AnsiString },
   floor: { encoding: EntityFieldEncoding.Int },
   costume: { encoding: EntityFieldEncoding.Int },
   stats: { sub: EntityFieldSub.Record, encoding: EntityFieldEncoding.Int },
   seq_ai_update: { encoding: EntityFieldEncoding.AnsiString },
   seq_player_move: { encoding: EntityFieldEncoding.AnsiString },
+  seq_unready: { encoding: EntityFieldEncoding.AnsiString },
   vis_data: { server_only: true },
 });
 
@@ -281,6 +283,10 @@ entityServerRegisterActions([{
   action_id: 'attack',
   self_only: true,
   handler: handleActionAttack,
+  allowed_data_assignments: {
+    ready: 'boolean',
+    seq_player_move: 'string',
+  },
 }, {
   // Same handler, but allow on non-self with data assignments
   action_id: 'ai_attack',
@@ -289,4 +295,10 @@ entityServerRegisterActions([{
     seq_ai_update: 'string',
   },
   handler: handleActionAttack,
+}, {
+  action_id: 'unready',
+  allowed_data_assignments: {
+    ready: 'boolean',
+    seq_unready: 'string',
+  },
 }]);

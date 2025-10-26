@@ -48,8 +48,10 @@ export type EntityGameDataCommon = {
   // inventory?: ItemInventory[];
   // refinery?: Refinery;
   seq_player_move?: string;
+  seq_unready?: string;
   // seq_refinery?: string;
   // keys?: Partial<Record<string, true>>;
+  ready: boolean;
 
   // // AI state
   seq_ai_update?: string;

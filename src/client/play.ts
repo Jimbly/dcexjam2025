@@ -93,7 +93,7 @@ import {
   crawlerEntityClientStartupEarly,
   crawlerEntityManager,
   crawlerEntityTraitsClientStartup,
-  crawlerMyActionSend,
+  crawlerMyApplyBatchUpdate,
   crawlerMyEnt,
   crawlerMyEntOptional,
   isLocal,
@@ -185,6 +185,8 @@ const BUTTON_W = 18;
 const FONT_HEIGHT = 11;
 const TINY_FONT_H = 8;
 const TITLE_FONT_H = 14;
+
+const BATTLEZONE_RANGE = 3;
 
 type Entity = EntityClient;
 
@@ -379,14 +381,29 @@ function closestPlayerToIgnoreWalls(ent: Entity): EntityID {
   return best;
 }
 
-export function closestPlayerPrep(): void {
+function cmpNumber(a: number, b: number): number {
+  return a - b;
+}
+
+function canIssueAction(): boolean {
+  let me = myEnt();
+  if (me.getData('ready', false) && me.battle_zone) {
+    return false;
+  }
+  return true;
+}
+
+function battleZonePrep(): void {
   let script_api = crawlerScriptAPI();
   script_api.is_visited = true; // Always visited for AI
   let entity_manager = entityManager();
   let game_state = crawlerGameState();
   let entities = entity_manager.entities;
   let { floor_id } = game_state;
-  let level = game_state.levels[floor_id]!;
+  let level = game_state.levels[floor_id];
+  if (!level) {
+    return;
+  }
   let stride = level.w + 100;
   // for each player, claim closest entities
   let players: Entity[] = [];
@@ -410,6 +427,7 @@ export function closestPlayerPrep(): void {
       cell.push(other_ent);
       other_ent.closest_ent_dist = Infinity;
       other_ent.closest_ent = 0;
+      other_ent.in_zone_ents.length = 0;
     }
   }
   let todo: JSVec3[] = []; // x, y, dist
@@ -432,7 +450,9 @@ export function closestPlayerPrep(): void {
           enemy_ent.closest_ent = player_ent_id;
           enemy_ent.closest_ent_dist = dist;
         }
-
+        if (dist <= BATTLEZONE_RANGE) {
+          enemy_ent.in_zone_ents.push(player_ent_id);
+        }
       }
     }
     todo.push(pos);
@@ -468,7 +488,18 @@ export function closestPlayerPrep(): void {
     }
   }
 
-  // store best on entities
+  // store best on entities, calculate battle zones
+  let battle_zones: Record<EntityID, EntityID> = {};
+  let battle_zone_is_multiplayer: Record<EntityID, boolean> = {};
+  for (let ii = 0; ii < players.length; ++ii) {
+    let player = players[ii];
+    battle_zones[player.id] = player.id;
+    battle_zone_is_multiplayer[player.id] = false;
+  }
+  function joinZones(lower: EntityID, higher: EntityID): void {
+    battle_zones[higher] = battle_zones[lower];
+    battle_zone_is_multiplayer[lower] = true;
+  }
   for (let key in enemy_pos_map) {
     let cell = enemy_pos_map[key];
     if (cell) {
@@ -480,9 +511,28 @@ export function closestPlayerPrep(): void {
           // *no* player can be walked to from this entity (but it may be visible), take absolute distance
           closestPlayerToIgnoreWalls(enemy_ent);
         }
+        if (enemy_ent.in_zone_ents.length > 1) {
+          enemy_ent.in_zone_ents.sort(cmpNumber);
+          for (let jj = 1; jj < enemy_ent.in_zone_ents.length; ++jj) {
+            joinZones(enemy_ent.in_zone_ents[0], enemy_ent.in_zone_ents[jj]);
+          }
+        }
       }
     }
   }
+  for (let ii = 0; ii < players.length; ++ii) {
+    let player = players[ii];
+    let eff_zone = battle_zones[player.id];
+    if (battle_zone_is_multiplayer[eff_zone]) {
+      player.battle_zone = eff_zone;
+    } else {
+      player.battle_zone = 0;
+    }
+  }
+}
+
+function ignoreErrors(err: unknown): void {
+  console.log(`Ignoring error sending unready: ${err}`);
 }
 
 function aiStep(): void {
@@ -495,7 +545,8 @@ function aiStep(): void {
   script_api.is_visited = true; // Always visited for AI
 
   let my_ent_id = myEntID();
-  closestPlayerPrep();
+  let my_ent = myEnt();
+  let the_battle_zone = my_ent.battle_zone;
   function entityFilter(ent: Entity): boolean {
     return ent.last_closest_ent === my_ent_id;
   }
@@ -503,6 +554,30 @@ function aiStep(): void {
   aiStepFloor(game_state.floor_id, game_state, entityManager(), engine.defines,
     script_api,
     entityFilter);
+
+  // for each player, unflag as ready
+  let entity_manager = entityManager();
+  let entities = entity_manager.entities;
+  let { floor_id } = game_state;
+  for (let ent_id in entities) {
+    let other_ent = entities[ent_id]!;
+    if (other_ent.data.floor !== floor_id || other_ent.fading_out ||
+      !other_ent.isPlayer() ||
+      !other_ent.getData('ready')
+    ) {
+      // not on current floor
+      continue;
+    }
+    if (other_ent === my_ent || the_battle_zone && other_ent.battle_zone === the_battle_zone) {
+      other_ent.applyBatchUpdate({
+        action_id: 'unready',
+        field: 'seq_unready',
+        data_assignments: {
+          ready: false,
+        },
+      }, ignoreErrors);
+    }
+  }
 }
 
 function drawBar(
@@ -511,6 +586,7 @@ function drawBar(
   w: number, h: number,
   p: number,
 ): void {
+  p = min(p, 1);
   const MIN_VIS_W = 4;
   let full_w = round(p * w);
   if (p > 0 && p < 1) {
@@ -692,7 +768,7 @@ function drawBattleZone(): void {
   }
   let me = myEnt();
   function isInBattleZone(ent: Entity): boolean {
-    return ent === me;
+    return Boolean(ent === me || me.battle_zone && me.battle_zone === ent.battle_zone);
   }
   let my_pos = me.getData<JSVec3>('pos')!;
   players.sort(function (a, b) {
@@ -732,7 +808,7 @@ function drawBattleZone(): void {
       });
       y += TINY_FONT_H + 1;
     }
-    let is_ready = false;
+    let is_ready = ent.getData('ready', false);
     drawBox({
       x, y, z: z - 1,
       w: BATTLEZONE_W,
@@ -994,6 +1070,10 @@ function moveBlockDead(): boolean {
 }
 
 function bumpEntityCallback(target_ent_id: EntityID): void {
+  if (!canIssueAction()) {
+    playUISound('msg_out_err');
+    return;
+  }
   let me = myEnt();
   let all_entities = entityManager().entities;
   let target_ent = all_entities[target_ent_id]!;
@@ -1020,9 +1100,13 @@ function bumpEntityCallback(target_ent_id: EntityID): void {
     pred_id,
     executor: myEntID(),
   };
-  crawlerMyActionSend({
+  crawlerMyApplyBatchUpdate({
     action_id: 'attack',
     payload,
+    data_assignments: {
+      ready: true,
+    },
+    field: CrawlerController.PLAYER_MOVE_FIELD,
   }, function (err, resp) {
     if (err) {
       target_ent.predictedClear(pred_id);
@@ -1145,6 +1229,8 @@ function playCrawl(): void {
   if (!controller.canRun()) {
     return profilerStopFunc();
   }
+
+  battleZonePrep();
 
   if (!controller.hasMoveBlocker() && !myEnt().isAlive()) {
     controller.setMoveBlocker(moveBlockDead);
@@ -1321,7 +1407,8 @@ function playCrawl(): void {
     no_visible_ui: frame_map_view || build_mode,
     button_w: build_mode ? 6 : BUTTON_W,
     button_sprites: useNoText() ? button_sprites_notext : button_sprites,
-    disable_move: moveBlocked() || overlay_menu_up,
+    disable_move: moveBlocked() || overlay_menu_up || !canIssueAction(),
+    // TODO: disable_rotate: moveBlocked() || overlay_menu_up,
     disable_player_impulse: Boolean(locked_dialog),
     show_buttons: !locked_dialog,
     do_debug_move: engine.defines.LEVEL_GEN || build_mode,
@@ -1475,7 +1562,7 @@ export function play(dt: number): void {
 }
 
 function onPlayerMove(old_pos: Vec2, new_pos: Vec2): void {
-  closestPlayerPrep(); // if we are the closest to anyone right now, they haven't been ticked
+  // battleZonePrep(); // if we are the closest to anyone right now, they haven't been ticked
   crawlerTurnBasedMovePreStart();
 }
 

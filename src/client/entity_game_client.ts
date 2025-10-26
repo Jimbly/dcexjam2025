@@ -62,10 +62,12 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
   floaters: Floater[];
   delete_reason?: string;
 
-  // for calculating closest player
+  // for calculating closest player / battle zone
   closest_ent: EntityID = 0;
   closest_ent_dist: number = Infinity;
+  in_zone_ents: EntityID[] = []; // on an enemy, which players are in our zone
   last_closest_ent: EntityID = 0;
+  battle_zone: EntityID = 0; // on a player, if we share a battle zone with others, what's the lowest EntityID
 
   declare onDelete: (reason: string) => number;
   declare draw2D: (param: EntityDraw2DOpts) => void;

@@ -573,7 +573,7 @@ export function crawlerMapViewDraw({
       if (icon && !ent.fading_out && ent.data.floor === game_state.floor_id) {
         let [xx,yy] = ent.data.pos;
         let vis = false;
-        if (full_vis) {
+        if (full_vis || icon === 'player_special') { // DCJAM
           vis = true;
         } else {
           let cell = level.getCell(xx, yy);
