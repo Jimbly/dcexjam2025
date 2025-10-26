@@ -307,17 +307,34 @@ export function aiTraitsClientStartup(): void {
           }
           return true;
         }
-        let do_x = random() * tot < abs(dx);
-        let dir = do_x ? xdir! : ydir!;
-        let new_pos: JSVec3 = [pos[0] + DX[dir], pos[1] + DY[dir], pos[2]];
-        let ents = entitiesAt(this.entity_manager, new_pos, floor_id, true);
-        ents = ents.filter(isEnemy);
-        if (ents.length) {
+
+        if (dx) {
+          let new_pos: JSVec3 = [pos[0] + DX[xdir!], pos[1] + DY[xdir!], pos[2]];
+          let ents = entitiesAt(this.entity_manager, new_pos, floor_id, true);
+          ents = ents.filter(isEnemy);
+          if (ents.length) {
+            dx = 0;
+          }
+        }
+        if (dy) {
+          let new_pos: JSVec3 = [pos[0] + DX[ydir!], pos[1] + DY[ydir!], pos[2]];
+          let ents = entitiesAt(this.entity_manager, new_pos, floor_id, true);
+          ents = ents.filter(isEnemy);
+          if (ents.length) {
+            dy = 0;
+          }
+        }
+
+        tot = abs(dx) + abs(dy);
+        if (!tot) {
           if (engine.defines.HUNTER) {
             statusSet(`edbg${this.id}`, `${this.id}: Move ent blocked`).counter = 500;
           }
           return false;
         }
+        let do_x = random() * tot < abs(dx);
+        let dir = do_x ? xdir! : ydir!;
+        let new_pos: JSVec3 = [pos[0] + DX[dir], pos[1] + DY[dir], pos[2]];
         // if (engine.defines.HUNTER) {
         //   statusPush(`${this.id}: Moving from ${pos} to ${new_pos}`);
         // }
