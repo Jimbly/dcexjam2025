@@ -137,6 +137,7 @@ export type DrawableSpriteState = {
   sprite: Sprite;
   sprite_near?: Sprite;
   sprite_hybrid?: Sprite;
+  autoatlas_last_frame?: string;
 };
 
 export type DrawableSpineOpts = {

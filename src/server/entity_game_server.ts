@@ -140,6 +140,25 @@ entityServerRegisterActions<EntityCrawlerServer>([{
   self_only: false,
   allow_any_assignment: true,
 }, {
+  action_id: 'stat_debug',
+  self_only: false,
+  handler: function ({ payload }, resp_func) {
+    let mod = payload as Partial<Record<string, number>>;
+    let broadcast = {} as Partial<Record<string, number>>;
+    for (let key in mod) {
+      let new_value = mod[key]!;
+      let stats = this.data.stats as Partial<Record<string, number>>;
+      let old_value = stats[key] || 0;
+      let delta = new_value - old_value;
+      broadcast[key] = delta;
+      // TODO: This should use data_assignments?
+      stats[key] = new_value;
+      this.dirtySub('stats', key);
+    }
+    this.entity_manager.broadcast(this, 'dstat', broadcast);
+    resp_func();
+  },
+}, {
   action_id: 'set_vis_data',
   handler: function (this: EntityCrawlerServer, { payload }, resp_func) {
     let { data, floor: floor_id } = payload as { data: string; floor: number };

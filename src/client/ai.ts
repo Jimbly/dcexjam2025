@@ -374,6 +374,7 @@ function aiDoEnemy(
   let { dam, style } = damage(attacker_stats, target_stats);
   let target_hp = target_ent.getData('stats.hp', 0);
   addFloater(target_ent.id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}`, '');
+  addFloater(ent.id, null, 'attack');
   let pred_ids: EntityPredictionID[] = [];
   target_ent.predictedSet(pred_ids, 'stats.hp', max(0, target_hp - dam));
   assert.equal(pred_ids.length, 1);

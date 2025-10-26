@@ -20,6 +20,14 @@ traits:
     idle:
       frames: [monsters-0, monsters-1]
       times: 400
+    attack:
+      frames: [monsters-2]
+      loop: false
+      transition_to: idle
+      times: 500
+    death:
+      frames: [monsters-3]
+      times: 1000
   sprite_data:
     atlas: dcex
     filter_min: LINEAR_MIPMAP_LINEAR

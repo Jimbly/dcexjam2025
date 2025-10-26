@@ -7,7 +7,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 * OMP AI ticking
   * plan: clients run steps; do it scheduled/delayed as well as pre-emptively before a move
   * next:
-    * enemies attack
     * battlezone system
   * deal with race conditions:
     * battlezone leader leaves/changes
@@ -27,6 +26,7 @@ TODO
 * Deal with more than 4 players in battlezone list (scrollbar, dither, hide?)
 * click to move - ensure stop when enter (active?) battlezone
 * click to move - stop when threatened (or, always in battlezone?)
+* hide cheating commands like entset
 
 Credits
 =======

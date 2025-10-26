@@ -898,7 +898,7 @@ function moveBlocked(): boolean {
 }
 
 // TODO: move into crawler_play?
-export function addFloater(ent_id: EntityID, message: string | null, anim: string): void {
+export function addFloater(ent_id: EntityID, message: string | null, anim?: string): void {
   let ent = crawlerEntityManager().getEnt(ent_id);
   if (ent) {
     if (message) {
@@ -910,7 +910,7 @@ export function addFloater(ent_id: EntityID, message: string | null, anim: strin
         msg: message,
       });
     }
-    if (ent.triggerAnimation) {
+    if (ent.triggerAnimation && anim) {
       ent.triggerAnimation(anim);
     }
   }
@@ -993,10 +993,10 @@ function moveBlockDead(): boolean {
   return true;
 }
 
-function bumpEntityCallback(ent_id: EntityID): void {
+function bumpEntityCallback(target_ent_id: EntityID): void {
   let me = myEnt();
   let all_entities = entityManager().entities;
-  let target_ent = all_entities[ent_id]!;
+  let target_ent = all_entities[target_ent_id]!;
   if (!target_ent || !target_ent.isAlive() || !me.isAlive()) {
     return;
   }
@@ -1007,13 +1007,14 @@ function bumpEntityCallback(ent_id: EntityID): void {
   let attacker_stats = me.data.stats;
   let target_stats = target_ent.data.stats;
   let { dam, style } = damage(attacker_stats, target_stats);
-  addFloater(ent_id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}`, '');
+  let new_hp = max(0, target_hp - dam);
+  addFloater(target_ent_id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}`, new_hp ? '' : 'death');
   let pred_ids: EntityPredictionID[] = [];
-  target_ent.predictedSet(pred_ids, 'stats.hp', max(0, target_hp - dam));
+  target_ent.predictedSet(pred_ids, 'stats.hp', new_hp);
   assert.equal(pred_ids.length, 1);
   let pred_id = pred_ids[0][1];
   let payload: ActionAttackPayload = {
-    target_ent_id: ent_id,
+    target_ent_id,
     type: style,
     dam,
     pred_id,
