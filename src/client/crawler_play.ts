@@ -695,6 +695,7 @@ export function crawlerBuildModeActivate(build_mode: boolean): void {
 let turn_based_step: (() => void) | undefined;
 let turn_based_step_threshold = 0.4;
 let turn_based_step_countdown = 0;
+let turn_based_allowed: (() => boolean) | undefined;
 
 function executeStep(): void {
   if (need_turn_based_step) {
@@ -703,8 +704,12 @@ function executeStep(): void {
   }
 }
 
+
 function crawlerTurnBasedTick(): void {
   if (need_turn_based_step) {
+    if (turn_based_allowed && !turn_based_allowed?.()) {
+      return;
+    }
     if (turn_based_step_countdown) {
       turn_based_step_countdown -= getScaledFrameDt();
       if (turn_based_step_countdown <= 0) {
@@ -1178,6 +1183,7 @@ export function crawlerPlayStartup(param: {
   allow_offline_console?: boolean;
   chat_ui_param?: CrawlerChatUIParam;
   turn_based_step?: () => void;
+  turn_based_allowed?: () => boolean;
   level_fallback_provider?: LevelProvider;
 }): void {
   on_broadcast = param.on_broadcast || undefined;
@@ -1190,6 +1196,7 @@ export function crawlerPlayStartup(param: {
   allow_offline_console = param.allow_offline_console || false;
   chat_ui_param = param.chat_ui_param || { x: 2, y_bottom: engine.game_height - 2, border: 2 };
   turn_based_step = param.turn_based_step;
+  turn_based_allowed = param.turn_based_allowed;
   level_fallback_provider = param.level_fallback_provider || levelFallbackProviderDefault;
   window.addEventListener('beforeunload', beforeUnload, false);
   viewport_sprite = spriteCreate({ texs: [textureWhite()] });

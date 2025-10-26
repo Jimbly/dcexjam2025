@@ -523,7 +523,7 @@ function battleZonePrep(): void {
   for (let ii = 0; ii < players.length; ++ii) {
     let player = players[ii];
     let eff_zone = battle_zones[player.id];
-    if (battle_zone_is_multiplayer[eff_zone]) {
+    if (battle_zone_is_multiplayer[eff_zone] || engine.defines.ALWAYS_BATTLEZONE) {
       player.battle_zone = eff_zone;
     } else {
       player.battle_zone = 0;
@@ -533,6 +533,34 @@ function battleZonePrep(): void {
 
 function ignoreErrors(err: unknown): void {
   console.log(`Ignoring error sending unready: ${err}`);
+}
+
+function aiStepAllowed(): boolean {
+  let me = myEnt();
+  if (!me.battle_zone) {
+    return true;
+  }
+
+  // if anyone in the battlezone is not ready, we cannot step yet
+  let entity_manager = entityManager();
+  let entities = entity_manager.entities;
+  let game_state = crawlerGameState();
+  let { floor_id } = game_state;
+  for (let ent_id in entities) {
+    let other_ent = entities[ent_id]!;
+    if (other_ent.data.floor !== floor_id || other_ent.fading_out ||
+      !other_ent.isPlayer()
+    ) {
+      // not on current floor
+      continue;
+    }
+    if (other_ent.battle_zone === me.battle_zone) {
+      if (!other_ent.getData('ready')) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 function aiStep(): void {
@@ -1230,8 +1258,6 @@ function playCrawl(): void {
     return profilerStopFunc();
   }
 
-  battleZonePrep();
-
   if (!controller.hasMoveBlocker() && !myEnt().isAlive()) {
     controller.setMoveBlocker(moveBlockDead);
   }
@@ -1521,6 +1547,8 @@ export function play(dt: number): void {
     return;
   }
 
+  battleZonePrep(); // before crawlerPlayTopOfFrame
+
   let overlay_menu_up = Boolean(cur_action?.is_overlay_menu || dialogMoveLocked());
 
   tickMusic(game_state.level?.props.music as string || null); // || 'default_music'
@@ -1629,6 +1657,7 @@ export function playStartup(): void {
     play_init_online: playInitEarly,
     play_init_offline: playInitOffline,
     turn_based_step: aiStep,
+    turn_based_allowed: aiStepAllowed,
     offline_data: {
       new_player_data: {
         type: 'player',
