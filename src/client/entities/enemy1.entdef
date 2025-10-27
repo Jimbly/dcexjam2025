@@ -4,11 +4,9 @@ properties:
 traits:
 - id: blocks_player
 - id: enemy
-- id: stats_default
-  hp: 20
-  level: 1
-  attack: 4
-  defense: 0
+- id: stats_enemy
+  hp: 5
+  attack: 3
 - id: hunter
 - id: wander
 - id: drawable

@@ -15,7 +15,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 
 **TODO**
 * combat fun
-  * random HP variation on enemies
   * elemental weakness / defense
   * try with level 2 and 2 skills
 * drop and pickup loot

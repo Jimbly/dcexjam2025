@@ -221,6 +221,7 @@ let button_sprites_down: Record<ButtonStateString, Sprite>;
 let button_sprites_notext: Record<ButtonStateString, Sprite>;
 let button_sprites_notext_down: Record<ButtonStateString, Sprite>;
 type BarSprite = {
+  min_width: number;
   bg: Sprite;
   hp: Sprite;
   empty?: Sprite;
@@ -738,7 +739,7 @@ function drawBar(
   p: number,
 ): void {
   p = min(p, 1);
-  const MIN_VIS_W = 4;
+  const MIN_VIS_W = bar.min_width;
   let full_w = round(p * w);
   if (p > 0 && p < 1) {
     full_w = clamp(full_w, MIN_VIS_W, w - MIN_VIS_W/2);
@@ -1131,7 +1132,7 @@ function drawEnemyStats(ent: Entity): void {
   if (ent.display_name) {
     font.drawSizedAligned(style_text, ENEMY_HP_BAR_X, ENEMY_HP_BAR_Y + bar_h, Z.UI,
       uiTextHeight(), ALIGN.HVCENTERFIT,
-      ENEMY_HP_BAR_W, bar_h, ent.display_name);
+      ENEMY_HP_BAR_W, bar_h, `${ent.display_name} (L${ent.data.stats.level})`);
   }
 }
 
@@ -2119,26 +2120,32 @@ export function playStartup(): void {
 
   bar_sprites = {
     healthbar: {
+      min_width: 6,
       bg: autoAtlas('ui', 'bar-frame'),
       hp: autoAtlas('ui', 'bar-fill-red'),
     },
     tinyhealth: {
+      min_width: 4,
       bg: autoAtlas('ui', 'minibar-frame-lighter'),
       hp: autoAtlas('ui', 'minibar-fill-red'),
     },
     doublehp: {
+      min_width: 4,
       bg: autoAtlas('ui', 'minibar-frame-lighter'),
       hp: autoAtlas('ui', 'minibar-fill-red-top'),
     },
     doublemp: {
+      min_width: 4,
       bg: autoAtlas('ui', 'minibar-frame-lighter'),
       hp: autoAtlas('ui', 'minibar-fill-blue-bottom'),
     },
     mpbar: {
+      min_width: 6,
       bg: autoAtlas('ui', 'bar-frame'),
       hp: autoAtlas('ui', 'bar-fill-blue'),
     },
     xpbar: {
+      min_width: 4,
       bg: autoAtlas('ui', 'minibar-frame'),
       hp: autoAtlas('ui', 'minibar-fill-yellow'),
     },
