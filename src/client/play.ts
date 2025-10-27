@@ -164,6 +164,7 @@ import { tinyFont } from './main';
 import { tickMusic } from './music';
 import {
   PAL_BLACK,
+  PAL_GREEN,
   PAL_RED,
   PAL_WHITE,
   palette,
@@ -853,12 +854,14 @@ function drawStatsOverViewport(): void {
   // Draw damage "floaters" on us, but on the UI layer
   let { floaters } = my_ent;
   let blink = 1;
+  let blink_good = false;
   for (let ii = floaters.length - 1; ii >= 0; --ii) {
     let floater = floaters[ii];
     let elapsed = engine.frame_timestamp - floater.start;
     const FLOATER_TIME = 750; // not including fade
     const FLOATER_FADE = 250;
     const BLINK_TIME = 250;
+    let good = floater.msg[0] === '+';
     let alpha = 1;
     if (elapsed > FLOATER_TIME) {
       alpha = 1 - (elapsed - FLOATER_TIME) / FLOATER_FADE;
@@ -867,10 +870,14 @@ function drawStatsOverViewport(): void {
         continue;
       }
     }
-    if (elapsed < BLINK_TIME) {
+    if (elapsed < BLINK_TIME && elapsed / BLINK_TIME < blink) {
       blink = min(blink, elapsed / BLINK_TIME);
+      blink_good = good;
     }
     let float = easeOut(elapsed / (FLOATER_TIME + FLOATER_FADE), 2) * 100;
+    if (good) {
+      float *= -1;
+    }
     let text_height = uiTextHeight() * 2;
     font.drawSizedAligned(fontStyleAlpha(style_text, alpha),
       VIEWPORT_X0 + render_width/2,
@@ -880,7 +887,7 @@ function drawStatsOverViewport(): void {
   }
   if (blink < 1) {
     blink = easeOut(blink, 2);
-    v3copy(color_temp, palette[PAL_RED]);
+    v3copy(color_temp, palette[blink_good ? PAL_GREEN : PAL_RED]);
     color_temp[3] = 0.5 * (1 - blink);
     drawRect(VIEWPORT_X0, VIEWPORT_Y0, VIEWPORT_X0+render_width, VIEWPORT_Y0+render_height,
       Z.UI - 5, color_temp);
@@ -1183,7 +1190,7 @@ function onBroadcast(update: EntityManagerEvent): void {
     } else {
       // someone else did
       if (hp) {
-        addFloater(target, `${hp}`, 'damage');
+        addFloater(target, `${hp > 0 ? '+' : ''}${hp}`, 'damage');
         addFloater(source, null, 'attack');
       }
     }
@@ -1368,6 +1375,8 @@ function doHeal(): void {
       inventory,
     },
   }, errorsToChat);
+
+  addFloater(my_ent.id, `+${new_hp - hp}`, 'heal');
 }
 
 function doQuickbar(): void {

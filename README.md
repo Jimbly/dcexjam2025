@@ -24,7 +24,6 @@ Assets to replace
 * placeholder sounds in play.ts
 
 TODO
-* better effect upon heal, not taking damage!
 * add critical hits/misses to combat system?
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit

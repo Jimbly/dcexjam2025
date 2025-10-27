@@ -406,7 +406,9 @@ entityServerRegisterActions([{
       inventory = this.data.inventory = [];
     }
     if (param.dstats) {
-      let broadcast = {} as Partial<Record<string, number>>;
+      let broadcast = {
+        executor: this.id,
+      } as Partial<Record<string, number>>;
       let key: keyof StatsData;
       for (key in param.dstats) {
         let new_value = param.dstats[key]!;
