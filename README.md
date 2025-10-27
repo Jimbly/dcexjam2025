@@ -15,8 +15,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 
 **TODO**
 * OMP AI ticking
-  * hide waiting/ready icons if we're the only one in the battle zone
-  * show battlezone on ground
   * play sound and display message if trying to do any action and BZ is waiting
   * display message if anyone else has been ready for more than a few seconds
 * aiHunt needs to hunt closest player, not BZ leader
@@ -36,6 +34,8 @@ TODO
 * click to move - ensure stop when enter (active?) battlezone
 * click to move - stop when threatened (or, always in battlezone?)
 * hide cheating commands like entset, stat
+* W on map screen is selecting Exit button, not moving player
+* Space on map screen after exit button selected is activating Wait, not closing the window
 
 Credits
 =======

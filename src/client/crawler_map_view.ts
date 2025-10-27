@@ -53,6 +53,7 @@ import { buildModeActive } from './crawler_build_mode';
 import { crawlerEntityManager, crawlerMyEnt } from './crawler_entity_client';
 import { crawlerController, crawlerSetLevelGenMode } from './crawler_play';
 import { CrawlerScriptAPIClient } from './crawler_script_api_client';
+import { isBattleZone } from './play';
 
 type Shader = ReturnType<typeof shaderCreate>;
 
@@ -443,6 +444,15 @@ export function crawlerMapViewDraw({
           w: tile_size,
           h: tile_size,
         });
+        if (isBattleZone(xx, yy)) { // DCJAM
+          autoAtlas('map', 'battlezone').draw({
+            x: x0 + xx * step_size,
+            y: y1 - yy * step_size,
+            z: z - 0.04,
+            w: tile_size,
+            h: tile_size,
+          });
+        }
       }
       // Walls
       let neighbor = level.getCell(xx, yy+1);

@@ -1113,6 +1113,19 @@ const font_style_debug = fontStyle(null, {
   outline_width: 2.5,
 });
 
+export type CrawlerControllerConstructorParam = {
+  game_state: CrawlerState;
+  entity_manager: ClientEntityManagerInterface<EntityCrawlerClient>;
+  script_api: CrawlerScriptAPIClient;
+  on_init_level?: (floor_id: number) => void;
+  on_pre_move?: () => void;
+  on_player_move?: (old_pos: Vec2, new_pos: Vec2, move_dir: DirType) => void;
+  on_move_start?: (pos: Vec2) => void;
+  on_enter_cell?: (pos: Vec2) => void;
+  flush_vis_data?: (force: boolean) => void;
+  controller_type?: string;
+};
+
 export class CrawlerController {
   game_state: CrawlerState;
   entity_manager: ClientEntityManagerInterface<EntityCrawlerClient>;
@@ -1125,18 +1138,7 @@ export class CrawlerController {
   flush_vis_data?: (force: boolean) => void;
   player_controller!: PlayerController;
   controller_type!: string;
-  constructor(param: {
-    game_state: CrawlerState;
-    entity_manager: ClientEntityManagerInterface<EntityCrawlerClient>;
-    script_api: CrawlerScriptAPIClient;
-    on_init_level?: (floor_id: number) => void;
-    on_pre_move?: () => void;
-    on_player_move?: (old_pos: Vec2, new_pos: Vec2, move_dir: DirType) => void;
-    on_move_start?: (pos: Vec2) => void;
-    on_enter_cell?: (pos: Vec2) => void;
-    flush_vis_data?: (force: boolean) => void;
-    controller_type?: string;
-  }) {
+  constructor(param: CrawlerControllerConstructorParam) {
     this.game_state = param.game_state;
     this.entity_manager = param.entity_manager;
     this.script_api = param.script_api;
@@ -2439,4 +2441,8 @@ export class CrawlerController {
     }
     return false;
   }
+}
+
+export function crawlerControllerCreate(param: CrawlerControllerConstructorParam): CrawlerController {
+  return new CrawlerController(param);
 }

@@ -40,6 +40,7 @@ tiles:
 
   spawner: [0,5]
   enemy: [1,5]
+  battlezone: [2,5]
 
   icon_question: [0,6]
   icon_exclamation: [1,6]

@@ -119,6 +119,7 @@ import {
 } from '../common/crawler_state';
 import { billboardBias, BillboardBiasOpts } from './crawler_billboard_bias';
 import type { CrawlerScriptAPIClient } from './crawler_script_api_client';
+import { isBattleZone } from './play';
 
 type Geom = ReturnType<typeof geomCreateQuads>;
 type Shader = ReturnType<typeof shaderCreate>;
@@ -578,6 +579,48 @@ function drawSimpleWall(
   if (vopts.force_rot !== undefined) {
     rot = wall_rots[vopts.force_rot];
   }
+
+  qTransformVec3(temp_pos, temp_pos, rot);
+  qTransformVec3(temp_right, wall_face_right, rot);
+  v3iAdd(temp_pos, pos);
+
+  sprite.draw3D({
+    ...param,
+    pos: temp_pos,
+    size: temp_size,
+    face_right: temp_right,
+    face_down: wall_face_down,
+  });
+}
+
+const battlezone_draw_param: SimpleVisualOpts = { // DCJAM
+  atlas: 'dcex',
+  tile: ['battlezone', 'battlezone2'],
+  times: 500,
+  total_time: 1000,
+  // color?: ROVec4;
+  // do_split?: boolean;
+  do_split: false,
+  do_blend: 250,
+  do_alpha: true,
+};
+function drawBattleZoneBorder(
+  rot: ROVec4,
+  pos: ROVec3,
+  opts: CrawlerDrawableOpts2,
+): void {
+  let [sprite, param] = simpleGetSpriteParam(battlezone_draw_param as unknown as VisualOpts, opts, 'na', 'sprite');
+  if (!sprite) {
+    return;
+  }
+  let scale = 1;
+  let offs = [0,0];
+  let height = 0.5;
+
+  v3set(temp_pos, HDIM, HDIM, VDIM);
+  temp_pos[1] -= offs[0] * DIM + (1 - scale) * HDIM;
+  temp_pos[2] -= -offs[1] * VDIM + (1 - scale) * HVDIM + (1 - height) * VDIM;
+  v2set(temp_size, DIM*scale, VDIM*scale*height);
 
   qTransformVec3(temp_pos, temp_pos, rot);
   qTransformVec3(temp_right, wall_face_right, rot);
@@ -1185,6 +1228,18 @@ function drawCell(
         let drawable = drawables[visual.type];
         assert(drawable);
         drawable(unit_quat, draw_pos, visual.opts, opts, cell_desc.id);
+      }
+
+    }
+    // DCJAM
+    if (pass.name === 'celldetails') {
+      let is_bz = isBattleZone(pos[0], pos[1]);
+      for (let ii = 0 as DirType; ii < 4; ++ii) {
+        if (is_bz !== isBattleZone(pos[0] + DX[ii], pos[1] + DY[ii]) &&
+          !game_state.level!.wallsBlock(pos, ii, script_api)
+        ) {
+          drawBattleZoneBorder(wall_rots[ii], draw_pos, opts);
+        }
       }
     }
   }

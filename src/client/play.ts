@@ -190,6 +190,7 @@ const TINY_FONT_H = 8;
 const TITLE_FONT_H = 14;
 
 const BATTLEZONE_RANGE = 3;
+const MAX_TICK_RANGE = 12; // if enemies are more steps than this from a player, use Manhattan dist instead
 
 type Entity = EntityClient;
 
@@ -396,6 +397,11 @@ function canIssueAction(): boolean {
   return true;
 }
 
+let battlezone_map: (boolean|undefined)[] = [];
+let battlezone_map_stride = 0;
+export function isBattleZone(x: number, y: number): boolean {
+  return Boolean(battlezone_map[x + y * battlezone_map_stride]);
+}
 function battleZonePrep(): void {
   let script_api = crawlerScriptAPI();
   script_api.is_visited = true; // Always visited for AI
@@ -407,7 +413,7 @@ function battleZonePrep(): void {
   if (!level) {
     return;
   }
-  let stride = level.w + 100;
+  let stride = battlezone_map_stride = level.w + 100;
   // for each player, claim closest entities
   let players: Entity[] = [];
   let enemy_pos_map: Entity[][] = [];
@@ -473,6 +479,9 @@ function battleZonePrep(): void {
 
     while (todo_idx < todo.length) {
       let pos = todo[todo_idx++];
+      if (pos[2] > MAX_TICK_RANGE) {
+        break;
+      }
       for (let dir = 0 as DirType; dir < 4; ++dir) {
         let target: JSVec3 = [pos[0] - DX[dir], pos[1] - DY[dir], pos[2] + 1];
         if (target[0] < 0 || target[0] >= level.w || target[1] < 0 || target[1] >= level.h) {
@@ -523,6 +532,61 @@ function battleZonePrep(): void {
       }
     }
   }
+  // paint battle zones on map, proceeding out from enemes
+  battlezone_map.length = 0;
+  function push2(pos: JSVec3): void {
+    let idx = pos[0] + pos[1] * stride;
+    let dist = pos[2];
+    battlezone_map[idx] = true;
+    if (dist < BATTLEZONE_RANGE) {
+      todo.push(pos);
+    }
+    done[idx] = true;
+    assert(todo.length < level.w * level.h * 2);
+  }
+  let my_eff_zone = battle_zones[myEnt().id];
+  for (let key in enemy_pos_map) {
+    let cell = enemy_pos_map[key];
+    if (!cell) {
+      continue;
+    }
+    let enemy_ent = cell[0];
+    if (!enemy_ent.in_zone_ents.length) {
+      continue;
+    }
+    let eff_zone = battle_zones[enemy_ent.in_zone_ents[0]];
+    if (eff_zone === my_eff_zone) {
+      // Don't paint the zone we're in
+      continue;
+    }
+
+    // paint out from the entity position
+    todo.length = 0;
+    let todo_idx = 0;
+    done = {};
+    let enemy_pos = enemy_ent.getData<JSVec2>('pos')!;
+    push2([enemy_pos[0], enemy_pos[1], 0]);
+
+    while (todo_idx < todo.length) {
+      let pos = todo[todo_idx++];
+      for (let dir = 0 as DirType; dir < 4; ++dir) {
+        let target: JSVec3 = [pos[0] + DX[dir], pos[1] + DY[dir], pos[2] + 1];
+        if (target[0] < 0 || target[0] >= level.w || target[1] < 0 || target[1] >= level.h) {
+          continue;
+        }
+        let target_idx = target[0] + target[1] * stride;
+        if (done[target_idx]) {
+          continue;
+        }
+        if (level.wallsBlock(pos, dir, script_api) & BLOCK_MOVE) {
+          continue;
+        }
+        push2(target);
+      }
+    }
+
+  }
+  // store effective battle zones on players
   for (let ii = 0; ii < players.length; ++ii) {
     let player = players[ii];
     let eff_zone = battle_zones[player.id];
@@ -879,7 +943,7 @@ function drawBattleZone(): void {
     drawBox({
       x, y, z: z - 1,
       w: BATTLEZONE_W,
-      h: is_bz ? 25: 23,
+      h: 25, // is_bz ? 25: 23,
     }, autoAtlas('ui', 'roundpanel'));
     autoAtlas('ui', 'portraits-0').draw({
       x: x + 5,
@@ -919,7 +983,7 @@ function drawBattleZone(): void {
       h: 12,
     });
     let icon_x = x + BATTLEZONE_W - 12 - 3;
-    if (is_bz) {
+    if (is_bz && me.battle_zone) {
       autoAtlas('ui', is_ready ? 'check': 'hourglass').draw({
         x: icon_x,
         y: y + 2,
@@ -946,22 +1010,28 @@ function drawBattleZone(): void {
       drawBar(bar_sprites.doublemp, x + 5, y + 16, z, 44, 6,
         ent.getData('stats.mp', 0) / ent.getData('stats.mp_max', 1));
 
-      tiny_font.draw({
-        color: palette_font[PAL_WHITE + 1],
-        x, y, z,
-        size: TINY_FONT_H,
-        w: BATTLEZONE_W - 3,
-        h: 22,
-        align: ALIGN.HRIGHT | ALIGN.VBOTTOM,
-        text: is_ready ? 'Ready!' : 'Waiting...',
-      });
+      if (me.battle_zone) {
+        tiny_font.draw({
+          color: palette_font[PAL_WHITE + 1],
+          x, y, z,
+          size: TINY_FONT_H,
+          w: BATTLEZONE_W - 3,
+          h: 22,
+          align: ALIGN.HRIGHT | ALIGN.VBOTTOM,
+          text: is_ready ? 'Ready!' : 'Waiting...',
+        });
+      }
     } else {
-      drawBar(bar_sprites.tinyhealth, x + 5, y + 16, z, 44, 4,
+      drawBar(bar_sprites.doublehp, x + 5, y + 16, z, 44, 6,
         ent.getData('stats.hp', 0) / ent.getData('stats.hp_max', 1));
+      drawBar(bar_sprites.doublemp, x + 5, y + 16, z, 44, 6,
+        ent.getData('stats.mp', 0) / ent.getData('stats.mp_max', 1));
+      // drawBar(bar_sprites.tinyhealth, x + 5, y + 16, z, 44, 4,
+      //   ent.getData('stats.hp', 0) / ent.getData('stats.hp_max', 1));
     }
 
 
-    y += is_bz ? 24 : 22;
+    y += 24; // is_bz ? 24 : 22;
   }
 
   if (is_bz) {
