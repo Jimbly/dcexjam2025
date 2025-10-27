@@ -28,7 +28,7 @@ import {
 } from '../common/crawler_state';
 import { ActionAttackPayload } from '../common/entity_game_common';
 import { crawlerEntFactory, myEntID } from './crawler_entity_client';
-import { EntityClient } from './entity_game_client';
+import { EntityClient, entityManager } from './entity_game_client';
 import { addFloater, myEnt } from './play';
 import { statusSet } from './status';
 
@@ -222,6 +222,12 @@ export function aiTraitsClientStartup(): void {
         // in range?
         let pos = this.getData<JSVec3>('pos')!;
         let player_pos = myEnt().getData<JSVec3>('pos')!;
+        if (this.closest_ent) {
+          let closest_ent = entityManager().entities[this.closest_ent];
+          if (closest_ent) {
+            player_pos = closest_ent.getData<JSVec3>('pos')!;
+          }
+        }
         let floor_id = this.getData<number>('floor');
         assert(typeof floor_id === 'number');
         let level = game_state.levels[floor_id];
