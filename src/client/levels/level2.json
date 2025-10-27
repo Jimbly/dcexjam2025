@@ -1,0 +1,2509 @@
+{
+  "special_pos": {
+    "stairs_in": [
+      4,
+      10,
+      0
+    ],
+    "stairs_out": [
+      15,
+      15,
+      2
+    ]
+  },
+  "w": 16,
+  "h": 16,
+  "cells": [
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "door",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "door",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "door",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "door"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "door",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "door",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "door",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "door"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "door"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "door",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "door",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "secret_door",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "secret_door",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "door",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "door",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "door"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "door",
+        "door",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "door",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "stairs_in",
+      "walls": [
+        "stairs_in",
+        "solid",
+        "solid",
+        "solid"
+      ],
+      "events": [
+        {
+          "id": "floor_delta",
+          "param": "-1"
+        }
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "stairs_in",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "door"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "door"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "door",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "door",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "secret_door",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "door",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "door",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "open",
+        "solid",
+        "door"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "door",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "door",
+        "secret_door"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "door",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "door",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "door"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "door",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "door",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "door",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "door",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "stairs_out",
+        "solid",
+        "open",
+        "door"
+      ]
+    },
+    {
+      "id": "stairs_out",
+      "walls": [
+        "solid",
+        "solid",
+        "stairs_out",
+        "solid"
+      ],
+      "events": [
+        {
+          "id": "floor_delta",
+          "param": "1"
+        }
+      ]
+    }
+  ],
+  "initial_entities": [
+    {
+      "type": "enemy0",
+      "pos": [
+        2,
+        9,
+        0
+      ]
+    },
+    {
+      "type": "enemy0",
+      "pos": [
+        14,
+        6,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        11,
+        4,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        5,
+        11,
+        0
+      ]
+    },
+    {
+      "type": "enemy0",
+      "pos": [
+        12,
+        10,
+        0
+      ]
+    },
+    {
+      "type": "enemy1",
+      "pos": [
+        8,
+        6,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        5,
+        1,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        8,
+        8,
+        0
+      ]
+    },
+    {
+      "type": "enemy1",
+      "pos": [
+        14,
+        9,
+        0
+      ]
+    },
+    {
+      "type": "enemy1",
+      "pos": [
+        9,
+        3,
+        0
+      ]
+    },
+    {
+      "type": "enemy0",
+      "pos": [
+        13,
+        9,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        7,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        10,
+        15,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        1,
+        11,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        3,
+        4,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        1,
+        4,
+        0
+      ]
+    },
+    {
+      "type": "enemy0",
+      "pos": [
+        6,
+        6,
+        0
+      ]
+    },
+    {
+      "type": "enemy0",
+      "pos": [
+        8,
+        3,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        4,
+        7,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        7,
+        12,
+        0
+      ]
+    },
+    {
+      "type": "enemy0",
+      "pos": [
+        9,
+        13,
+        0
+      ]
+    }
+  ],
+  "state": {},
+  "vstyle": "dcex",
+  "seed": "40472245",
+  "props": {},
+  "paths": {}
+}

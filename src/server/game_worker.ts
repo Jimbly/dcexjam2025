@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { CmdRespFunc } from 'glov/common/cmd_parse';
 import {
   ClientHandlerSource,
   DataObject,
@@ -6,6 +7,7 @@ import {
   NetErrorCallback,
   NetResponseCallback,
 } from 'glov/common/types';
+import { isInteger } from 'glov/common/util';
 import { v3copy } from 'glov/common/vmath';
 import { ChannelServer } from 'glov/server/channel_server';
 import { ChannelData } from 'glov/server/channel_worker';
@@ -19,6 +21,7 @@ import {
 import { CrawlerJoinPayload } from '../common/crawler_entity_common';
 import '../common/crawler_events'; // side effects: register events
 import { CrawlerLevel } from '../common/crawler_state';
+import { Item } from '../common/entity_game_common';
 import { CrawlerWorker } from './crawler_worker';
 import {
   EntityServer,
@@ -217,70 +220,40 @@ GameWorker.registerClientHandler('ent_join', function (
   resp_func();
 });
 
-// GameWorker.registerCmds([{
-//   cmd: 'give',
-//   help: 'Gives oneself items or refinery inputs',
-//   prefix_usage_with_help: true,
-//   usage: '/give essence [level [essence amount]]\n' +
-//     '/give spell [id [rarity [level]]]',
-//   func: function (this: GameWorker, str: string, resp_func: CmdRespFunc) {
-//     let ent = this.cmdFindEnt();
-//     if (!ent) {
-//       return void resp_func('Could not find relevant entity');
-//     }
-//     let tokens = str.split(' ');
-//     let item: Item | undefined;
-//     if (tokens[0] === 'essence') {
-//       let level = Number(tokens[1]) || (1 + ent.data.floor);
-//       if (tokens.length === 4) {
-//         item = {
-//           type: 'essence',
-//           list: [{
-//             level,
-//             essence: Number(tokens[2]),
-//             amount: Number(tokens[3]),
-//           }],
-//         };
-//       } else {
-//         item = {
-//           type: 'essence',
-//           list: [{
-//             level,
-//             essence: mathFloor(random() * 6),
-//             amount: 10 + mathFloor(random() * 100),
-//           }, {
-//             level,
-//             essence: mathFloor(random() * 6),
-//             amount: 10 + mathFloor(random() * 100),
-//           }],
-//         };
-//       }
-//     } else if (tokens[0] === 'spell') {
-//       item = {
-//         type: 'spell',
-//         spell_id: tokens[1] || 'dummy',
-//         rarity: Number(tokens[2]) || 0,
-//         level: Number(tokens[3]) || (1 + ent.data.floor),
-//       };
-//     }
-//
-//     if (!item) {
-//       return void resp_func('Error parsing arguments');
-//     }
-//     if (ent.pickup(item, true)) {
-//       ent.sendClientMessage({
-//         msg: 'pickup',
-//         data: {
-//           contents: [item],
-//         },
-//       });
-//     } else {
-//       ent.sendClientMessage({
-//         msg: 'pickup_failed',
-//       });
-//     }
-//     resp_func();
-//   },
+GameWorker.registerCmds([{
+  cmd: 'give',
+  help: 'Gives oneself item',
+  prefix_usage_with_help: true,
+  usage: '/give hat|book|potion subtype level [count]',
+  func: function (this: GameWorker, str: string, resp_func: CmdRespFunc) {
+    let ent = this.cmdFindEnt();
+    if (!ent) {
+      return void resp_func('Could not find relevant entity');
+    }
+    let tokens = str.split(' ');
+    if (tokens.length !== 3 && tokens.length !== 4) {
+      return void resp_func('Error parsing arguments');
+    }
+    let type = tokens[0];
+    if (type !== 'hat' && type !== 'book' && type !== 'potion') {
+      return void resp_func('Invalid type');
+    }
+    let subtype = Number(tokens[1]);
+    let level = Number(tokens[2]);
+    let count = tokens[3] ? Number(tokens[3]) : 1;
+    if (!isInteger(subtype) || !isInteger(level) || !isInteger(count)) {
+      return void resp_func('Error parsing arguments');
+    }
+    let item: Item = {
+      type,
+      subtype,
+      level,
+      count,
+    };
+
+    ent.pickup(item);
+    resp_func();
+  },
 // }, {
 //   cmd: 'key_user',
 //   help: 'Show or toggle per-game-per-user-scoped keys',
@@ -297,7 +270,7 @@ GameWorker.registerClientHandler('ent_join', function (
 //     ent.setDataSub('keys', str, old ? null : true);
 //     resp_func(null, `User key "${str}" ${old ? 'cleared' : 'set'}`);
 //   },
-// }]);
+}]);
 
 export function gameWorkerInit(channel_server: ChannelServer): void {
   channel_server.registerChannelWorker('game', GameWorker, {

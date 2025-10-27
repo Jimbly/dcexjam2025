@@ -50,7 +50,7 @@ import { EntityManagerEvent } from 'glov/common/entity_base_common';
 import {
   EntityID,
 } from 'glov/common/types';
-import { clamp, easeOut, ridx } from 'glov/common/util';
+import { clamp, clone, easeOut, ridx } from 'glov/common/util';
 import {
   JSVec2,
   JSVec3,
@@ -59,7 +59,7 @@ import {
   Vec2,
   vec4,
 } from 'glov/common/vmath';
-import { damage, xpToLevelUp } from '../common/combat';
+import { damage, POTION_HEAL_AMOUNT, xpToLevelUp } from '../common/combat';
 import {
   BLOCK_MOVE,
   crawlerLoadData,
@@ -67,7 +67,14 @@ import {
   DX,
   DY,
 } from '../common/crawler_state';
-import { ActionAttackPayload, BroadcastDataDstat, Item } from '../common/entity_game_common';
+import {
+  ActionAttackPayload,
+  ActionInventoryOp,
+  ActionInventoryPayload,
+  BroadcastDataDstat,
+  Item,
+  StatsData,
+} from '../common/entity_game_common';
 import { gameEntityTraitsCommonStartup } from '../common/game_entity_traits_common';
 import {
   aiStepFloor,
@@ -415,6 +422,7 @@ function battleZonePrep(): void {
   if (!level) {
     return;
   }
+  script_api.setLevel(level);
   let stride = battlezone_map_stride = level.w + 100;
   // for each player, claim closest entities
   let players: Entity[] = [];
@@ -616,7 +624,7 @@ function battleZoneDebug(): void {
   let y = 40;
   let z = Z.DEBUG;
   let my_ent = myEntOptional();
-  if (!my_ent) {
+  if (!my_ent || engine.defines.LEVEL_GEN) {
     return;
   }
   const text_height = uiTextHeight();
@@ -678,6 +686,10 @@ function aiStep(): void {
   let game_state = crawlerGameState();
   let script_api = crawlerScriptAPI();
   script_api.is_visited = true; // Always visited for AI
+  let { floor_id } = game_state;
+  let level = game_state.levels[floor_id];
+  assert(level);
+  script_api.setLevel(level);
 
   let my_ent_id = myEntID();
   let my_ent = myEnt();
@@ -692,7 +704,6 @@ function aiStep(): void {
     entityFilter);
 
   // for each player, unflag as ready
-  let { floor_id } = game_state;
   for (let ent_id in entities) {
     let other_ent = entities[ent_id]!;
     if (other_ent.data.floor !== floor_id || other_ent.fading_out ||
@@ -1287,6 +1298,66 @@ function bumpEntityCallback(target_ent_id: EntityID): void {
   doAttack(target_ent, 'basic');
 }
 
+function doHeal(): void {
+  let my_ent = myEnt();
+  let inventory = my_ent.getData<(Item|null)[]>('inventory') || [];
+  let inv_idx = -1;
+  for (let ii = 0; ii < inventory.length; ++ii) {
+    let item = inventory[ii];
+    if (item && item.type === 'potion') {
+      inv_idx = ii;
+      break;
+    }
+  }
+  if (inv_idx === -1) {
+    playUISound('msg_out_err');
+    statusSet('heal', 'Oh no!  Out of potions.').counter = 2500;
+    return;
+  }
+
+  let hp = my_ent.getData('stats.hp', 0);
+  let hp_max = my_ent.getData('stats.hp_max', 1);
+  if (hp >= hp_max) {
+    playUISound('msg_out_err');
+    statusSet('heal', 'Already fully healed.').counter = 2500;
+    return;
+  }
+
+  let dstats: Partial<StatsData> = {};
+  let new_hp = min(hp_max, hp + POTION_HEAL_AMOUNT);
+  dstats.hp = new_hp;
+  let ops: ActionInventoryOp[] = [];
+  ops.push({
+    idx: inv_idx,
+    delta: -1,
+  });
+
+  let new_inventory = clone(inventory);
+  let item = new_inventory[inv_idx];
+  assert(item);
+  item.count--;
+  if (!item.count) {
+    new_inventory[inv_idx] = null;
+  }
+
+  let payload: ActionInventoryPayload = {
+    dstats,
+    ops,
+    ready: true,
+  };
+  my_ent.applyBatchUpdate({
+    field: 'seq_inventory',
+    action_id: 'inv',
+    payload,
+    data_assignments: {
+      client_only: true,
+      ready: true,
+      'stats.hp': new_hp,
+      inventory,
+    },
+  }, errorsToChat);
+}
+
 function doQuickbar(): void {
   let me = myEnt();
   let books = me.data.books || [];
@@ -1340,6 +1411,14 @@ function doQuickbar(): void {
           doAttack(target_ent, action);
         }
       }
+    }
+  }
+
+  if (keyDownEdge(KEYS.H)) {
+    if (all_disabled) {
+      onDisabledAction(); // eslint-disable-line @typescript-eslint/no-use-before-define
+    } else {
+      doHeal();
     }
   }
 }
@@ -1921,7 +2000,7 @@ export function playStartup(): void {
     },
     play_state: play,
     // on_init_level_offline: initLevel,
-    default_vstyle: 'demo',
+    default_vstyle: 'dcex',
     allow_offline_console: engine.DEBUG,
     chat_ui_param: {
       x: 12,

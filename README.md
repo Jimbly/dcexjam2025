@@ -15,6 +15,8 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 
 **TODO**
 * draft combat system
+  * H to heal, consume a potion
+  * Try getting through a floor
 
 Assets to replace
 * panel / status message background
@@ -22,6 +24,8 @@ Assets to replace
 * placeholder sounds in play.ts
 
 TODO
+* better effect upon heal, not taking damage!
+* aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * bug: visibility is different before/after turning camera/moving forward and back if directly facing a wall
   * relatedly: always show monster behind (and diagonals?)
@@ -31,6 +35,7 @@ TODO
 * hide cheating commands like entset, stat
 * W on map screen is selecting Exit button, not moving player
 * Space on map screen after exit button selected is activating Wait, not closing the window
+* Shadow under ents
 
 Credits
 =======

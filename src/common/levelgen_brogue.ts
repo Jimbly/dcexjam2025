@@ -46,17 +46,17 @@ export const default_gen_params_brogue: GenParamsBrogue = {
   odds: {
     small_rect: 1,
     organic_small: 1,
-    organic_large: 1,
+    organic_large: 0,
     tetronimo: 1,
     rect2: 1,
     circle: 1,
   },
   hallway_chance: 0.95,
-  closets: 10,
+  closets: 4,
   secrets: 4,
-  w: 33,
-  h: 29,
-  max_rooms: 40,
+  w: 16,
+  h: 16,
+  max_rooms: 25,
   shops: 0,
   shop_cell_ids: ['shop_1', 'shop_2', 'shop_3'],
   wall_ids: {
@@ -77,7 +77,7 @@ export const default_gen_params_brogue: GenParamsBrogue = {
   pits_min: 0,
   pits_random: 0,
   enemies_min: 20,
-  enemies_random: 10,
+  enemies_random: 2,
 };
 
 import assert from 'assert';

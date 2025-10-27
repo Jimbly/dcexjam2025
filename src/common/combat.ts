@@ -1,3 +1,5 @@
+export const POTION_HEAL_AMOUNT = 30;
+
 import { lerp } from 'glov/common/util';
 import { StatsData } from './entity_game_common';
 

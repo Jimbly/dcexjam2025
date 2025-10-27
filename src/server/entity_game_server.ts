@@ -17,9 +17,11 @@ import {
 } from 'glov/server/entity_base_server';
 import {
   ActionAttackPayload,
+  ActionInventoryPayload,
   BroadcastDataDstat,
   entityGameCommonClass,
   EntityGameDataCommon,
+  Item,
   StatsData,
 } from '../common/entity_game_common';
 import { EntityCrawlerDataServer, EntityCrawlerServer } from './crawler_entity_server';
@@ -51,20 +53,28 @@ entityServerRegisterFieldDefs<EntityGameDataServer>({
   seq_ai_update: { encoding: EntityFieldEncoding.AnsiString },
   seq_player_move: { encoding: EntityFieldEncoding.AnsiString },
   seq_unready: { encoding: EntityFieldEncoding.AnsiString },
+  seq_inventory: { encoding: EntityFieldEncoding.AnsiString },
   vis_data: { server_only: true },
 });
 
 const default_player_stats: StatsData = {
-  hp: 100,
-  hp_max: 100,
-  mp: 10,
-  mp_max: 10,
+  hp: 50,
+  hp_max: 50,
+  mp: 5,
+  mp_max: 5,
   xp: 0,
   level: 1,
+  attack: 0,
+  defense: 0,
 };
 
 const default_player_fields: Partial<EntityGameDataCommon> = {
   inventory: [{
+    type: 'potion',
+    subtype: 0,
+    level: 1,
+    count: 10,
+  }, {
     type: 'hat',
     subtype: 0,
     level: 1,
@@ -161,6 +171,28 @@ export class EntityServer extends entityGameCommonClass(EntityBaseServer) implem
 
   visibleAreaSees(): VAID[] {
     return [this.data.floor as VAID];
+  }
+
+  pickup(item: Item): void {
+    let inventory = this.data.inventory;
+    if (!inventory) {
+      this.data.inventory = [item];
+      this.dirty('inventory');
+      return;
+    }
+    let open_slot = inventory.length;
+    for (let ii = inventory.length - 1; ii >= 0; --ii) {
+      let elem = inventory[ii];
+      if (!elem) {
+        open_slot = ii;
+      } else if (elem.type === item.type && elem.subtype === item.subtype && elem.level === item.level) {
+        elem.count += item.count;
+        this.dirtySub('inventory', ii);
+        return;
+      }
+    }
+    inventory[open_slot] = item;
+    this.dirtySub('inventory', open_slot);
   }
 }
 
@@ -359,5 +391,52 @@ entityServerRegisterActions([{
   allowed_data_assignments: {
     ready: 'boolean',
     seq_unready: 'string',
+  },
+}, {
+  action_id: 'inv',
+  self_only: true,
+  allowed_data_assignments: {
+    seq_inventory: 'string',
+  },
+  handler: function ({ payload }, resp_func) {
+    let param = payload as ActionInventoryPayload;
+    let { stats, inventory } = this.data;
+    if (!inventory) {
+      inventory = this.data.inventory = [];
+    }
+    if (param.dstats) {
+      let broadcast = {} as Partial<Record<string, number>>;
+      let key: keyof StatsData;
+      for (key in param.dstats) {
+        let new_value = param.dstats[key]!;
+        let old_value = stats[key] || 0;
+        let delta = new_value - old_value;
+        broadcast[key] = delta;
+        // TODO: This should use data_assignments?
+        stats[key] = new_value;
+        this.dirtySub('stats', key);
+      }
+      this.entity_manager.broadcast(this, 'dstat', broadcast);
+    }
+    for (let ii = 0; ii < param.ops.length; ++ii) {
+      let op = param.ops[ii];
+      let { idx, delta, item } = op;
+      if (item) {
+        inventory[idx] = item;
+      } else {
+        assert(typeof delta === 'number');
+        assert(inventory[idx]);
+        inventory[idx].count += delta;
+        if (!inventory[idx].count) {
+          inventory[idx] = null;
+        }
+      }
+      this.dirtySub('inventory', idx);
+    }
+    if (param.ready) {
+      this.data.ready = true;
+      this.dirty('ready');
+    }
+    resp_func();
   },
 }]);

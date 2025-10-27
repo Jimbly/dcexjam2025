@@ -34,7 +34,7 @@ export let default_config_options = {
       ping: null,
       redundant: null,
       clientlist: false,
-      entverbose: false,
+      entverbose: true, // DCJAM
       load: false,
       lifecycle: false,
       quiet: false, // do not show 'quiet' category messages by default

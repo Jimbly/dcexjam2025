@@ -25,17 +25,30 @@ export type ActionAttackPayload = {
   executor: EntityID;
 };
 
+export type ActionInventoryOp = {
+  idx: number;
+  delta?: number;
+  item?: Item;
+};
+export type ActionInventoryPayload = {
+  dstats?: Partial<StatsData>;
+  ops: ActionInventoryOp[];
+  ready: boolean;
+};
+
 export type StatsData = {
   hp: number;
   hp_max: number;
   mp: number;
   mp_max: number;
-  xp: number;
+  xp: number; // just players
   level: number;
+  attack: number; // just monsters
+  defense: number; // just monsters?
 };
 
 export type Item = {
-  type: 'hat' | 'book';
+  type: 'hat' | 'book' | 'potion';
   subtype: number;
   level: number;
   count: number;
@@ -52,12 +65,13 @@ export type EntityGameDataCommon = {
   display_name: string;
   user_id: string;
   // costume?: number;
-  inventory?: Item[];
+  inventory?: (Item|null)[];
   hats?: Item[];
   books?: Item[];
   // refinery?: Refinery;
   seq_player_move?: string;
   seq_unready?: string;
+  seq_inventory?: string;
   // seq_refinery?: string;
   // keys?: Partial<Record<string, true>>;
   ready: boolean;
