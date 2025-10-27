@@ -12,7 +12,6 @@ import {
 } from 'glov/client/font';
 import * as input from 'glov/client/input';
 import {
-  keyDown,
   keyDownEdge,
   KEYS,
   keyUpEdge,
@@ -68,7 +67,7 @@ import {
   DX,
   DY,
 } from '../common/crawler_state';
-import { ActionAttackPayload, BroadcastDataDstat } from '../common/entity_game_common';
+import { ActionAttackPayload, BroadcastDataDstat, Item } from '../common/entity_game_common';
 import { gameEntityTraitsCommonStartup } from '../common/game_entity_traits_common';
 import {
   aiStepFloor,
@@ -1228,32 +1227,27 @@ function moveBlockDead(): boolean {
   return true;
 }
 
-function bumpEntityCallback(target_ent_id: EntityID): void {
-  if (!canIssueAction()) {
-    playUISound('msg_out_err');
-    return;
+function doAttack(target_ent: Entity, action: Item | 'basic'): void {
+  let dam: number;
+  let style: string;
+  if (action === 'basic') {
+    let attacker_stats = myEnt().data.stats;
+    let target_stats = target_ent.data.stats;
+    ({ dam, style } = damage(attacker_stats, target_stats));
+  } else {
+    dam = 5;
+    style = 'magic';
   }
-  let me = myEnt();
-  let all_entities = entityManager().entities;
-  let target_ent = all_entities[target_ent_id]!;
-  if (!target_ent || !target_ent.isAlive() || !me.isAlive()) {
-    return;
-  }
+
   let target_hp = target_ent.getData('stats.hp', 0);
-  if (!target_hp) {
-    return;
-  }
-  let attacker_stats = me.data.stats;
-  let target_stats = target_ent.data.stats;
-  let { dam, style } = damage(attacker_stats, target_stats);
   let new_hp = max(0, target_hp - dam);
-  addFloater(target_ent_id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}`, new_hp ? '' : 'death');
+  addFloater(target_ent.id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}`, new_hp ? '' : 'death');
   let pred_ids: EntityPredictionID[] = [];
   target_ent.predictedSet(pred_ids, 'stats.hp', new_hp);
   assert.equal(pred_ids.length, 1);
   let pred_id = pred_ids[0][1];
   let payload: ActionAttackPayload = {
-    target_ent_id,
+    target_ent_id: target_ent.id,
     type: style,
     dam,
     pred_id,
@@ -1277,6 +1271,77 @@ function bumpEntityCallback(target_ent_id: EntityID): void {
     }
   });
   crawlerTurnBasedScheduleStep(250);
+}
+
+function bumpEntityCallback(target_ent_id: EntityID): void {
+  if (!canIssueAction()) {
+    playUISound('msg_out_err');
+    return;
+  }
+  let me = myEnt();
+  let all_entities = entityManager().entities;
+  let target_ent = all_entities[target_ent_id]!;
+  if (!target_ent || !target_ent.isAlive() || !me.isAlive()) {
+    return;
+  }
+  doAttack(target_ent, 'basic');
+}
+
+function doQuickbar(): void {
+  let me = myEnt();
+  let books = me.data.books || [];
+  let floor_level = 10;
+
+  let game_state = crawlerGameState();
+  let level = game_state.level;
+  let all_disabled = false;
+  if (!level || crawlerController().controllerIsAnimating(0.75)) {
+    all_disabled = true;
+  }
+  let can_attack = false;
+  let ent_in_front = crawlerEntInFront();
+  let target_ent: Entity | null = null;
+  if (ent_in_front && me.isAlive()) {
+    let entities = entityManager().entities;
+    target_ent = entities[ent_in_front] || null;
+    if (target_ent && target_ent.isAlive()) {
+      can_attack = true;
+    }
+  }
+
+  if (!canIssueAction()) {
+    all_disabled = true;
+  }
+
+  for (let ii = 0; ii < 10; ++ii) {
+    let disabled = all_disabled;
+    let action: Item | 'basic' = 'basic';
+    if (ii === 0) {
+      action = 'basic';
+    } else {
+      let item_slot = ii - 1;
+      if (item_slot >= floor_level) {
+        disabled = true;
+      } else if (!books[item_slot]) {
+        disabled = true;
+      } else {
+        action = books[item_slot];
+      }
+    }
+    let is_attack = true;
+    if (is_attack && !can_attack) {
+      disabled = true;
+    }
+    if (!disabled) {
+      if (keyDownEdge(KEYS[ii === 9 ? '0' : `${ii + 1}` as '1'])) {
+        // activate!
+        if (is_attack) {
+          assert(target_ent);
+          doAttack(target_ent, action);
+        }
+      }
+    }
+  }
 }
 
 const MOVE_BUTTONS_X0 = 343;
@@ -1568,6 +1633,8 @@ function playCrawl(): void {
       drawStatsOverViewport();
       drawBattleZone();
 
+      doQuickbar();
+
       doEngagedEnemy();
     }
     // Do modal UIs here
@@ -1736,16 +1803,16 @@ export function play(dt: number): void {
   if (keyDownEdge(KEYS.F3)) {
     settingsSet('show_fps', 1 - settings.show_fps);
   }
-  if (keyDownEdge(KEYS.F)) {
-    settingsSet('filter', 1 - settings.filter);
-  }
-  if (keyDownEdge(KEYS.G)) {
-    const types = ['instant', 'instantblend', 'queued', 'queued2'];
-    let type_idx = types.indexOf(controller.getControllerType());
-    type_idx = (type_idx + (keyDown(KEYS.SHIFT) ? -1 : 1) + types.length) % types.length;
-    controller.setControllerType(types[type_idx]);
-    statusPush(`Controller: ${types[type_idx]}`);
-  }
+  // if (keyDownEdge(KEYS.F)) {
+  //   settingsSet('filter', 1 - settings.filter);
+  // }
+  // if (keyDownEdge(KEYS.G)) {
+  //   const types = ['instant', 'instantblend', 'queued', 'queued2'];
+  //   let type_idx = types.indexOf(controller.getControllerType());
+  //   type_idx = (type_idx + (keyDown(KEYS.SHIFT) ? -1 : 1) + types.length) % types.length;
+  //   controller.setControllerType(types[type_idx]);
+  //   statusPush(`Controller: ${types[type_idx]}`);
+  // }
 
   playCrawl();
 

@@ -45,6 +45,9 @@ entityServerRegisterFieldDefs<EntityGameDataServer>({
   floor: { encoding: EntityFieldEncoding.Int },
   costume: { encoding: EntityFieldEncoding.Int },
   stats: { sub: EntityFieldSub.Record, encoding: EntityFieldEncoding.Int },
+  inventory: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
+  hats: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
+  books: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
   seq_ai_update: { encoding: EntityFieldEncoding.AnsiString },
   seq_player_move: { encoding: EntityFieldEncoding.AnsiString },
   seq_unready: { encoding: EntityFieldEncoding.AnsiString },
@@ -58,6 +61,48 @@ const default_player_stats: StatsData = {
   mp_max: 10,
   xp: 0,
   level: 1,
+};
+
+const default_player_fields: Partial<EntityGameDataCommon> = {
+  inventory: [{
+    type: 'hat',
+    subtype: 0,
+    level: 1,
+    count: 1,
+  }, {
+    type: 'hat',
+    subtype: 1,
+    level: 2,
+    count: 1,
+  }, {
+    type: 'hat',
+    subtype: 2,
+    level: 3,
+    count: 1,
+  }, {
+    type: 'book',
+    subtype: 3,
+    level: 1,
+    count: 1,
+  }, {
+    type: 'book',
+    subtype: 4,
+    level: 2,
+    count: 1,
+  }, {
+    type: 'book',
+    subtype: 5,
+    level: 3,
+    count: 1,
+  }],
+  // hats: [{
+  // }],
+  books: [{
+    type: 'book',
+    subtype: 0,
+    level: 1,
+    count: 1,
+  }],
 };
 
 export class EntityServer extends entityGameCommonClass(EntityBaseServer) implements EntityCrawlerServer {
@@ -95,6 +140,12 @@ export class EntityServer extends entityGameCommonClass(EntityBaseServer) implem
       for (key in default_player_stats) {
         if (this.data.stats[key] === undefined) {
           this.data.stats[key] = default_player_stats[key];
+        }
+      }
+      let key2: keyof EntityGameDataCommon;
+      for (key2 in default_player_fields) {
+        if (this.data[key2] === undefined) {
+          (this.data as DataObject)[key2] = default_player_fields[key2];
         }
       }
     }

@@ -14,8 +14,7 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* draft inventory/equip types
-* allow attacking via quickbar (just hotkeys, no drawing yet)
+* draft combat system
 
 Assets to replace
 * panel / status message background

@@ -34,6 +34,13 @@ export type StatsData = {
   level: number;
 };
 
+export type Item = {
+  type: 'hat' | 'book';
+  subtype: number;
+  level: number;
+  count: number;
+};
+
 export type EntityGameDataCommon = {
   // floor: number;
   // type: string;
@@ -45,7 +52,9 @@ export type EntityGameDataCommon = {
   display_name: string;
   user_id: string;
   // costume?: number;
-  // inventory?: ItemInventory[];
+  inventory?: Item[];
+  hats?: Item[];
+  books?: Item[];
   // refinery?: Refinery;
   seq_player_move?: string;
   seq_unready?: string;
