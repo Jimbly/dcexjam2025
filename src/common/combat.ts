@@ -1,13 +1,12 @@
 export const POTION_HEAL_AMOUNT = 30;
 
 import assert from 'assert';
-import { lerp } from 'glov/common/util';
 import { Item, StatsData } from './entity_game_common';
 
 const { abs, pow, random, max, floor, round } = Math;
 
 // return 0...1 weighted around 0.5
-function bellish(xin: number, exp: number): number {
+export function bellish(xin: number, exp: number): number {
   // also reasonable: return easeInOut(xin, 1/exp);
   xin = xin * 2 - 1; // -> -1..1
   let y = 1 - abs(pow(xin, exp)); // 0..1 weighted to 1
@@ -33,7 +32,7 @@ export function damage(attacker: StatsData, defender: StatsData): {
   style: 'miss' | 'hit';
 } {
   // let dam = lerp(bellish(random(), 3), 1, 3);
-  let dam = lerp(bellish(0.5, 3), 2, 4);
+  let dam = max(1, attacker.attack - defender.defense);
 
   // dam = roundRand(dam);
   dam = round(dam);
@@ -49,7 +48,7 @@ export function basicAttackDamage(attacker: StatsData, defender: StatsData): {
   style: 'miss' | 'hit';
 } {
   return {
-    dam: 5,
+    dam: max(1, 5 - defender.defense),
     style: 'hit',
   };
 }
@@ -101,7 +100,7 @@ export function skillAttackDamage(skill_details: SkillDetails, defender: StatsDa
   style: Element;
 } {
   return {
-    dam: skill_details.dam + 5,
+    dam: max(1, skill_details.dam + 5 - defender.defense),
     style: skill_details.element,
   };
 }
