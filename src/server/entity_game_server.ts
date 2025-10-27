@@ -368,6 +368,7 @@ entityServerRegisterActions([{
   handler: handleActionAttack,
   allowed_data_assignments: {
     ready: 'boolean',
+    'stats.mp': 'number',
     seq_player_move: 'string',
   },
 }, {

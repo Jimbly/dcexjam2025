@@ -1,7 +1,8 @@
 export const POTION_HEAL_AMOUNT = 30;
 
+import assert from 'assert';
 import { lerp } from 'glov/common/util';
-import { StatsData } from './entity_game_common';
+import { Item, StatsData } from './entity_game_common';
 
 const { abs, pow, random, max, floor, round } = Math;
 
@@ -43,6 +44,64 @@ export function damage(attacker: StatsData, defender: StatsData): {
   };
 }
 
+export function basicAttackDamage(attacker: StatsData, defender: StatsData): {
+  dam: number;
+  style: 'miss' | 'hit';
+} {
+  return {
+    dam: 5,
+    style: 'hit',
+  };
+}
+
 export function xpToLevelUp(level: number): number {
   return 100;
+}
+
+export type Element = 'fire' | 'earth' | 'ice';
+export type SkillDetails = {
+  mp_cost: number;
+  element: Element;
+  dam: number;
+};
+export function skillDetails(item: Item): SkillDetails {
+  assert(item.type === 'book');
+  let { subtype, level } = item;
+  let mp_cost;
+  let element: Element;
+  let dam;
+  switch (subtype) {
+    case 0:
+      mp_cost = 2 + level;
+      element = 'fire';
+      dam = 5 + 3 * level;
+      break;
+    case 1:
+      mp_cost = 3 + level;
+      element = 'earth';
+      dam = 7 + floor(3.34 * level); // not sure about this
+      break;
+    case 2:
+      mp_cost = 5 + level;
+      element = 'ice';
+      dam = 10 + 4 * level;
+      break;
+    default:
+      assert(false);
+  }
+  return {
+    mp_cost,
+    element,
+    dam,
+  };
+}
+
+export function skillAttackDamage(skill_details: SkillDetails, defender: StatsData): {
+  dam: number;
+  style: Element;
+} {
+  return {
+    dam: skill_details.dam + 5,
+    style: skill_details.element,
+  };
 }

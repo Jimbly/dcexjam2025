@@ -59,7 +59,13 @@ import {
   Vec2,
   vec4,
 } from 'glov/common/vmath';
-import { damage, POTION_HEAL_AMOUNT, xpToLevelUp } from '../common/combat';
+import {
+  basicAttackDamage,
+  POTION_HEAL_AMOUNT,
+  skillAttackDamage,
+  skillDetails,
+  xpToLevelUp,
+} from '../common/combat';
 import {
   BLOCK_MOVE,
   crawlerLoadData,
@@ -1241,13 +1247,17 @@ function moveBlockDead(): boolean {
 function doAttack(target_ent: Entity, action: Item | 'basic'): void {
   let dam: number;
   let style: string;
+  let target_stats = target_ent.data.stats;
+  let mp_cost = 0;
+  let my_ent = myEnt();
   if (action === 'basic') {
-    let attacker_stats = myEnt().data.stats;
-    let target_stats = target_ent.data.stats;
-    ({ dam, style } = damage(attacker_stats, target_stats));
+    let attacker_stats = my_ent.data.stats;
+    ({ dam, style } = basicAttackDamage(attacker_stats, target_stats));
+    mp_cost = -1;
   } else {
-    dam = 5;
-    style = 'magic';
+    let details = skillDetails(action);
+    ({ dam, style } = skillAttackDamage(details, target_stats));
+    ({ mp_cost } = details);
   }
 
   let target_hp = target_ent.getData('stats.hp', 0);
@@ -1264,11 +1274,13 @@ function doAttack(target_ent: Entity, action: Item | 'basic'): void {
     pred_id,
     executor: myEntID(),
   };
+  let new_mp = clamp(my_ent.getData('stats.mp', 0) - mp_cost, 0, my_ent.getData('stats.mp_max', 1));
   crawlerMyApplyBatchUpdate({
     action_id: 'attack',
     payload,
     data_assignments: {
       ready: true,
+      'stats.mp': new_mp,
     },
     field: CrawlerController.PLAYER_MOVE_FIELD,
   }, function (err, resp) {
@@ -1407,6 +1419,15 @@ function doQuickbar(): void {
       if (keyDownEdge(KEYS[ii === 9 ? '0' : `${ii + 1}` as '1'])) {
         // activate!
         if (is_attack) {
+          if (action !== 'basic') {
+            let skill_details = skillDetails(action);
+            let { mp_cost } = skill_details;
+            if (mp_cost > myEnt().getData('stats.mp', 0)) {
+              playUISound('msg_out_err');
+              statusPush('Insufficient MP').counter = 2500;
+              continue;
+            }
+          }
           assert(target_ent);
           doAttack(target_ent, action);
         }

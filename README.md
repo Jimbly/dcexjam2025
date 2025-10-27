@@ -15,7 +15,7 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 
 **TODO**
 * draft combat system
-  * H to heal, consume a potion
+  * mp gain/spending for skill
   * Try getting through a floor
 
 Assets to replace
@@ -25,6 +25,7 @@ Assets to replace
 
 TODO
 * better effect upon heal, not taking damage!
+* add critical hits/misses to combat system?
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * bug: visibility is different before/after turning camera/moving forward and back if directly facing a wall
