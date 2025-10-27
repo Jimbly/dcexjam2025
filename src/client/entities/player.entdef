@@ -66,3 +66,6 @@ traits:
     - period: 3000
       scale: [1, 0.95]
       easing: 1.5
+  shadow:
+    atlas: dcex
+    name: shadow

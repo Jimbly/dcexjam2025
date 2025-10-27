@@ -33,7 +33,7 @@ export function damage(attacker: StatsData, defender: StatsData): {
   style: 'miss' | 'hit';
 } {
   // let dam = lerp(bellish(random(), 3), 1, 3);
-  let dam = lerp(bellish(0.5, 3), 1, 3);
+  let dam = lerp(bellish(0.5, 3), 2, 4);
 
   // dam = roundRand(dam);
   dam = round(dam);

@@ -14,9 +14,13 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* draft combat system
-  * mp gain/spending for skill
-  * Try getting through a floor
+* combat fun
+  * random HP variation on enemies
+  * elemental weakness / defense
+  * try with level 2 and 2 skills
+* drop and pickup loot
+* equip UI?
+* add chests with potions and gear
 
 Assets to replace
 * panel / status message background
@@ -27,6 +31,8 @@ TODO
 * add critical hits/misses to combat system?
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
+* animate/grow critters on attack / hit
+* fix two hits on the same frame not showing floaters well
 * bug: visibility is different before/after turning camera/moving forward and back if directly facing a wall
   * relatedly: always show monster behind (and diagonals?)
 * Deal with more than 4 players in battlezone list (scrollbar, dither, hide?)
@@ -35,7 +41,6 @@ TODO
 * hide cheating commands like entset, stat
 * W on map screen is selecting Exit button, not moving player
 * Space on map screen after exit button selected is activating Wait, not closing the window
-* Shadow under ents
 
 Credits
 =======

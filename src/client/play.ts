@@ -1723,7 +1723,7 @@ function playCrawl(): void {
     menu_pads.push(PAD.B, PAD.BACK);
   }
   button(2, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, cur_action?.name === 'PauseMenu');
-  if (!build_mode) {
+  if (!build_mode && !controller.ignoreGameplay()) {
     //button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]);
     button(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B]);
     button(1, 0, 7, 'inv', [KEYS.I], [PAD.Y]); // , inventory_up);

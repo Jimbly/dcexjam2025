@@ -34,7 +34,7 @@ Goals:
 
 1 floor = 20 enemies
 L1 enemies:
-  4 damage
-  20 HP (get 2 hits on optimal player, 3 on avg)
-2.5 hits x 20 enemies = 200 damage
+  3 damage
+  20 HP (get 2-3 hits on optimal player, 3-4 on avg)
+3 hits x 20 enemies = 180 damage
   So, L1 PC = 50hp; heal for 30?

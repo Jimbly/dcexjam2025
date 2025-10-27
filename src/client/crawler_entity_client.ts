@@ -48,6 +48,7 @@ import {
   ROVec2,
   ROVec3,
   ROVec4,
+  vec2,
 } from 'glov/common/vmath';
 import {
   EntityCrawlerDataCommon,
@@ -379,6 +380,7 @@ function drawableSpriteUpdateAnim(this: EntityDrawableSprite, dt: number): numbe
   return frame;
 }
 
+const shadow_origin = vec2(0.5, 0.5);
 
 function lookupGLDefines(
   sprite_data: (TextureOptions | TextureOptionsAsStrings) & SpriteSpec
@@ -466,6 +468,9 @@ function crawlerTraitsInit(ent_factory: TraitFactory<Entity, DataObject>): void 
           });
         }
       }
+      if (opts.shadow) {
+        opts.sprite_shadow = autoAtlas(opts.shadow.atlas, opts.shadow.name).withOrigin(shadow_origin);
+      }
     },
     alloc_state: function (opts: DrawableSpriteOpts, ent: Entity) {
       let anim = spriteAnimationCreate(opts.anim_data);
@@ -477,6 +482,7 @@ function crawlerTraitsInit(ent_factory: TraitFactory<Entity, DataObject>): void 
         sprite_near: opts.sprite_near,
         sprite_hybrid: opts.sprite_hybrid,
         anim_offs: random() * 120000,
+        sprite_shadow: opts.sprite_shadow,
       };
       return ret;
     },

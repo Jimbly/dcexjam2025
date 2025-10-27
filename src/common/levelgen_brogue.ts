@@ -52,7 +52,7 @@ export const default_gen_params_brogue: GenParamsBrogue = {
     circle: 1,
   },
   hallway_chance: 0.95,
-  closets: 4,
+  closets: 0,
   secrets: 4,
   w: 16,
   h: 16,

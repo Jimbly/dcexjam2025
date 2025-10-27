@@ -31,8 +31,9 @@ traits:
     atlas: dcex
     filter_min: LINEAR_MIPMAP_LINEAR
     filter_mag: LINEAR
-    origin: [0.5, 1]
+    origin: [0.5, 1.25]
   scale: 0.75
+  do_alpha: false
   simple_anim:
     - period: 5000
       scale: [1, 0.95]
@@ -40,3 +41,6 @@ traits:
       # offs:
       #   - [0, -0.15]
       #   - [0, 0]
+  shadow:
+    atlas: dcex
+    name: shadow
