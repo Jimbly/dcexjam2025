@@ -18,6 +18,7 @@ import type { CrawlerScriptAPI } from '../common/crawler_script';
 import {
   BLOCK_MOVE,
   BLOCK_OPEN,
+  BLOCK_VIS,
   CrawlerState,
   dirFromDelta,
   DirType,
@@ -79,6 +80,7 @@ export function entitiesAdjacentTo<T extends Entity>(
 export type WanderOpts = Record<never, never>;
 export type WanderState = {
   home_pos: JSVec3;
+  prefer_door: boolean;
 };
 export type EntityWander = EntityClient & {
   wander_state: WanderState;
@@ -125,11 +127,24 @@ export function aiTraitsClientStartup(): void {
       aiWander: function (this: EntityWander, game_state: CrawlerState, script_api: CrawlerScriptAPI): boolean {
         let pos = this.getData<JSVec3>('pos');
         assert(pos);
-        let dir = floor(random() * 4) as DirType;
         let floor_id = this.getData<number>('floor');
         assert(typeof floor_id === 'number');
         let level = game_state.levels[floor_id];
         script_api.setPos(pos);
+        let dir = floor(random() * 4) as DirType;
+        if (this.wander_state.prefer_door) {
+          this.wander_state.prefer_door = false;
+          let opts: DirType[] = [];
+          for (let ii = 0 as DirType; ii < 4; ++ii) {
+            let block = level.wallsBlock(pos, ii, script_api);
+            if (!(block & BLOCK_MOVE) && (block & BLOCK_VIS)) {
+              opts.push(ii);
+            }
+          }
+          if (opts.length) {
+            dir = opts[floor(random() * opts.length)];
+          }
+        }
         if (level.wallsBlock(pos, dir, script_api) & BLOCK_MOVE) {
           return false;
         }
@@ -147,6 +162,7 @@ export function aiTraitsClientStartup(): void {
     alloc_state: function (opts: WanderOpts, ent: Entity) {
       let ret: WanderState = {
         home_pos: ent.data.pos.slice(0) as JSVec3,
+        prefer_door: false,
       };
       return ret;
     }
@@ -270,6 +286,10 @@ export function aiTraitsClientStartup(): void {
           if (!can_see) {
             if (engine.defines.HUNTER) {
               statusSet(`edbg${this.id}`, `${this.id}: Reached last known target`).counter = 500;
+            }
+            if ((this as unknown as EntityWander).wander_state) {
+              // Got there, can't see him, prefer wandering through doors if possible
+              (this as unknown as EntityWander).wander_state.prefer_door = true;
             }
             // playUISound('hunter_lost', volume);
           } else {

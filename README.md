@@ -14,7 +14,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* aiHunter should follow a player through a door (or: if they arrive at last know spot, should enter a random door? or doors are open vis for hunter?)
 * draft inventory/equip types
 * allow attacking via quickbar (just hotkeys, no drawing yet)
 
