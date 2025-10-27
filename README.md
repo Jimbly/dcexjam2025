@@ -18,7 +18,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 * allow attacking via quickbar (just hotkeys, no drawing yet)
 
 Assets to replace
-* buttons / menu
 * panel / status message background
 * chat send/receive/join/leave sounds
 * placeholder sounds in play.ts

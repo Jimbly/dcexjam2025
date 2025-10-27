@@ -625,8 +625,8 @@ function battleZoneDebug(): void {
   y += text_height;
   print(style_text, x, y, z, `Tick queued: ${crawlerTurnBasedQueued()}`);
   y += text_height;
-  print(style_text, x, y, z, `CanIssueAction: ${canIssueAction()}`);
-  y += text_height;
+  // print(style_text, x, y, z, `CanIssueAction: ${canIssueAction()}`);
+  // y += text_height;
 
 }
 
