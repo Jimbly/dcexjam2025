@@ -616,8 +616,12 @@ function drawBattleZoneBorder(
   let scale = 1;
   let offs = [0,0];
   let height = 0.5;
+  let detail_layer = 3;
 
   v3set(temp_pos, HDIM, HDIM, VDIM);
+  if (detail_layer) {
+    v3iAddScale(temp_pos, wall_detail_offs, -detail_layer);
+  }
   temp_pos[1] -= offs[0] * DIM + (1 - scale) * HDIM;
   temp_pos[2] -= -offs[1] * VDIM + (1 - scale) * HVDIM + (1 - height) * VDIM;
   v2set(temp_size, DIM*scale, VDIM*scale*height);
