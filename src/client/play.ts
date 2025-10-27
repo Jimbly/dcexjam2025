@@ -39,6 +39,7 @@ import {
   menuUp,
   modalDialog,
   playUISound,
+  print,
   uiButtonWidth,
   uiGetFont,
   uiGetTitleFont,
@@ -119,7 +120,9 @@ import {
   crawlerPrepAndRenderFrame,
   crawlerSaveGame,
   crawlerScriptAPI,
+  crawlerTurnBasedClearQueue,
   crawlerTurnBasedMovePreStart,
+  crawlerTurnBasedQueued,
   crawlerTurnBasedScheduleStep,
   getScaledFrameDt,
 } from './crawler_play';
@@ -529,16 +532,52 @@ function battleZonePrep(): void {
       player.battle_zone = 0;
     }
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  if (!crawlerTurnBasedQueued() && myEnt().getData('ready') && aiStepAllowed()) {
+    // no step is queued, but everyone's ready and I'm the leader, or no longer in a battle zone
+    crawlerTurnBasedScheduleStep(250);
+  }
+  if (crawlerTurnBasedQueued() && !myEnt().getData('ready')) {
+    // a tick is queued, but I'm not ready, presumably not the leader, someone else
+    // cleared my ready state, also cancel the tick
+    crawlerTurnBasedClearQueue();
+  }
 }
 
-function ignoreErrors(err: unknown): void {
-  console.log(`Ignoring error sending unready: ${err}`);
+function battleZoneDebug(): void {
+  let x = 12;
+  let y = 40;
+  let z = Z.DEBUG;
+  let my_ent = myEntOptional();
+  if (!my_ent) {
+    return;
+  }
+  const text_height = uiTextHeight();
+  print(style_text, x, y, z, `BattleZone: ${my_ent.battle_zone} (me=${my_ent.id})`);
+  y += text_height;
+  print(style_text, x, y, z, `Tick queued: ${crawlerTurnBasedQueued()}`);
+  y += text_height;
+  print(style_text, x, y, z, `CanIssueAction: ${canIssueAction()}`);
+  y += text_height;
+
+}
+
+function errorsToChat(err: unknown): void {
+  if (err) {
+    getChatUI().addChat(`Error executing action: ${err}`, 'error');
+  }
 }
 
 function aiStepAllowed(): boolean {
   let me = myEnt();
   if (!me.battle_zone) {
     return true;
+  }
+
+  if (me.battle_zone !== me.id) {
+    // Someone else's in charge of it
+    return false;
   }
 
   // if anyone in the battlezone is not ready, we cannot step yet
@@ -567,7 +606,9 @@ function aiStep(): void {
   if (buildModeActive() || settings.ai_pause || engine.defines.LEVEL_GEN) {
     return;
   }
-  playUISound('button_click');
+  playUISound('rollover');
+  let entity_manager = entityManager();
+  let entities = entity_manager.entities;
   let game_state = crawlerGameState();
   let script_api = crawlerScriptAPI();
   script_api.is_visited = true; // Always visited for AI
@@ -576,7 +617,8 @@ function aiStep(): void {
   let my_ent = myEnt();
   let the_battle_zone = my_ent.battle_zone;
   function entityFilter(ent: Entity): boolean {
-    return ent.last_closest_ent === my_ent_id;
+    return Boolean(ent.last_closest_ent === my_ent_id ||
+      the_battle_zone && ent.last_closest_ent && entities[ent.last_closest_ent]!.battle_zone === the_battle_zone);
   }
 
   aiStepFloor(game_state.floor_id, game_state, entityManager(), engine.defines,
@@ -584,8 +626,6 @@ function aiStep(): void {
     entityFilter);
 
   // for each player, unflag as ready
-  let entity_manager = entityManager();
-  let entities = entity_manager.entities;
   let { floor_id } = game_state;
   for (let ent_id in entities) {
     let other_ent = entities[ent_id]!;
@@ -593,7 +633,6 @@ function aiStep(): void {
       !other_ent.isPlayer() ||
       !other_ent.getData('ready')
     ) {
-      // not on current floor
       continue;
     }
     if (other_ent === my_ent || the_battle_zone && other_ent.battle_zone === the_battle_zone) {
@@ -603,7 +642,7 @@ function aiStep(): void {
         data_assignments: {
           ready: false,
         },
-      }, ignoreErrors);
+      }, errorsToChat);
     }
   }
 }
@@ -1322,6 +1361,7 @@ function playCrawl(): void {
   let button_y0: number;
 
   let disabled = controller.hasMoveBlocker();
+  let disabled_action = !canIssueAction();
 
   function button(
     rx: number, ry: number,
@@ -1329,11 +1369,12 @@ function playCrawl(): void {
     key: ValidKeys,
     keys: number[],
     pads: number[],
-    toggled_down?: boolean
+    toggled_down?: boolean,
+    specific_disabled?: boolean,
   ): void {
     let z;
     let no_visible_ui = frame_map_view;
-    let my_disabled = disabled;
+    let my_disabled = Boolean(disabled || specific_disabled);
     if (key === 'menu') {
       no_visible_ui = false;
       if (frame_map_view) {
@@ -1384,8 +1425,8 @@ function playCrawl(): void {
   }
   button(2, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, cur_action?.name === 'PauseMenu');
   if (!build_mode) {
-    //button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]); // , inventory_up);
-    button(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B]); // , inventory_up);
+    //button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]);
+    button(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B], undefined, disabled_action);
     button(1, 0, 7, 'inv', [KEYS.I], [PAD.Y]); // , inventory_up);
     // if (up_edge.inv) {
     //   inventory_up = !inventory_up;
@@ -1423,6 +1464,13 @@ function playCrawl(): void {
   //   inventory_up = !inventory_up;
   // }
   if (up_edge.wait) {
+    crawlerMyApplyBatchUpdate({
+      action_id: 'ready',
+      data_assignments: {
+        ready: true,
+      },
+      field: CrawlerController.PLAYER_MOVE_FIELD,
+    }, errorsToChat);
     crawlerTurnBasedScheduleStep(1);
   }
 
@@ -1434,7 +1482,7 @@ function playCrawl(): void {
     button_w: build_mode ? 6 : BUTTON_W,
     button_sprites: useNoText() ? button_sprites_notext : button_sprites,
     disable_move: moveBlocked() || overlay_menu_up || !canIssueAction(),
-    // TODO: disable_rotate: moveBlocked() || overlay_menu_up,
+    but_allow_rotate: true,
     disable_player_impulse: Boolean(locked_dialog),
     show_buttons: !locked_dialog,
     do_debug_move: engine.defines.LEVEL_GEN || build_mode,
@@ -1548,6 +1596,7 @@ export function play(dt: number): void {
   }
 
   battleZonePrep(); // before crawlerPlayTopOfFrame
+  battleZoneDebug();
 
   let overlay_menu_up = Boolean(cur_action?.is_overlay_menu || dialogMoveLocked());
 
@@ -1590,7 +1639,13 @@ export function play(dt: number): void {
 }
 
 function onPlayerMove(old_pos: Vec2, new_pos: Vec2): void {
-  // battleZonePrep(); // if we are the closest to anyone right now, they haven't been ticked
+  crawlerMyApplyBatchUpdate({
+    action_id: 'ready',
+    data_assignments: {
+      ready: true,
+    },
+    field: CrawlerController.PLAYER_MOVE_FIELD,
+  }, errorsToChat);
   crawlerTurnBasedMovePreStart();
 }
 

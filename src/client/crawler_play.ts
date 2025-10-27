@@ -704,10 +704,17 @@ function executeStep(): void {
   }
 }
 
+export function crawlerTurnBasedQueued(): boolean {
+  return need_turn_based_step;
+}
+
+export function crawlerTurnBasedClearQueue(): void {
+  need_turn_based_step = false;
+}
 
 function crawlerTurnBasedTick(): void {
   if (need_turn_based_step) {
-    if (turn_based_allowed && !turn_based_allowed?.()) {
+    if (turn_based_allowed?.() === false) {
       return;
     }
     if (turn_based_step_countdown) {
@@ -723,17 +730,23 @@ function crawlerTurnBasedTick(): void {
 }
 
 export function crawlerTurnBasedScheduleStep(delay: number): void {
-  executeStep();
+  if (turn_based_allowed?.() !== false) {
+    executeStep();
+  }
   need_turn_based_step = true;
   turn_based_step_countdown = delay;
 }
 
 export function crawlerTurnBasedMovePreStart(/*old_pos, new_pos, move_dir*/): void {
-  executeStep();
+  if (turn_based_allowed?.() !== false) {
+    executeStep();
+  }
 }
 
 function crawlerTurnBasedMoveStart(pos: Vec2): void {
-  executeStep();
+  if (turn_based_allowed?.() !== false) {
+    executeStep();
+  }
   need_turn_based_step = true;
   turn_based_step_countdown = 0; // fire as soon as we're done animating
   crawlerTurnBasedTick();
@@ -741,7 +754,9 @@ function crawlerTurnBasedMoveStart(pos: Vec2): void {
 
 function crawlerTurnBasedMoveFinish(pos: Vec2): void {
   // Finished a queued move, possibly because interrupted and starting a new one
-  executeStep();
+  if (turn_based_allowed?.() !== false) {
+    executeStep();
+  }
 }
 
 function crawlerPlayInitShared(): void {

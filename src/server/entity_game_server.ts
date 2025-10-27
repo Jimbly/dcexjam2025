@@ -296,7 +296,15 @@ entityServerRegisterActions([{
   },
   handler: handleActionAttack,
 }, {
+  action_id: 'ready',
+  self_only: true,
+  allowed_data_assignments: {
+    ready: 'boolean',
+    seq_player_move: 'string',
+  },
+}, {
   action_id: 'unready',
+  self_only: false,
   allowed_data_assignments: {
     ready: 'boolean',
     seq_unready: 'string',

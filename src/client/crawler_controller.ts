@@ -1083,6 +1083,7 @@ export type PlayerMotionParam = {
   show_buttons: boolean;
   show_debug: { x: number; y: number } | null;
   disable_move: boolean;
+  but_allow_rotate: boolean; // if `disable_move` is true, still allow rotating
   disable_player_impulse: boolean;
   button_w: number;
   button_sprites: Record<ButtonStateString, Sprite>;
@@ -1968,6 +1969,7 @@ export class CrawlerController {
       button_sprites,
       show_buttons,
       disable_move,
+      but_allow_rotate,
       disable_player_impulse,
       show_hotkeys,
     } = param;
@@ -1981,6 +1983,7 @@ export class CrawlerController {
     const build_mode = buildModeActive();
 
     let no_move = this.hasMoveBlocker() || disable_move || disable_player_impulse;
+    let no_rotate = this.hasMoveBlocker() || disable_player_impulse || disable_move && !but_allow_rotate;
 
     if (no_move) { // was: disable_player_impulse
       this.path_to = null;
@@ -2004,10 +2007,12 @@ export class CrawlerController {
       turn_right: 0,
     } as Record<ValidKeys, number>;
 
-    let disabled = no_move || disable_player_impulse;
+    const disabled_move = no_move || disable_player_impulse;
+    const disabled_rotate = no_rotate || disable_player_impulse;
     function button(
       rx: number, ry: number,
       frame: number,
+      disabled: boolean,
       key: ValidKeys,
       keys: number[],
       pads: number[],
@@ -2097,24 +2102,35 @@ export class CrawlerController {
       let forward_hotzone: Box | undefined;
       let back_hotzone: Box | undefined;
       let right_hotzone: Box | undefined;
-      if (!uiHandlingNav() && !disabled && !build_mode) {
+      if (!uiHandlingNav() && !build_mode) {
         // do touch controls on the viewport
-        ({ left: left_hotzone, right: right_hotzone, forward: forward_hotzone, back: back_hotzone } = touch_hotzones);
+        if (disabled_move && !disabled_rotate) {
+          ({ left: left_hotzone, right: right_hotzone } = touch_hotzones);
+        } else if (!disabled_move && !disabled_rotate) {
+          ({ left: left_hotzone, right: right_hotzone, forward: forward_hotzone, back: back_hotzone } = touch_hotzones);
+        }
       }
 
-      button(0, 0, 0, 'turn_left', keys_turn_left, pad_turn_left, false, left_hotzone);
-      button(1, 0, forward_frame, 'forward', keys_forward, pad_forward, false, forward_hotzone);
-      button(2, 0, 2, 'turn_right', keys_turn_right, pad_turn_right, false, right_hotzone);
-      button(0, 1, 3, 'left', keys_left, pad_left);
-      button(1, 1, 4, 'back', keys_back, pad_back, false, back_hotzone);
-      button(2, 1, 5, 'right', keys_right, pad_right);
+      button(0, 0, 0, disabled_rotate, 'turn_left', keys_turn_left, pad_turn_left, false, left_hotzone);
+      button(1, 0, forward_frame, disabled_move, 'forward', keys_forward, pad_forward, false, forward_hotzone);
+      button(2, 0, 2, disabled_rotate, 'turn_right', keys_turn_right, pad_turn_right, false, right_hotzone);
+      button(0, 1, 3, disabled_move, 'left', keys_left, pad_left);
+      button(1, 1, 4, disabled_move, 'back', keys_back, pad_back, false, back_hotzone);
+      button(2, 1, 5, disabled_move, 'right', keys_right, pad_right);
     }
 
     let level = game_state.level!;
 
-    if (!no_move) {
+    if (no_move || no_rotate) {
+      this.player_controller.cancelQueuedMoves?.();
+    }
+    if (this.loading_level) {
+      this.fade_alpha = this.fade_override;
+      return;
+    }
+    if (!no_move || !no_rotate) {
       let eff_rot = this.player_controller.effRot();
-      {
+      if (!no_rotate) {
         let drot = down_edge.turn_left;
         drot -= down_edge.turn_right;
         while (drot) {
@@ -2125,7 +2141,7 @@ export class CrawlerController {
         }
       }
 
-      {
+      if (!no_move) {
         let dx = 0;
         dx += down_edge.left;
         dx -= down_edge.right;
@@ -2144,7 +2160,8 @@ export class CrawlerController {
         }
       }
 
-      if (!this.player_controller.isMoving() &&
+      if (!no_rotate &&
+        !this.player_controller.isMoving() &&
         frame_timestamp - this.last_action_time >= KEY_REPEAT_TIME_ROT
       ) {
         // Not currently doing any move
@@ -2160,8 +2177,9 @@ export class CrawlerController {
       }
 
       let kb_repeat_rate = this.is_repeating ? KEY_REPEAT_TIME_MOVE_RATE : KEY_REPEAT_TIME_MOVE_DELAY;
-      if (!this.player_controller.isMoving() && frame_timestamp - this.last_action_time >= kb_repeat_rate ||
-        this.player_controller.allowRepeatImmediately()
+      if (!no_move &&
+        (!this.player_controller.isMoving() && frame_timestamp - this.last_action_time >= kb_repeat_rate ||
+        this.player_controller.allowRepeatImmediately())
       ) {
         // Check for held movement inputs
         let dx = 0;
@@ -2180,14 +2198,16 @@ export class CrawlerController {
         this.is_repeating = false;
       }
 
-      if (!this.player_controller.isMoving() && !build_mode && entityBlocks(game_state.floor_id, last_dest_pos, true) &&
+      if (!no_move &&
+        !this.player_controller.isMoving() && !build_mode && entityBlocks(game_state.floor_id, last_dest_pos, true) &&
         !v2same(last_dest_pos, prev_pos)
       ) {
         // We're standing over a blocking entity!  Move to where we were before
         this.player_controller.startMove(dirFromMove(last_dest_pos, prev_pos));
       }
 
-      if (!this.player_controller.isMoving() && this.path_to &&
+      if (!no_move && !no_rotate &&
+        !this.player_controller.isMoving() && this.path_to &&
         frame_timestamp - this.path_to_last_step > FAST_TRAVEL_STEP_MIN_TIME
       ) {
         this.on_pre_move?.();
@@ -2232,13 +2252,6 @@ export class CrawlerController {
             }
           }
         }
-      }
-    } else {
-      // no_move
-      this.player_controller.cancelQueuedMoves?.();
-      if (this.loading_level) {
-        this.fade_alpha = this.fade_override;
-        return;
       }
     }
 

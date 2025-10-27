@@ -12,19 +12,14 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 * If attempting to move/attack
   * if there are any other players in the zone, block the action (line above will handle it)
   * if I am the only player, execute a tick before allowing the action
-* This means: remove the existing 250ms schedule tick logic; kind of - still need to flag the tick as needed before the next action though
 
 **TODO**
 * OMP AI ticking
-  * plan: clients run steps; do it scheduled/delayed as well as pre-emptively before a move
-  * next:
-    * battlezone system
-  * deal with race conditions:
-    * battlezone leader leaves/changes
-    * non-ready person leaves
-    * ready person leaves
-  * allow rotating while battlezone-locked
   * hide waiting/ready icons if we're the only one in the battle zone
+  * show battlezone on ground
+  * play sound and display message if trying to do any action and BZ is waiting
+  * display message if anyone else has been ready for more than a few seconds
+* aiHunt needs to hunt closest player, not BZ leader
 * aiHunter should follow a player through a door (or: if they arrive at last know spot, should enter a random door? or doors are open vis for hunter?)
 
 Assets to replace
@@ -34,8 +29,8 @@ Assets to replace
 * chat send/receive/join/leave sounds
 
 TODO
-* damage floaters in 3D at a distance
-* bug: visibility is different before/after turning camera/moving forward and back
+* damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
+* bug: visibility is different before/after turning camera/moving forward and back if directly facing a wall
   * relatedly: always show monster behind (and diagonals?)
 * Deal with more than 4 players in battlezone list (scrollbar, dither, hide?)
 * click to move - ensure stop when enter (active?) battlezone
