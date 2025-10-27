@@ -14,9 +14,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* OMP AI ticking
-  * play sound and display message if trying to do any action and BZ is waiting
-  * display message if anyone else has been ready for more than a few seconds
 * aiHunt needs to hunt closest player, not BZ leader
 * aiHunter should follow a player through a door (or: if they arrive at last know spot, should enter a random door? or doors are open vis for hunter?)
 
@@ -25,6 +22,7 @@ Assets to replace
 * buttons / menu
 * panel / status message background
 * chat send/receive/join/leave sounds
+* placeholder sounds in play.ts
 
 TODO
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit

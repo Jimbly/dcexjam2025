@@ -160,6 +160,7 @@ import {
 import { renderAppStartup } from './render_app';
 import {
   statusPush,
+  statusSet,
   statusTick,
 } from './status';
 
@@ -223,6 +224,8 @@ let bar_sprites: {
 let frame_sprites: {
   horiz: Sprite;
   vert: Sprite;
+  horiz_red: Sprite;
+  vert_red: Sprite;
 };
 
 const outline_width = 2.5;
@@ -869,6 +872,8 @@ function drawStatsOverViewport(): void {
 }
 
 const BATTLEZONE_W = 134;
+let battlezone_is_waiting = false;
+let battlezone_is_waiting_time = 0;
 function drawBattleZone(): void {
   let x = 275;
   let y = 252;
@@ -926,6 +931,7 @@ function drawBattleZone(): void {
 
   let is_bz = true;
   let my_angle = crawlerController().getEffRot();
+  battlezone_is_waiting = false;
   for (let ii = 0; ii < players.length; ++ii) {
     let ent = players[ii];
     if (is_bz && !isInBattleZone(ent)) {
@@ -984,6 +990,9 @@ function drawBattleZone(): void {
     });
     let icon_x = x + BATTLEZONE_W - 12 - 3;
     if (is_bz && me.battle_zone) {
+      if (ent !== me && is_ready) {
+        battlezone_is_waiting = true;
+      }
       autoAtlas('ui', is_ready ? 'check': 'hourglass').draw({
         x: icon_x,
         y: y + 2,
@@ -1067,6 +1076,19 @@ function drawBattleZone(): void {
       });
     }
   }
+
+  if (battlezone_is_waiting && me.getData('ready')) {
+    battlezone_is_waiting = false;
+  }
+  if (battlezone_is_waiting) {
+    battlezone_is_waiting_time += getScaledFrameDt();
+    if (battlezone_is_waiting_time > 2000) {
+      statusSet('bzwait', 'Other players are waiting for you to take your action').fade();
+    }
+  } else {
+    battlezone_is_waiting_time = 0;
+  }
+
 }
 
 const ENEMY_HP_BAR_W = 100;
@@ -1358,6 +1380,40 @@ function drawFrames(): void {
       h: 12,
     });
   });
+
+  if (battlezone_is_waiting) {
+    z++;
+    [0, 240].forEach(function (y) {
+      frame_sprites.horiz_red.draw({
+        x: 12,
+        y,
+        z,
+        w: render_width,
+        h: 12,
+        uvs: [0, 0, (render_width)/512, 1],
+      });
+    });
+
+    [
+      [0, 12, render_height],
+      [324, 12, render_height],
+    ].forEach(function (coords) {
+      frame_sprites.vert_red.draw({
+        x: coords[0],
+        y: coords[1],
+        z,
+        w: 12,
+        h: coords[2],
+        uvs: [0, coords[3] || 0, 1, coords[2]/512],
+      });
+    });
+
+  }
+}
+
+function onDisabledAction(): void {
+  playUISound('msg_out_err');
+  statusSet('onDisabledAction', 'Please wait for other players to take their turn').counter = 2500;
 }
 
 function playCrawl(): void {
@@ -1440,11 +1496,10 @@ function playCrawl(): void {
     keys: number[],
     pads: number[],
     toggled_down?: boolean,
-    specific_disabled?: boolean,
   ): void {
     let z;
     let no_visible_ui = frame_map_view;
-    let my_disabled = Boolean(disabled || specific_disabled);
+    let my_disabled = disabled;
     if (key === 'menu') {
       no_visible_ui = false;
       if (frame_map_view) {
@@ -1496,7 +1551,7 @@ function playCrawl(): void {
   button(2, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, cur_action?.name === 'PauseMenu');
   if (!build_mode) {
     //button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]);
-    button(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B], undefined, disabled_action);
+    button(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B]);
     button(1, 0, 7, 'inv', [KEYS.I], [PAD.Y]); // , inventory_up);
     // if (up_edge.inv) {
     //   inventory_up = !inventory_up;
@@ -1534,14 +1589,18 @@ function playCrawl(): void {
   //   inventory_up = !inventory_up;
   // }
   if (up_edge.wait) {
-    crawlerMyApplyBatchUpdate({
-      action_id: 'ready',
-      data_assignments: {
-        ready: true,
-      },
-      field: CrawlerController.PLAYER_MOVE_FIELD,
-    }, errorsToChat);
-    crawlerTurnBasedScheduleStep(1);
+    if (disabled_action) {
+      onDisabledAction();
+    } else {
+      crawlerMyApplyBatchUpdate({
+        action_id: 'ready',
+        data_assignments: {
+          ready: true,
+        },
+        field: CrawlerController.PLAYER_MOVE_FIELD,
+      }, errorsToChat);
+      crawlerTurnBasedScheduleStep(1);
+    }
   }
 
   controller.doPlayerMotion({
@@ -1553,6 +1612,7 @@ function playCrawl(): void {
     button_sprites: useNoText() ? button_sprites_notext : button_sprites,
     disable_move: moveBlocked() || overlay_menu_up || !canIssueAction(),
     but_allow_rotate: true,
+    on_disabled_action: onDisabledAction,
     disable_player_impulse: Boolean(locked_dialog),
     show_buttons: !locked_dialog,
     do_debug_move: engine.defines.LEVEL_GEN || build_mode,
@@ -1906,22 +1966,29 @@ export function playStartup(): void {
     },
   };
 
+  let frame_param = {
+    filter_min: gl.NEAREST,
+    filter_mag: gl.NEAREST,
+    wrap_s: gl.CLAMP_TO_EDGE,
+    wrap_t: gl.CLAMP_TO_EDGE,
+    force_mipmaps: false,
+  };
   frame_sprites = {
     horiz: spriteCreate({
-      filter_min: gl.NEAREST,
-      filter_mag: gl.NEAREST,
-      wrap_s: gl.CLAMP_TO_EDGE,
-      wrap_t: gl.CLAMP_TO_EDGE,
-      force_mipmaps: false,
+      ...frame_param,
       name: 'frame-h',
     }),
     vert: spriteCreate({
-      filter_min: gl.NEAREST,
-      filter_mag: gl.NEAREST,
-      wrap_s: gl.CLAMP_TO_EDGE,
-      wrap_t: gl.CLAMP_TO_EDGE,
-      force_mipmaps: false,
+      ...frame_param,
       name: 'frame-v',
+    }),
+    horiz_red: spriteCreate({
+      ...frame_param,
+      name: 'frame-h-red',
+    }),
+    vert_red: spriteCreate({
+      ...frame_param,
+      name: 'frame-v-red',
     }),
   };
 
