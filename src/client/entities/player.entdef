@@ -46,6 +46,7 @@ traits:
     filter_mag: NEAREST
     origin: [0.5, 1]
   scale: 0.65
+  do_alpha: true
   tint_colors:
   - - '#E0F058' # Pants
     - '#E098B0' # Skin

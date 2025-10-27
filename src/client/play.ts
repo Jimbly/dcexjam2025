@@ -1945,13 +1945,15 @@ export function play(dt: number): void {
 }
 
 function onPlayerMove(old_pos: Vec2, new_pos: Vec2): void {
-  crawlerMyApplyBatchUpdate({
-    action_id: 'ready',
-    data_assignments: {
-      ready: true,
-    },
-    field: CrawlerController.PLAYER_MOVE_FIELD,
-  }, errorsToChat);
+  if (!buildModeActive()) {
+    crawlerMyApplyBatchUpdate({
+      action_id: 'ready',
+      data_assignments: {
+        ready: true,
+      },
+      field: CrawlerController.PLAYER_MOVE_FIELD,
+    }, errorsToChat);
+  }
   crawlerTurnBasedMovePreStart();
 }
 
