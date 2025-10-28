@@ -17,6 +17,7 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 * equip UI
 * xp and level up
 * "floor level"
+  * don't allow using abilities beyond it
 * respawn / defeat mechanic
 * reward for floor mechanic
 * shops
@@ -29,6 +30,7 @@ Assets to replace
 
 TODO
 * add compass/coords to UI
+* show an un-slotted, but available, quickbar slot as a different color
 * battlezone: option to skip (set other player as ready) if they have not taken an action in 10 seconds; maybe exit to menu if skipped 3 times in a row
 * battlezone: tick even if in background
 * add critical hits/misses to combat system?

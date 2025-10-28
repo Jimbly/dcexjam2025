@@ -8,7 +8,7 @@
     "stairs_out": [
       3,
       8,
-      2
+      1
     ]
   },
   "w": 16,
@@ -1241,8 +1241,8 @@
     {
       "id": "open",
       "walls": [
-        "stairs_out",
-        "open",
+        "solid",
+        "solid",
         "stairs_in",
         "open"
       ]
@@ -1251,14 +1251,14 @@
       "id": "stairs_out",
       "walls": [
         "solid",
-        "solid",
         "door",
+        "solid",
         "solid"
       ],
       "events": [
         {
           "id": "floor_delta",
-          "param": "1"
+          "param": "2"
         }
       ]
     },
@@ -1400,7 +1400,7 @@
     {
       "id": "open",
       "walls": [
-        "open",
+        "solid",
         "open",
         "open",
         "solid"
@@ -1408,6 +1408,123 @@
     },
     {
       "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "stairs_out"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "solid",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
       "walls": [
         "open",
         "open",
@@ -1420,17 +1537,8 @@
       "walls": [
         "open",
         "open",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
+        "solid",
+        "open"
       ]
     },
     {
@@ -1443,96 +1551,6 @@
       ]
     },
     {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "solid",
-        "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
       "id": "open",
       "walls": [
         "open",
@@ -1553,16 +1571,7 @@
     {
       "id": "open",
       "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
+        "solid",
         "open",
         "open",
         "open"
@@ -1573,16 +1582,7 @@
       "walls": [
         "open",
         "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
+        "solid",
         "open"
       ],
       "h": 0.125
@@ -1691,7 +1691,7 @@
     {
       "id": "open",
       "walls": [
-        "open",
+        "solid",
         "solid",
         "open",
         "open"
@@ -1702,7 +1702,7 @@
       "walls": [
         "open",
         "door",
-        "open",
+        "solid",
         "open"
       ]
     },
@@ -1718,7 +1718,7 @@
     {
       "id": "open",
       "walls": [
-        "open",
+        "solid",
         "solid",
         "open",
         "open"
@@ -1729,7 +1729,7 @@
       "walls": [
         "solid",
         "solid",
-        "open",
+        "solid",
         "open"
       ]
     },
@@ -2440,14 +2440,6 @@
         5,
         13,
         0
-      ]
-    },
-    {
-      "type": "enemy0",
-      "pos": [
-        2,
-        9,
-        3
       ]
     }
   ],

@@ -214,7 +214,7 @@ export function main(): void {
       // button_disabled: { name: 'button_disabled', ws: [3, 20, 3], hs: [26] },
       buttonselected_regular: { atlas: 'pixely', name: 'buttonselected' },
       buttonselected_down: { atlas: 'pixely' },
-      buttonselected_rollover: { atlas: 'pixely', name: 'buttonselected' },
+      buttonselected_rollover: { atlas: 'pixely' },
       buttonselected_disabled: { atlas: 'pixely' },
       // panel: { name: 'panel', ws: [3, 2, 3], hs: [3, 10, 3] },
       // menu_entry: { name: 'menu_entry', ws: [4, 5, 4], hs: [13] },

@@ -181,6 +181,7 @@ import {
   PAL_GREEN,
   PAL_RED,
   PAL_WHITE,
+  PAL_YELLOW,
   palette,
   palette_font,
 } from './palette';
@@ -223,6 +224,9 @@ const FRAME_LR_SPLIT = 288;
 
 const BATTLEZONE_RANGE = 3;
 const MAX_TICK_RANGE = 12; // if enemies are more steps than this from a player, use Manhattan dist instead
+const INVENTORY_GRID_W = 8;
+const INVENTORY_GRID_H = 6;
+const INVENTORY_MAX_SIZE = INVENTORY_GRID_W * INVENTORY_GRID_H;
 
 type Entity = EntityClient;
 
@@ -275,8 +279,10 @@ const style_hotkey = fontStyle(null, {
 const style_hotkey_disabled = fontStyle(style_hotkey, {
   outline_color: palette_font[PAL_BLACK - 2],
 });
-const style_potion_count= fontStyle(null, {
+const style_item_count = fontStyle(null, {
   color: palette_font[PAL_BLACK],
+  outline_width: 3.5,
+  outline_color: palette_font[PAL_BLACK - 5],
 });
 const style_mp_cost_over = fontStyle(null, {
   color: palette_font[PAL_RED],
@@ -285,6 +291,11 @@ const style_mp_cost = fontStyle(null, {
   color: palette_font[PAL_CYAN],
   outline_width: 3.5,
   outline_color: palette_font[PAL_CYAN - 2],
+});
+const style_item_level = fontStyle(null, {
+  color: palette_font[PAL_YELLOW],
+  outline_width: 3.5,
+  outline_color: palette_font[PAL_YELLOW - 2],
 });
 
 export function myEnt(): Entity {
@@ -401,6 +412,218 @@ class PauseMenuAction extends UIAction {
 }
 PauseMenuAction.prototype.name = 'PauseMenu';
 PauseMenuAction.prototype.is_overlay_menu = true;
+
+type InventoryButtonParam = {
+  x: number;
+  y: number;
+  z: number;
+  item: Item;
+  show_count: boolean;
+  selected: boolean;
+};
+function inventoryButton(param: InventoryButtonParam): boolean {
+  let { x, y, z, item, show_count, selected } = param;
+  let button_param = {
+    x,
+    y,
+    z,
+    w: BUTTON_W,
+    h: BUTTON_W,
+  };
+  let ret = button({
+    ...button_param,
+    base_name: selected ? 'buttonselected' : undefined,
+    text: ' ',
+  });
+  let skill_details: SkillDetails;
+  // show icon
+  let icon_param = {
+    x: x + 4,
+    y: y + 4,
+    w: 12, h: 12,
+    z: z + 1,
+  };
+  switch (item.type) {
+    case 'book': {
+      skill_details = skillDetails(item);
+      let icon = `spell-${ELEMENT_NAME[skill_details.element]}`;
+      autoAtlas('ui', icon).draw(icon_param);
+    } break;
+    case 'hat': {
+      let icon = `hat-${ELEMENT_NAME[item.subtype + 1]}`;
+      autoAtlas('ui', icon).draw(icon_param);
+    } break;
+    case 'potion':
+      autoAtlas('ui', 'potion').draw(icon_param);
+      break;
+    default:
+      // TODO
+  }
+  const offs = 1;
+  if (item.type !== 'potion') {
+    // show level
+    tiny_font.draw({
+      ...button_param,
+      x: button_param.x + 1 + offs,
+      y: button_param.y - offs,
+      style: style_item_level,
+      size: TINY_FONT_H,
+      z: z + 3,
+      align: ALIGN.HRIGHT,
+      text: `L${item.level}`,
+    });
+  }
+  if (item.type === 'book') {
+    // show mp cost
+    tiny_font.draw({
+      ...button_param,
+      x: button_param.x + 1 - offs,
+      y: button_param.y + offs,
+      style: style_mp_cost,
+      size: TINY_FONT_H,
+      z: z + 3,
+      align: ALIGN.VBOTTOM,
+      text: `${skill_details!.mp_cost}`,
+    });
+  }
+  if (show_count) {
+    // show count
+    tiny_font.draw({
+      ...button_param,
+      x: button_param.x + offs,
+      y: button_param.y + offs,
+      style: style_item_count,
+      size: TINY_FONT_H,
+      z: z + 3,
+      align: ALIGN.VBOTTOM | ALIGN.HRIGHT,
+      text: `${item.count > 99 ? '9+' : item.count}`,
+    });
+  }
+
+  return Boolean(ret);
+}
+
+const INVENTORY_LEFT_COLUMN = 52;
+const INVENTORY_PAD = 4;
+const INVENTORY_BETWEEN_ITEM_COLUMNS = 12;
+const INVENTORY_PAD6 = 6;
+const INVENTORY_BOOKS_XOFFS = INVENTORY_LEFT_COLUMN + INVENTORY_PAD;
+const INVENTORY_HATS_XOFFS = INVENTORY_BOOKS_XOFFS + BUTTON_W + INVENTORY_BETWEEN_ITEM_COLUMNS;
+const INVENTORY_GRID_XOFFS = INVENTORY_HATS_XOFFS + BUTTON_W +
+  INVENTORY_BETWEEN_ITEM_COLUMNS + INVENTORY_PAD6;
+const INVENTORY_W = INVENTORY_GRID_XOFFS +
+  INVENTORY_GRID_W * (BUTTON_W + INVENTORY_PAD) - INVENTORY_PAD +
+  INVENTORY_PAD6 + INVENTORY_PAD6;
+const INVENTORY_GRID_YOFFS = INVENTORY_PAD6 * 2;
+const INVENTORY_H = 300; // TODO
+const INVENTORY_X = floor((game_width - INVENTORY_W) / 2);
+const INVENTORY_Y = floor((game_height - INVENTORY_H) / 2);
+const MAX_LEVEL = 9;
+class InventoryMenuAction extends UIAction {
+  selected_item: [string, number] = ['null', 0];
+  tick(): void {
+    let z = Z.MODAL;
+
+    let my_ent = myEnt();
+    let inventory = my_ent.getData<(Item|null)[]>('inventory', []);
+    let hats = my_ent.getData<(Item|null)[]>('hats', []);
+    let books = my_ent.getData<(Item|null)[]>('books', []);
+    let { selected_item } = this;
+
+    let x0 = INVENTORY_X + INVENTORY_BOOKS_XOFFS;
+    let y0 = INVENTORY_Y + INVENTORY_GRID_YOFFS;
+    for (let ii = 0; ii < MAX_LEVEL; ++ii) {
+      let x = x0;
+      let y = y0 + (BUTTON_W + INVENTORY_PAD) * ii;
+      let idx = MAX_LEVEL - ii - 1;
+      let item = books[idx];
+      let param = {
+        x, y, z, w: BUTTON_W, h: BUTTON_W,
+      };
+      if (!item) {
+        autoAtlas('ui', 'inventory-empty').draw(param);
+      } else {
+        if (inventoryButton({
+          x, y, z,
+          item,
+          show_count: false,
+          selected: selected_item[0] === 'books' && selected_item[1] === idx,
+        })) {
+          this.selected_item = ['books', idx];
+        }
+      }
+    }
+
+    x0 = INVENTORY_X + INVENTORY_HATS_XOFFS;
+    for (let ii = 0; ii < MAX_LEVEL; ++ii) {
+      let x = x0;
+      let y = y0 + (BUTTON_W + INVENTORY_PAD) * ii;
+      let idx = MAX_LEVEL - ii - 1;
+      let item = hats[idx];
+      let param = {
+        x, y, z, w: BUTTON_W, h: BUTTON_W,
+      };
+      if (!item) {
+        autoAtlas('ui', 'inventory-empty').draw(param);
+      } else {
+        if (inventoryButton({
+          x, y, z,
+          item,
+          show_count: false,
+          selected: selected_item[0] === 'hats' && selected_item[1] === idx,
+        })) {
+          this.selected_item = ['hats', idx];
+        }
+      }
+    }
+
+    let idx = 0;
+    x0 = INVENTORY_X + INVENTORY_GRID_XOFFS;
+    y0 = INVENTORY_Y + INVENTORY_GRID_YOFFS;
+    for (let yy = 0; yy < INVENTORY_GRID_H; ++yy) {
+      let y = y0 + yy * (BUTTON_W + INVENTORY_PAD);
+      for (let xx = 0; xx < INVENTORY_GRID_W; ++xx, ++idx) {
+        let x = x0 + xx * (BUTTON_W + INVENTORY_PAD);
+        let item = inventory[idx];
+        let param = {
+          x, y, z, w: BUTTON_W, h: BUTTON_W,
+        };
+        if (!item) {
+          autoAtlas('ui', 'inventory-empty').draw(param);
+        } else {
+          if (inventoryButton({
+            x, y, z,
+            item,
+            show_count: true,
+            selected: selected_item[0] === 'inv' && selected_item[1] === idx,
+          })) {
+            this.selected_item = ['inv', idx];
+          }
+        }
+      }
+    }
+
+    drawBox({
+      x: x0 - INVENTORY_PAD6,
+      y: y0 - INVENTORY_PAD6,
+      z: z - 0.5,
+      w: INVENTORY_GRID_W * (BUTTON_W + INVENTORY_PAD) - INVENTORY_PAD + INVENTORY_PAD6 * 2,
+      h: INVENTORY_GRID_H * (BUTTON_W + INVENTORY_PAD) - INVENTORY_PAD + INVENTORY_PAD6 * 2,
+    }, autoAtlas('ui', 'panel-overlay'));
+
+    drawBox({
+      x: INVENTORY_X - 4,
+      y: INVENTORY_Y - 4,
+      w: INVENTORY_W + 8,
+      h: INVENTORY_H + 8,
+      z: z - 1,
+    }, autoAtlas('ui', 'panel-thick'));
+    // drawRect(0, 0, game_width, game_height, z - 1, [0, 0, 0, 0.5]);
+    menuUp();
+  }
+}
+InventoryMenuAction.prototype.name = 'InventoryMenu';
+InventoryMenuAction.prototype.is_overlay_menu = true;
 
 function v2manhattan(a: ROVec2, b: ROVec2): number {
   return abs(a[0] - b[0]) + abs(a[1] - b[1]);
@@ -670,7 +893,7 @@ function battleZoneDebug(): void {
   let y = 40;
   let z = Z.DEBUG;
   let my_ent = myEntOptional();
-  if (!my_ent || engine.defines.LEVEL_GEN) {
+  if (!my_ent || engine.defines.LEVEL_GEN || cur_action) {
     return;
   }
   const text_height = uiTextHeight();
@@ -1041,7 +1264,7 @@ function drawBattleZone(): void {
       w: BATTLEZONE_W,
       h: 25, // is_bz ? 25: 23,
     }, autoAtlas('ui', 'roundpanel'));
-    autoAtlas('ui', 'portraits-0').draw({
+    autoAtlas('ui', 'portraits-4').draw({
       x: x + 5,
       y: y + 3, z,
       w: 12,
@@ -1655,12 +1878,12 @@ function doQuickbar(): void {
   let count = numHealingPotions();
   tiny_font.draw({
     ...heal_button_param,
-    x: heal_button_param.x + 1,
-    style: style_potion_count,
+    x: heal_button_param.x,
+    style: style_item_count ,
     size: TINY_FONT_H,
     z: Z.UI + 2,
-    align: ALIGN.VBOTTOM,
-    text: `${count > 9 ? '+' : count}`,
+    align: ALIGN.VBOTTOM | ALIGN.HRIGHT,
+    text: `${count > 99 ? '9+' : count}`,
   });
 }
 
@@ -1928,7 +2151,7 @@ function playCrawl(): void {
       no_visible_ui = false;
       if (frame_map_view) {
         z = Z.MAP + 1;
-      } else if (cur_action?.name === 'PauseMenu') {
+      } else if (cur_action) {
         z = Z.MODAL + 1;
       } else {
         z = Z.MENUBUTTON;
@@ -1978,10 +2201,7 @@ function playCrawl(): void {
   if (!build_mode && !controller.ignoreGameplay()) {
     //button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]);
     crawlerButton(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B]);
-    crawlerButton(0, 1, 7, 'inv', [KEYS.I], [PAD.Y]); // , inventory_up);
-    // if (up_edge.inv) {
-    //   inventory_up = !inventory_up;
-    // }
+    crawlerButton(0, 1, 7, 'inv', [KEYS.I], [PAD.Y], cur_action?.name === 'InventoryMenu');
   }
 
   cur_action?.tick();
@@ -2008,10 +2228,6 @@ function playCrawl(): void {
   button_x0 += BUTTON_W + 4;
 
   // Check for intentional events
-  // if (!build_mode) {
-  //   button(2, -3, 7, 'inventory', [KEYS.I], [PAD.X], inventory_up);
-  // }
-  //
   // if (up_edge.inventory) {
   //   inventory_up = !inventory_up;
   // }
@@ -2060,7 +2276,7 @@ function playCrawl(): void {
       if (crawlerCommWant()) {
         return profilerStopFunc();
       }
-      // inventory_up = false;
+      uiAction(null);
     }
   }
 
@@ -2076,11 +2292,17 @@ function playCrawl(): void {
         mapViewSetActive(false);
         // inventory_up = false;
       }
-      if (cur_action?.name === 'PauseMenu') {
+      if (cur_action) { //?.name === 'PauseMenu') {
         uiAction(null);
       }
     } else {
       uiAction(new PauseMenuAction());
+    }
+  } else if (up_edge.inv) {
+    if (menu_up) {
+      uiAction(null);
+    } else {
+      uiAction(new InventoryMenuAction());
     }
   }
 
@@ -2207,7 +2429,7 @@ function onPlayerMove(old_pos: Vec2, new_pos: Vec2): void {
   crawlerTurnBasedMovePreStart();
 }
 
-function pickupOnClient(item: Item): void {
+function pickupOnClient(item: Item): boolean {
   let my_ent = myEnt();
   let inventory = my_ent.data.inventory;
   let idx = -1;
@@ -2228,6 +2450,12 @@ function pickupOnClient(item: Item): void {
     if (idx === -1) {
       idx = open_slot;
     }
+  }
+
+  if (idx >= INVENTORY_MAX_SIZE) {
+    playUISound('msg_out_err');
+    statusPush('Cannot pickup: Inventory full');
+    return false;
   }
 
   let ops: ActionInventoryOp[] = [];
@@ -2259,6 +2487,7 @@ function pickupOnClient(item: Item): void {
     },
   }, errorsToChat);
   statusPush(`Picked up ${itemName(item)}`);
+  return true;
 }
 
 function onEnterCell(pos: Vec2): void {
@@ -2271,10 +2500,17 @@ function onEnterCell(pos: Vec2): void {
   chests.forEach(function (chest) {
     let contents = chest.data.contents;
     assert(contents && contents.length);
-    for (let ii = 0; ii < contents.length; ++ii) {
-      pickupOnClient(contents[ii]);
+    let all_picked_up = true;
+    for (let ii = contents.length - 1; ii >= 0; --ii) {
+      if (pickupOnClient(contents[ii])) {
+        ridx(contents, ii);
+      } else {
+        all_picked_up = false;
+      }
     }
-    entity_manager.deleteEntity(chest.id, 'pickup');
+    if (all_picked_up) {
+      entity_manager.deleteEntity(chest.id, 'pickup');
+    }
   });
   crawlerTurnBasedMoveFinish(pos);
 }
@@ -2303,7 +2539,6 @@ function playInitOffline(): void {
 }
 
 function playInitEarly(room: ClientChannelWorker): void {
-
   // let room_public_data = room.getChannelData('public') as { seed: string };
   // game_state.setSeed(room_public_data.seed);
 
