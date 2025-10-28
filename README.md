@@ -15,8 +15,8 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 
 **TODO**
 * combat fun
-  * try with level 2 and 2 skills
   * add range 2 skill
+  * do relayout, add quickbar, move hp/mana if needed
 * drop and pickup loot
 * equip UI?
 * add chests with potions and gear
@@ -33,6 +33,7 @@ TODO
 * animate/grow critters on attack / hit
 * fix two hits on the same frame not showing floaters well
 * bug: visibility is different before/after turning camera/moving forward and back if directly facing a wall
+  * relatedly: moving backwards through a door and I could see the enemy on the other side
   * relatedly: always show monster behind (and diagonals?)
 * Deal with more than 4 players in battlezone list (scrollbar, dither, hide?)
 * click to move - ensure stop when enter (active?) battlezone

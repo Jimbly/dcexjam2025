@@ -39,7 +39,6 @@ export function gameEntityTraitsCommonStartup(
           // player-only:
           xp: 0,
           mp: 0,
-          mp_max: 0,
         };
         let stats = ent.data.stats;
         if (opts.element) {

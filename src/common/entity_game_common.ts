@@ -59,7 +59,6 @@ export type StatsData = {
   hp: number;
   hp_max: number;
   mp: number;
-  mp_max: number;
   xp: number; // just players
   level: number;
   attack: number; // just monsters

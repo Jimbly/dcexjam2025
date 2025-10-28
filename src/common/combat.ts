@@ -80,6 +80,10 @@ export function xpToLevelUp(level: number): number {
   return 100;
 }
 
+export function maxMP(level: number): number {
+  return 5 + (level - 1) * 2;
+}
+
 export type SkillDetails = {
   mp_cost: number;
   element: Element;

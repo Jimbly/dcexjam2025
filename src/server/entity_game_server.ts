@@ -61,9 +61,8 @@ const default_player_stats: StatsData = {
   hp: 50,
   hp_max: 50,
   mp: 5,
-  mp_max: 5,
   xp: 0,
-  level: 1,
+  level: 2,
   attack: 0,
   defense: 0,
 };
@@ -110,6 +109,11 @@ const default_player_fields: Partial<EntityGameDataCommon> = {
   books: [{
     type: 'book',
     subtype: 0,
+    level: 2,
+    count: 1,
+  }, {
+    type: 'book',
+    subtype: 1,
     level: 1,
     count: 1,
   }],

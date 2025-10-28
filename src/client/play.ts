@@ -804,7 +804,7 @@ function drawStats(): void {
   let hp = me.getData('stats.hp', 0);
   let hp_max = me.getData('stats.hp_max', 1);
   let mp = me.getData('stats.mp', 0);
-  let mp_max = me.getData('stats.mp_max', 1);
+  let mp_max = me.maxMP();
   font.draw({
     style: style_stats,
     x: x + STATS_X_INDENT,
@@ -1041,7 +1041,7 @@ function drawBattleZone(): void {
       drawBar(bar_sprites.doublehp, x + 5, y + 16, z, 44, 6,
         ent.getData('stats.hp', 0) / ent.getData('stats.hp_max', 1));
       drawBar(bar_sprites.doublemp, x + 5, y + 16, z, 44, 6,
-        ent.getData('stats.mp', 0) / ent.getData('stats.mp_max', 1));
+        ent.getData('stats.mp', 0) / ent.maxMP());
 
       if (me.battle_zone) {
         tiny_font.draw({
@@ -1058,7 +1058,7 @@ function drawBattleZone(): void {
       drawBar(bar_sprites.doublehp, x + 5, y + 16, z, 44, 6,
         ent.getData('stats.hp', 0) / ent.getData('stats.hp_max', 1));
       drawBar(bar_sprites.doublemp, x + 5, y + 16, z, 44, 6,
-        ent.getData('stats.mp', 0) / ent.getData('stats.mp_max', 1));
+        ent.getData('stats.mp', 0) / ent.maxMP());
       // drawBar(bar_sprites.tinyhealth, x + 5, y + 16, z, 44, 4,
       //   ent.getData('stats.hp', 0) / ent.getData('stats.hp_max', 1));
     }
@@ -1287,7 +1287,7 @@ function doAttack(target_ent: Entity, action: Item | 'basic'): void {
     pred_id,
     executor: myEntID(),
   };
-  let new_mp = clamp(my_ent.getData('stats.mp', 0) - mp_cost, 0, my_ent.getData('stats.mp_max', 1));
+  let new_mp = clamp(my_ent.getData('stats.mp', 0) - mp_cost, 0, my_ent.maxMP());
   crawlerMyApplyBatchUpdate({
     action_id: 'attack',
     payload,

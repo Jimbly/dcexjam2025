@@ -10,6 +10,7 @@ import {
   NetErrorCallback,
 } from 'glov/common/types.js';
 import type { ROVec2 } from 'glov/common/vmath';
+import { maxMP } from '../common/combat';
 import { EntityCrawlerDataCommon, entSamePos } from '../common/crawler_entity_common';
 import {
   entityGameCommonClass,
@@ -134,6 +135,11 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
   }
   isPlayer(): boolean {
     return this.is_player;
+  }
+
+  maxMP(): number {
+    let level = this.getData('stats.level', 1);
+    return maxMP(level);
   }
 
   onCreate(is_initial: boolean): number {
