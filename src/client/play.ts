@@ -50,6 +50,7 @@ import {
 import * as urlhash from 'glov/client/urlhash';
 import { webFSAPI } from 'glov/client/webfs';
 import { EntityManagerEvent } from 'glov/common/entity_base_common';
+import { DISPLAY_NAME_MAX_VISUAL_SIZE } from 'glov/common/net_common';
 import {
   EntityID,
 } from 'glov/common/types';
@@ -1091,13 +1092,15 @@ function drawBattleZone(): void {
       });
     }
     let name_x = x + 32;
+    let bz_width = icon_x - name_x;
+    assert.equal(bz_width, DISPLAY_NAME_MAX_VISUAL_SIZE.width);
     title_font.draw({
       size: TITLE_FONT_H,
       color: palette_font[PAL_WHITE + 1],
       x: name_x,
       y,
       z,
-      w: icon_x - name_x,
+      w: bz_width,
       align: ALIGN.HFIT,
       text: ent.data.display_name || '???',
     });

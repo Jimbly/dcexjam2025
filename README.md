@@ -20,6 +20,7 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 * respawn / defeat mechanic
 * reward for floor mechanic
 * shops
+* player creation / renaming
 
 Assets to replace
 * panel / status message background
