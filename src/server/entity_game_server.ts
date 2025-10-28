@@ -108,12 +108,12 @@ const default_player_fields: Partial<EntityGameDataCommon> = {
   // }],
   books: [{
     type: 'book',
-    subtype: 0,
+    subtype: 1,
     level: 2,
     count: 1,
   }, {
     type: 'book',
-    subtype: 1,
+    subtype: 0,
     level: 1,
     count: 1,
   }],

@@ -11,7 +11,7 @@ L2 S2 6MP Basic+14dam = 7/T Fire
 L3 S0 4MP Basic+11dam = 7.2/T Earth
 L3 S1 5MP Basic+13dam = 7.16/T Ice
 L3 S2 7MP Basic+18dam = 7.25/T Fire
-Also want range=2 attacks
+Also want range=2 attacks? need particles and to change hunt/door behavior
 
 Healing from potions, which cost money (OMP -> fewer potions used)
 

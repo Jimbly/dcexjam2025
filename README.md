@@ -14,9 +14,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* combat fun
-  * add range 2 skill
-  * add quickbar
 * drop and pickup loot
 * equip UI?
 * add chests with potions and gear
@@ -28,6 +25,8 @@ Assets to replace
 
 TODO
 * add compass/coords to UI
+* battlezone: option to skip (set other player as ready) if they have not taken an action in 10 seconds; maybe exit to menu if skipped 3 times in a row
+* battlezone: tick even if in background
 * add critical hits/misses to combat system?
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
@@ -42,6 +41,7 @@ TODO
 * hide cheating commands like entset, stat
 * W on map screen is selecting Exit button, not moving player
 * Space on map screen after exit button selected is activating Wait, not closing the window
+* change W icon to basic attack when engaged
 
 Credits
 =======

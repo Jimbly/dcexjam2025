@@ -28,9 +28,12 @@ import {
 import { SimpleMenu, simpleMenuCreate } from 'glov/client/simple_menu';
 import {
   Sprite,
+  spriteClipPop,
+  spriteClipPush,
   spriteCreate,
 } from 'glov/client/sprites';
 import {
+  button,
   ButtonStateString,
   buttonText,
   drawBox,
@@ -63,6 +66,7 @@ import {
   basicAttackDamage,
   POTION_HEAL_AMOUNT,
   skillAttackDamage,
+  SkillDetails,
   skillDetails,
   xpToLevelUp,
 } from '../common/combat';
@@ -78,6 +82,7 @@ import {
   ActionInventoryOp,
   ActionInventoryPayload,
   BroadcastDataDstat,
+  ELEMENT_NAME,
   Item,
   StatsData,
 } from '../common/entity_game_common';
@@ -164,6 +169,7 @@ import { tinyFont } from './main';
 import { tickMusic } from './music';
 import {
   PAL_BLACK,
+  PAL_CYAN,
   PAL_GREEN,
   PAL_RED,
   PAL_WHITE,
@@ -251,6 +257,26 @@ const style_text = fontStyle(null, {
   color: palette_font[PAL_WHITE],
   outline_width,
   outline_color: palette_font[PAL_BLACK],
+});
+
+const style_hotkey = fontStyle(null, {
+  color: palette_font[PAL_BLACK],
+  outline_width: 3.5,
+  outline_color: palette_font[PAL_BLACK - 3],
+});
+const style_hotkey_disabled = fontStyle(style_hotkey, {
+  outline_color: palette_font[PAL_BLACK - 2],
+});
+const style_potion_count= fontStyle(null, {
+  color: palette_font[PAL_BLACK],
+});
+const style_mp_cost_over = fontStyle(null, {
+  color: palette_font[PAL_RED],
+});
+const style_mp_cost = fontStyle(null, {
+  color: palette_font[PAL_CYAN],
+  outline_width: 3.5,
+  outline_color: palette_font[PAL_CYAN - 2],
 });
 
 export function myEnt(): Entity {
@@ -741,7 +767,7 @@ function drawBar(
   x: number, y: number, z: number,
   w: number, h: number,
   p: number,
-): void {
+): number {
   p = min(p, 1);
   const MIN_VIS_W = bar.min_width;
   let full_w = round(p * w);
@@ -772,6 +798,7 @@ function drawBar(
       z: z + 1,
     }, bar.empty, 1);
   }
+  return full_w;
 }
 
 export function drawHealthBar(
@@ -833,28 +860,46 @@ function drawStats(): void {
   z = Z.STATSBARS;
   x = 12*3;
   y = QUICKBAR_FRAME_Y;
-  tiny_font.draw({
+  let hp_param = {
     size: TINY_FONT_H,
-    color: palette_font[PAL_BLACK],
     x, y, z: z + 1,
     w: HP_BAR_W,
     h: HP_BAR_H,
     align: ALIGN.HVCENTER,
     text: `HP ${hp}/${hp_max}`,
+  };
+  tiny_font.draw({
+    ...hp_param,
+    color: palette_font[PAL_BLACK],
   });
-  drawBar(bar_sprites.healthbar, x, y, z, HP_BAR_W, HP_BAR_H, hp/hp_max);
+  let full_w = drawBar(bar_sprites.healthbar, x, y, z, HP_BAR_W, HP_BAR_H, hp/hp_max);
+  spriteClipPush(z + 2, x + full_w - 2, y, HP_BAR_W, HP_BAR_H);
+  tiny_font.draw({
+    ...hp_param,
+    color: palette_font[PAL_WHITE + 2],
+  });
+  spriteClipPop();
   x += HP_BAR_W + 12 * 2;
 
-  tiny_font.draw({
+  let mp_param = {
     size: TINY_FONT_H,
-    color: palette_font[PAL_BLACK],
     x, y, z: z + 1,
     w: HP_BAR_W,
     h: HP_BAR_H,
     align: ALIGN.HVCENTER,
     text: `MP ${mp}/${mp_max}`,
+  };
+  tiny_font.draw({
+    ...mp_param,
+    color: palette_font[PAL_BLACK],
   });
-  drawBar(bar_sprites.mpbar, x, y, z, HP_BAR_W, HP_BAR_H, mp/mp_max);
+  full_w = drawBar(bar_sprites.mpbar, x, y, z, HP_BAR_W, HP_BAR_H, mp/mp_max);
+  spriteClipPush(z + 2, x + full_w - 2, y, HP_BAR_W, HP_BAR_H);
+  tiny_font.draw({
+    ...mp_param,
+    color: palette_font[PAL_WHITE + 2],
+  });
+  spriteClipPop();
 
 }
 
@@ -1336,6 +1381,18 @@ function bumpEntityCallback(target_ent_id: EntityID): void {
   doAttack(target_ent, 'basic');
 }
 
+function numHealingPotions(): number {
+  let my_ent = myEnt();
+  let inventory = my_ent.getData<(Item|null)[]>('inventory') || [];
+  for (let ii = 0; ii < inventory.length; ++ii) {
+    let item = inventory[ii];
+    if (item && item.type === 'potion') {
+      return item.count;
+    }
+  }
+  return 0;
+}
+
 function doHeal(): void {
   let my_ent = myEnt();
   let inventory = my_ent.getData<(Item|null)[]>('inventory') || [];
@@ -1398,6 +1455,9 @@ function doHeal(): void {
   addFloater(my_ent.id, `+${new_hp - hp}`, 'heal');
 }
 
+const QUICKBAR_X = 14;
+const QUICKBAR_Y = 218;
+
 function doQuickbar(): void {
   let me = myEnt();
   let books = me.data.books || [];
@@ -1424,11 +1484,14 @@ function doQuickbar(): void {
     all_disabled = true;
   }
 
-  for (let ii = 0; ii < 10; ++ii) {
+  for (let ii = 1; ii <= 10; ++ii) {
     let disabled = all_disabled;
     let action: Item | 'basic' = 'basic';
-    if (ii === 0) {
+    let icon: string | undefined;
+    let skill_details: SkillDetails | undefined;
+    if (ii === 10) {
       action = 'basic';
+      icon = 'spell-basic';
     } else {
       let item_slot = ii - 1;
       if (item_slot >= floor_level) {
@@ -1437,19 +1500,60 @@ function doQuickbar(): void {
         disabled = true;
       } else {
         action = books[item_slot];
+        skill_details = skillDetails(action);
+        icon = `spell-${ELEMENT_NAME[skill_details.element]}`;
       }
     }
     let is_attack = true;
     if (is_attack && !can_attack) {
       disabled = true;
     }
-    if (!disabled) {
-      if (keyDownEdge(KEYS[ii === 9 ? '0' : `${ii + 1}` as '1'])) {
-        // activate!
+    let button_param = {
+      x: QUICKBAR_X + (BUTTON_W + 4) * (ii - 1),
+      y: QUICKBAR_Y,
+      w: BUTTON_W,
+      h: BUTTON_W,
+      shrink: 12/16,
+    };
+    let hotkey = `${ii === 10 ? 0 : ii}` as '1' | '2';
+    let activate = false;
+    if (!icon) {
+      button({
+        ...button_param,
+        text: ' ',
+        disabled: true,
+      });
+    } else {
+      activate = Boolean(button({
+        ...button_param,
+        img: autoAtlas('ui', icon),
+        hotkey: KEYS[hotkey],
+      }));
+    }
+    tiny_font.draw({
+      ...button_param,
+      style: icon ? style_hotkey : style_hotkey_disabled,
+      size: TINY_FONT_H,
+      z: Z.UI + 2,
+      align: ALIGN.HRIGHT,
+      text: hotkey,
+    });
+    if (skill_details && skill_details.mp_cost) {
+      tiny_font.draw({
+        ...button_param,
+        x: button_param.x + 1,
+        style: skill_details.mp_cost > myEnt().getData('stats.mp', 0) ? style_mp_cost_over : style_mp_cost,
+        size: TINY_FONT_H,
+        z: Z.UI + 2,
+        align: ALIGN.VBOTTOM,
+        text: `${skill_details.mp_cost}`,
+      });
+    }
+    if (activate) {
+      if (!disabled) {
         if (is_attack) {
           if (action !== 'basic') {
-            let skill_details = skillDetails(action);
-            let { mp_cost } = skill_details;
+            let { mp_cost } = skill_details!;
             if (mp_cost > myEnt().getData('stats.mp', 0)) {
               playUISound('msg_out_err');
               statusPush('Insufficient MP').counter = 2500;
@@ -1459,17 +1563,58 @@ function doQuickbar(): void {
           assert(target_ent);
           doAttack(target_ent, action);
         }
+      } else if (!canIssueAction()) {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        onDisabledAction();
+      } else if (all_disabled) {
+        playUISound('msg_out_err');
+        statusSet('onDisabledAction', 'Cannot attack while moving').counter = 2500;
+      } else if (!can_attack) {
+        playUISound('msg_out_err');
+        statusSet('onDisabledAction', 'No target for your attack').counter = 2500;
+      } else {
+        playUISound('msg_out_err');
+        statusSet('onDisabledAction', 'Unknown error');
       }
     }
   }
 
-  if (keyDownEdge(KEYS.H)) {
+  let heal_button_param = {
+    x: QUICKBAR_X + (BUTTON_W + 4) * 10,
+    y: QUICKBAR_Y,
+    w: BUTTON_W,
+    h: BUTTON_W,
+  };
+  if (button({
+    ...heal_button_param,
+    shrink: 12/16,
+    hotkey: KEYS.H,
+    img: autoAtlas('ui', 'potion'),
+  })) {
     if (all_disabled) {
       onDisabledAction(); // eslint-disable-line @typescript-eslint/no-use-before-define
     } else {
       doHeal();
     }
   }
+  tiny_font.draw({
+    ...heal_button_param,
+    style: style_hotkey,
+    size: TINY_FONT_H,
+    z: Z.UI + 2,
+    align: ALIGN.HRIGHT,
+    text: 'H',
+  });
+  let count = numHealingPotions();
+  tiny_font.draw({
+    ...heal_button_param,
+    x: heal_button_param.x + 1,
+    style: style_potion_count,
+    size: TINY_FONT_H,
+    z: Z.UI + 2,
+    align: ALIGN.VBOTTOM,
+    text: `${count > 9 ? '+' : count}`,
+  });
 }
 
 const MOVE_BUTTONS_Y0 = 302;
@@ -1721,7 +1866,7 @@ function playCrawl(): void {
   let disabled = controller.hasMoveBlocker();
   let disabled_action = !canIssueAction();
 
-  function button(
+  function crawlerButton(
     rx: number, ry: number,
     frame: number,
     key: ValidKeys,
@@ -1780,13 +1925,13 @@ function playCrawl(): void {
   if (menu_up) {
     menu_pads.push(PAD.B, PAD.BACK);
   }
-  button(0, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, cur_action?.name === 'PauseMenu');
+  crawlerButton(0, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, cur_action?.name === 'PauseMenu');
   button_x0 = 331;
   button_y0 = MOVE_BUTTONS_Y0;
   if (!build_mode && !controller.ignoreGameplay()) {
     //button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]);
-    button(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B]);
-    button(0, 1, 7, 'inv', [KEYS.I], [PAD.Y]); // , inventory_up);
+    crawlerButton(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B]);
+    crawlerButton(0, 1, 7, 'inv', [KEYS.I], [PAD.Y]); // , inventory_up);
     // if (up_edge.inv) {
     //   inventory_up = !inventory_up;
     // }

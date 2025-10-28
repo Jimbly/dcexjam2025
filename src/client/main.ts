@@ -26,6 +26,7 @@ import {
   markdownImageRegisterAutoAtlas,
 } from 'glov/client/markdown_renderables';
 import { netInit } from 'glov/client/net';
+import { scrollAreaSetPixelScale } from 'glov/client/scroll_area';
 import { settingsSet } from 'glov/client/settings';
 import { shadersSetInternalDefines } from 'glov/client/shaders';
 import { spriteSetGet } from 'glov/client/sprite_sets';
@@ -259,6 +260,7 @@ export function main(): void {
   ui.setModalSizes(0, round(game_width * 0.8), round(game_height * 0.23), 0, 0);
   ui.setFontHeight(11);
   ui.setButtonHeight(20);
+  scrollAreaSetPixelScale(1);
   ui.setPanelPixelScale(1);
   uiSetPanelColor([1, 1, 1, 1]);
   // ui.uiSetFontStyleFocused(fontStyle(ui.uiGetFontStyleFocused(), {

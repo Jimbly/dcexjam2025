@@ -1,0 +1,6 @@
+---
+tile_res: 12
+tiles:
+  spell-fire: [1,0]
+  spell-ice: [2,0]
+  spell-earth: [0,1]

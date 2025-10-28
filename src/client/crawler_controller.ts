@@ -2026,8 +2026,8 @@ export class CrawlerController {
     ): void {
       let z;
       let ret = crawlerOnScreenButton({
-        x: button_x0 + (button_w + 4) * rx,
-        y: button_y0 + (button_w + 4) * ry,
+        x: button_x0 + (button_w + 4) * rx, // DCJAM
+        y: button_y0 + (button_w + 4) * ry, // DCJAM
         z,
         w: button_w, h: button_w,
         frame,
