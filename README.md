@@ -16,7 +16,7 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 **TODO**
 * combat fun
   * add range 2 skill
-  * do relayout, add quickbar, move hp/mana if needed
+  * add quickbar
 * drop and pickup loot
 * equip UI?
 * add chests with potions and gear
@@ -27,6 +27,7 @@ Assets to replace
 * placeholder sounds in play.ts
 
 TODO
+* add compass/coords to UI
 * add critical hits/misses to combat system?
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit

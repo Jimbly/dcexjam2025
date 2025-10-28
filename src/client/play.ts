@@ -188,20 +188,24 @@ declare module 'glov/client/settings' {
 
 // const ATTACK_WINDUP_TIME = 1000;
 // const MINIMAP_RADIUS = 3;
-const MINIMAP_X = 332;
+const MINIMAP_X = 322;
 const MINIMAP_Y = 8;
-const MINIMAP_W = 80;
-const MINIMAP_H = 68;
+const MINIMAP_W = 76;
+const MINIMAP_H = 76;
 const MINIMAP_STEP_SIZE = 12;
 const MINIMAP_TILE_SIZE = MINIMAP_STEP_SIZE * 12/12;
 const FULLMAP_STEP_SIZE = MINIMAP_STEP_SIZE;
 const FULLMAP_TILE_SIZE = FULLMAP_STEP_SIZE * 12/12;
 const COMPASS_X = MINIMAP_X;
 const COMPASS_Y = MINIMAP_Y + MINIMAP_H;
-const BUTTON_W = 18;
+const BUTTON_W = 20;
 const FONT_HEIGHT = 11;
 const TINY_FONT_H = 8;
 const TITLE_FONT_H = 14;
+const QUICKBAR_FRAME_Y = VIEWPORT_Y0 + render_height - 3;
+const FRAME_HORIZ_SPLIT = 240;
+const FRAME_VERT_SPLIT = 276;
+const FRAME_LR_SPLIT = 288;
 
 const BATTLEZONE_RANGE = 3;
 const MAX_TICK_RANGE = 12; // if enemies are more steps than this from a player, use Manhattan dist instead
@@ -786,18 +790,18 @@ export function drawHealthBar(
 
 const HP_BAR_H = 12;
 
+const HP_BAR_W = 96;
 const STATS_BAR_W = BUTTON_W * 3 + 4;
 const STATS_X_INDENT = 2;
 const STATS_Y_PAD = 4;
 const STATS_XP_BAR_H = 4;
-const STATS_BAR_H = 12;
 const style_stats = fontStyleColored(null, palette_font[PAL_WHITE + 1]);
 function drawStats(): void {
   let me = myEnt();
   let x = VIEWPORT_X0 + render_width + 16;
-  let y = 86;
+  let y = FRAME_HORIZ_SPLIT + 12 + 6;
   let z = Z.UI;
-  drawRect(332, 80, 411, 243, z - 1, palette[PAL_BLACK]);
+  // drawRect(332, 80, 411, 243, z - 1, palette[PAL_BLACK]);
   let level = me.getData('stats.level', 0);
   let xp = me.getData('stats.xp', 0);
   let next_xp = xpToLevelUp(level);
@@ -823,27 +827,34 @@ function drawStats(): void {
   y += STATS_XP_BAR_H;
   y += STATS_Y_PAD;
 
-  font.draw({
-    style: style_stats,
-    x: x + STATS_X_INDENT,
-    y,
+  // TODO: gold and floor level
+
+
+  z = Z.STATSBARS;
+  x = 12*3;
+  y = QUICKBAR_FRAME_Y;
+  tiny_font.draw({
+    size: TINY_FONT_H,
+    color: palette_font[PAL_BLACK],
+    x, y, z: z + 1,
+    w: HP_BAR_W,
+    h: HP_BAR_H,
+    align: ALIGN.HVCENTER,
     text: `HP ${hp}/${hp_max}`,
   });
-  y += FONT_HEIGHT;
-  drawBar(bar_sprites.healthbar, x, y, z, STATS_BAR_W, STATS_BAR_H, hp/hp_max);
-  y += STATS_BAR_H;
-  y += STATS_Y_PAD;
+  drawBar(bar_sprites.healthbar, x, y, z, HP_BAR_W, HP_BAR_H, hp/hp_max);
+  x += HP_BAR_W + 12 * 2;
 
-  font.draw({
-    style: style_stats,
-    x: x + STATS_X_INDENT,
-    y,
+  tiny_font.draw({
+    size: TINY_FONT_H,
+    color: palette_font[PAL_BLACK],
+    x, y, z: z + 1,
+    w: HP_BAR_W,
+    h: HP_BAR_H,
+    align: ALIGN.HVCENTER,
     text: `MP ${mp}/${mp_max}`,
   });
-  y += FONT_HEIGHT;
-  drawBar(bar_sprites.mpbar, x, y, z, STATS_BAR_W, STATS_BAR_H, mp/mp_max);
-  y += STATS_BAR_H;
-  y += STATS_Y_PAD;
+  drawBar(bar_sprites.mpbar, x, y, z, HP_BAR_W, HP_BAR_H, mp/mp_max);
 
 }
 
@@ -895,12 +906,14 @@ function drawStatsOverViewport(): void {
   }
 }
 
-const BATTLEZONE_W = 134;
+const BATTLEZONE_HPAD = 2;
+const BATTLEZONE_X = FRAME_VERT_SPLIT + 12 + BATTLEZONE_HPAD;
+const BATTLEZONE_W = game_width - 12 - BATTLEZONE_X - BATTLEZONE_HPAD;
 let battlezone_is_waiting = false;
 let battlezone_is_waiting_time = 0;
 function drawBattleZone(): void {
-  let x = 275;
-  let y = 252;
+  let x = BATTLEZONE_X;
+  let y = MINIMAP_Y + MINIMAP_H + 8;
   let z = Z.UI;
 
   tiny_font.draw({
@@ -1459,8 +1472,7 @@ function doQuickbar(): void {
   }
 }
 
-const MOVE_BUTTONS_X0 = 343;
-const MOVE_BUTTONS_Y0 = 197;
+const MOVE_BUTTONS_Y0 = 302;
 
 
 function useNoText(): boolean {
@@ -1471,12 +1483,13 @@ let sprite_corner = autoAtlas('ui', 'frame-corner-silver');
 function drawFrames(): void {
   let z = Z.FRAMES;
 
-  [0, 240, game_height - 12].forEach(function (y) {
-    sprite_corner.draw({
-      x: 0, y, z: z + 1,
-      w: 12, h: 12,
-    });
-    if (y !== 240) {
+  // full-height bars
+  [0, FRAME_HORIZ_SPLIT, game_height - 12].forEach(function (y) {
+    if (y !== FRAME_HORIZ_SPLIT) {
+      sprite_corner.draw({
+        x: 0, y, z: z + 1,
+        w: 12, h: 12,
+      });
       sprite_corner.draw({
         x: game_width - 12, y, z: z + 1,
         w: 12, h: 12,
@@ -1491,19 +1504,39 @@ function drawFrames(): void {
       uvs: [0, 0, (game_width - 24)/512, 1],
     });
   });
-  frame_sprites.horiz.draw({
-    x: 324+12,
-    y: 72,
-    z,
-    w: game_width - 324 - 24,
-    h: 12,
-    uvs: [0, 0, (game_width - 324 - 24)/512, 1],
+  // partial-width bars
+  [
+    [12, QUICKBAR_FRAME_Y, FRAME_VERT_SPLIT - 12, 1],
+    [FRAME_VERT_SPLIT+12, FRAME_LR_SPLIT, (game_width - FRAME_VERT_SPLIT - 24), 0],
+    [MINIMAP_X + 2, MINIMAP_Y + MINIMAP_H - 4, MINIMAP_W - 4, 0],
+  ].forEach(function (coords) {
+    if (coords[3]) {
+      sprite_corner.draw({
+        x: coords[0] - 12, y: coords[1], z: z + 1,
+        w: 12, h: 12,
+      });
+      sprite_corner.draw({
+        x: coords[0] + coords[2], y: coords[1], z: z + 1,
+        w: 12, h: 12,
+      });
+    }
+    frame_sprites.horiz.draw({
+      x: coords[0],
+      y: coords[1],
+      z,
+      w: coords[2],
+      h: 12,
+      uvs: [0, 0, (coords[2])/512, 1],
+    });
   });
+  // partial- and full-height bars
   [
     [0, 12, game_height - 24],
-    [324, 12, 228],
+    [FRAME_VERT_SPLIT, 12, game_height - 24],
     [game_width - 12, 12, game_height - 24],
-    [264, 252-6, 96+6, 6/512],
+    // [264, 252-6, 96+6, 6/512],
+    [MINIMAP_X - 8, MINIMAP_Y + 2, MINIMAP_H - 4],
+    [MINIMAP_X + MINIMAP_W - 4, MINIMAP_Y + 2, MINIMAP_H - 4],
   ].forEach(function (coords) {
     frame_sprites.vert.draw({
       x: coords[0],
@@ -1515,9 +1548,10 @@ function drawFrames(): void {
     });
   });
 
+  // extra solid corners
   [
-    [324,0],
-    [264, game_height - 12],
+    [FRAME_VERT_SPLIT,0],
+    [FRAME_VERT_SPLIT, game_height - 12],
   ].forEach(function (coords) {
     sprite_corner.draw({
       x: coords[0],
@@ -1529,10 +1563,13 @@ function drawFrames(): void {
   });
 
   let gems: [number, number, string][] = [
-    [324,72,'frame-t-right'],
-    [game_width - 12,72,'frame-t-left'],
-    [324,240,'frame-t-up'],
-    [game_width - 12,240,'frame-t-left'],
+    [MINIMAP_X - 8, 0, 'frame-t-down'],
+    [MINIMAP_X + MINIMAP_W - 4, 0, 'frame-t-down'],
+    [FRAME_VERT_SPLIT,FRAME_HORIZ_SPLIT,'frame-t-plus'],
+    [game_width - 12,FRAME_HORIZ_SPLIT,'frame-t-left'],
+    [FRAME_VERT_SPLIT,FRAME_LR_SPLIT,'frame-t-right'],
+    [game_width - 12,FRAME_LR_SPLIT,'frame-t-left'],
+    [0,FRAME_HORIZ_SPLIT,'frame-t-right'],
   ];
   gems.forEach(function (coords) {
     autoAtlas('ui', coords[2]).draw({
@@ -1561,9 +1598,24 @@ function drawFrames(): void {
     });
   });
 
+  let smooth_corners: [number, number, string][] = [
+    [MINIMAP_X - 8, MINIMAP_Y + MINIMAP_H - 4, 'frame-ll'],
+    [MINIMAP_X + MINIMAP_W - 4, MINIMAP_Y + MINIMAP_H - 4, 'frame-lr'],
+  ];
+  smooth_corners.forEach(function (coords) {
+    autoAtlas('ui', coords[2]).draw({
+      x: coords[0],
+      y: coords[1],
+      z: z + 1,
+      w: 12,
+      h: 12,
+    });
+  });
+
+
   if (battlezone_is_waiting) {
     z++;
-    [0, 240].forEach(function (y) {
+    [0, QUICKBAR_FRAME_Y].forEach(function (y) {
       frame_sprites.horiz_red.draw({
         x: 12,
         y,
@@ -1576,7 +1628,7 @@ function drawFrames(): void {
 
     [
       [0, 12, render_height],
-      [324, 12, render_height],
+      [FRAME_VERT_SPLIT, 12, render_height],
     ].forEach(function (coords) {
       frame_sprites.vert_red.draw({
         x: coords[0],
@@ -1697,8 +1749,8 @@ function playCrawl(): void {
       }
     }
     let ret = crawlerOnScreenButton({
-      x: button_x0 + (BUTTON_W + 2) * rx,
-      y: button_y0 + (BUTTON_W + 2) * ry,
+      x: button_x0 + (BUTTON_W + 4) * rx,
+      y: button_y0 + (BUTTON_W + 4) * ry,
       z,
       w: BUTTON_W, h: BUTTON_W,
       frame,
@@ -1720,19 +1772,21 @@ function playCrawl(): void {
 
 
   // Escape / open/close menu button - *before* pauseMenu()
-  button_x0 = 343;
-  button_y0 = 172;
+  button_x0 = 409;
+  button_y0 = 16;
   let menu_up = frame_map_view || build_mode || overlay_menu_up;
   let menu_keys = [KEYS.ESC];
   let menu_pads = [PAD.START];
   if (menu_up) {
     menu_pads.push(PAD.B, PAD.BACK);
   }
-  button(2, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, cur_action?.name === 'PauseMenu');
+  button(0, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, cur_action?.name === 'PauseMenu');
+  button_x0 = 331;
+  button_y0 = MOVE_BUTTONS_Y0;
   if (!build_mode && !controller.ignoreGameplay()) {
     //button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]);
     button(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B]);
-    button(1, 0, 7, 'inv', [KEYS.I], [PAD.Y]); // , inventory_up);
+    button(0, 1, 7, 'inv', [KEYS.I], [PAD.Y]); // , inventory_up);
     // if (up_edge.inv) {
     //   inventory_up = !inventory_up;
     // }
@@ -1759,8 +1813,7 @@ function playCrawl(): void {
     }
   }
 
-  button_x0 = MOVE_BUTTONS_X0;
-  button_y0 = MOVE_BUTTONS_Y0;
+  button_x0 += BUTTON_W + 4;
 
   // Check for intentional events
   // if (!build_mode) {
@@ -1787,7 +1840,7 @@ function playCrawl(): void {
 
   controller.doPlayerMotion({
     dt,
-    button_x0: MOVE_BUTTONS_X0,
+    button_x0,
     button_y0: build_mode ? game_height - 16 : MOVE_BUTTONS_Y0,
     no_visible_ui: frame_map_view || build_mode,
     button_w: build_mode ? 6 : BUTTON_W,
@@ -1802,7 +1855,6 @@ function playCrawl(): void {
     show_hotkeys: false,
   });
 
-  button_x0 = MOVE_BUTTONS_X0;
   button_y0 = MOVE_BUTTONS_Y0;
 
   if (keyUpEdge(KEYS.B)) {
@@ -2042,7 +2094,7 @@ export function playStartup(): void {
     allow_offline_console: engine.DEBUG,
     chat_ui_param: {
       x: 12,
-      y_bottom: 347,
+      y_bottom: 348,
       border: 2,
       scroll_grow: 2,
       cuddly_scroll: true,
@@ -2071,8 +2123,8 @@ export function playStartup(): void {
   let button_param = {
     filter_min: gl.NEAREST,
     filter_mag: gl.NEAREST,
-    ws: [18, 18, 18],
-    hs: [18, 18, 18, 18],
+    ws: [BUTTON_W, BUTTON_W, BUTTON_W],
+    hs: [BUTTON_W, BUTTON_W, BUTTON_W, BUTTON_W],
   };
   button_sprites = {
     regular: spriteCreate({

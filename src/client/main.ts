@@ -60,6 +60,7 @@ Z.DIALOG = 140;
 Z.STATUS = 160;
 Z.CHAT_FOCUSED = 100;
 Z.FRAMES = Z.MAP + 5;
+Z.STATSBARS = Z.FRAMES + 5;
 
 let fonts: Font[] | undefined;
 let tiny_font: Font;
@@ -257,7 +258,7 @@ export function main(): void {
   ui.scaleSizes(13 / 32);
   ui.setModalSizes(0, round(game_width * 0.8), round(game_height * 0.23), 0, 0);
   ui.setFontHeight(11);
-  ui.setButtonHeight(16);
+  ui.setButtonHeight(20);
   ui.setPanelPixelScale(1);
   uiSetPanelColor([1, 1, 1, 1]);
   // ui.uiSetFontStyleFocused(fontStyle(ui.uiGetFontStyleFocused(), {
@@ -267,7 +268,7 @@ export function main(): void {
 
   chat_ui = chatUICreate({
     max_len: 1000,
-    w: 252,
+    w: 264,
     h: 96,
     outline_width: 3,
     fade_start_time: [10000, 5000],
