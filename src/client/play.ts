@@ -38,6 +38,7 @@ import {
   buttonText,
   drawBox,
   drawRect,
+  drawRect2,
   menuUp,
   modalDialog,
   playUISound,
@@ -1727,6 +1728,7 @@ function doHeal(): void {
 
 const QUICKBAR_X = 14;
 const QUICKBAR_Y = 218;
+const color_disable_action = vec4(0,0,0,0.75);
 
 function doQuickbar(): void {
   let me = myEnt();
@@ -1798,7 +1800,15 @@ function doQuickbar(): void {
         ...button_param,
         img: autoAtlas('ui', icon),
         hotkey: KEYS[hotkey],
+        // base_name: canIssueAction() ? undefined : 'button_disabled',
       }));
+      if (!canIssueAction()) {
+        drawRect2({
+          ...button_param,
+          z: Z.UI + 5,
+          color: color_disable_action,
+        });
+      }
     }
     tiny_font.draw({
       ...button_param,
@@ -1866,6 +1876,13 @@ function doQuickbar(): void {
     } else {
       doHeal();
     }
+  }
+  if (!canIssueAction()) {
+    drawRect2({
+      ...heal_button_param,
+      z: Z.UI + 5,
+      color: color_disable_action,
+    });
   }
   tiny_font.draw({
     ...heal_button_param,
@@ -2028,7 +2045,7 @@ function drawFrames(): void {
   });
 
 
-  if (battlezone_is_waiting) {
+  if (!canIssueAction()/*battlezone_is_waiting*/) {
     z++;
     [0, QUICKBAR_FRAME_Y].forEach(function (y) {
       frame_sprites.horiz_red.draw({
@@ -2096,7 +2113,7 @@ function playCrawl(): void {
     x: VIEWPORT_X0 + 8,
     w: render_width - 16,
     y: VIEWPORT_Y0,
-    h: render_height + 4,
+    h: render_height - 5,
     z: Z.STATUS,
     pad_top: 2,
     pad_bottom: 4,

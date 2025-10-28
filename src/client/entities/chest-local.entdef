@@ -3,6 +3,9 @@ properties:
   display_name: Chest (local)
 traits:
 - id: drawable
+  biasL: [-0.18, 0.4]
+  biasF: [0, -0.20]
+  biasR: [-0.18, 0.4]
 - id: drawable_sprite
   anim_data:
     idle:

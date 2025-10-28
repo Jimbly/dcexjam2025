@@ -29,6 +29,7 @@ Assets to replace
 * placeholder sounds in play.ts
 
 TODO
+* hunter/wander never move onto square outside of stairs_in
 * add compass/coords to UI
 * show an un-slotted, but available, quickbar slot as a different color
 * battlezone: option to skip (set other player as ready) if they have not taken an action in 10 seconds; maybe exit to menu if skipped 3 times in a row
@@ -49,6 +50,9 @@ TODO
 * Space on map screen after exit button selected is activating Wait, not closing the window
 * change W icon to basic attack icon when engaged
 * show actual item instead of chest graphic when there's a single item
+
+Bugs:
+* simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Credits
 =======
