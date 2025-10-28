@@ -149,7 +149,7 @@ export class EntityServer extends entityGameCommonClass(EntityBaseServer) implem
       let key: keyof StatsData;
       for (key in default_player_stats) {
         if (this.data.stats[key] === undefined) {
-          this.data.stats[key] = default_player_stats[key];
+          this.data.stats[key] = default_player_stats[key]!;
         }
       }
       let key2: keyof EntityGameDataCommon;
@@ -313,7 +313,7 @@ function handleActionAttack(
   if (!self && this.is_player) {
     return void resp_func('ERR_NOT_SELF');
   }
-  let { target_ent_id, type, dam, pred_id, executor } = payload as ActionAttackPayload;
+  let { target_ent_id, type, dam, pred_id, executor, resist } = payload as ActionAttackPayload;
   let target = this.entity_manager.entities[target_ent_id];
   if (!target) {
     return void resp_func('ERR_INVALID_ENT_ID');
@@ -332,7 +332,7 @@ function handleActionAttack(
   assert(target_stats.hp);
   let new_hp = max(0, target_stats.hp - dam);
   target.setDataSub('stats', 'hp', new_hp);
-  let ret: BroadcastDataDstat = { hp: -dam, source: this.id, action: 'attack', type, pred_id, executor };
+  let ret: BroadcastDataDstat = { hp: -dam, source: this.id, action: 'attack', type, pred_id, executor, resist };
   if (!target_stats.hp) {
     ret.fatal = true;
     if (target.is_player) {

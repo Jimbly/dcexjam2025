@@ -26,6 +26,8 @@ L1 S5 2MaxMP Basic +1dam
 L1 S6 3MaxMP 1 DamResist
 +10% speed (chance of bonus action)
 Block/tank (MP -> DR for 1 turn?) for multiplayer
+Stun enemy
+Buff an element?
 
 
 Goals:

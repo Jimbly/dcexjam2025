@@ -3,6 +3,7 @@ import { DataObject } from 'glov/common/types';
 
 import type { EntityClient } from '../client/entity_game_client';
 import type { EntityServer } from '../server/entity_game_server';
+import { ELEMENT, ElementName } from './entity_game_common';
 
 const { floor, random } = Math;
 
@@ -12,6 +13,7 @@ type StatsEnemyData = {
   hp: number;
   attack: number;
   defense: number;
+  element?: ElementName;
 };
 
 export function gameEntityTraitsCommonStartup(
@@ -39,6 +41,11 @@ export function gameEntityTraitsCommonStartup(
           mp: 0,
           mp_max: 0,
         };
+        let stats = ent.data.stats;
+        if (opts.element) {
+          stats[`r${opts.element}`] = 50;
+          stats.element = ELEMENT[opts.element];
+        }
       }
       return undefined;
     }

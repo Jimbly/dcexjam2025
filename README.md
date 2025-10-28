@@ -15,8 +15,8 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 
 **TODO**
 * combat fun
-  * elemental weakness / defense
   * try with level 2 and 2 skills
+  * add range 2 skill
 * drop and pickup loot
 * equip UI?
 * add chests with potions and gear

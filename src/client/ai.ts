@@ -414,7 +414,7 @@ function aiDoEnemy(
 
   let target_stats = target_ent.data.stats;
   let attacker_stats = ent.data.stats;
-  let { dam, style } = damage(attacker_stats, target_stats);
+  let { dam, style, resist } = damage(attacker_stats, target_stats);
   let target_hp = target_ent.getData('stats.hp', 0);
   addFloater(target_ent.id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}`, '');
   addFloater(ent.id, null, 'attack');
@@ -425,6 +425,7 @@ function aiDoEnemy(
   let payload: ActionAttackPayload = {
     target_ent_id: target_ent.id,
     type: style,
+    resist,
     dam,
     pred_id,
     executor: myEntID(),

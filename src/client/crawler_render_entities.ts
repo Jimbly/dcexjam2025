@@ -625,9 +625,9 @@ export function crawlerRenderEntities(ent_set: SplitSet): void {
         if (is_in_front && !crawlerController().controllerIsAnimating()) {
           let { x, y, w, h } = crawlerRenderViewportGet();
           let float = easeOut(elapsed / (FLOATER_TIME + FLOATER_FADE), 2) * 20;
-          font.drawSizedAligned(fontStyleAlpha(style_text, alpha),
+          font.drawSizedAlignedWrapped(fontStyleAlpha(style_text, alpha),
             x,
-            y + h/2 - float, Z.FLOATERS,
+            y + h/2 - float, Z.FLOATERS, 0,
             uiTextHeight(), ALIGN.HCENTER|ALIGN.VBOTTOM,
             w, 0, floater.msg);
         }

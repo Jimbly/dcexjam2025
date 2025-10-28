@@ -1,3 +1,20 @@
+export const ELEMENT_NONE = 0;
+export const ELEMENT_FIRE = 1;
+export const ELEMENT_EARTH = 2;
+export const ELEMENT_ICE = 3;
+export const ELEMENT = {
+  fire: 1,
+  earth: 2,
+  ice: 3,
+} as const;
+export const ELEMENT_NAME: Record<Element, ElementName> = {
+  1: 'fire',
+  2: 'earth',
+  3: 'ice',
+};
+export type ElementName = keyof typeof ELEMENT;
+export type Element = typeof ELEMENT_FIRE | typeof ELEMENT_EARTH | typeof ELEMENT_ICE | number;
+
 import {
   EntityBaseCommon,
   EntityBaseDataCommon,
@@ -12,6 +29,7 @@ export type BroadcastDataDstat = {
   source: EntityID;
   action: string;
   type: string;
+  resist?: boolean;
   fatal?: boolean;
   pred_id?: number;
   executor: EntityID; // who did the logic / presumably already predicted it
@@ -20,6 +38,7 @@ export type BroadcastDataDstat = {
 export type ActionAttackPayload = {
   target_ent_id: EntityID;
   type: string;
+  resist: boolean;
   dam: number;
   pred_id: number;
   executor: EntityID;
@@ -45,6 +64,10 @@ export type StatsData = {
   level: number;
   attack: number; // just monsters
   defense: number; // just monsters?
+  element?: Element;
+  rfire?: number;
+  rearth?: number;
+  rice?: number;
 };
 
 export type Item = {

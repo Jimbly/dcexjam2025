@@ -1,7 +1,7 @@
 export const POTION_HEAL_AMOUNT = 30;
 
 import assert from 'assert';
-import { Item, StatsData } from './entity_game_common';
+import { ELEMENT, Element, ELEMENT_NAME, ELEMENT_NONE, ElementName, Item, StatsData } from './entity_game_common';
 
 const { abs, pow, random, max, floor, round } = Math;
 
@@ -27,37 +27,59 @@ function roundRand(v: number): number {
   return floor(v + random());
 }
 
-export function damage(attacker: StatsData, defender: StatsData): {
+function calcDamage(pair: {
   dam: number;
-  style: 'miss' | 'hit';
+  element?: Element;
+}, defender: StatsData): {
+  dam: number;
+  style: string;
+  resist: boolean;
 } {
-  // let dam = lerp(bellish(random(), 3), 1, 3);
-  let dam = max(1, attacker.attack - defender.defense);
-
-  // dam = roundRand(dam);
+  let resist = false;
+  let { dam, element } = pair;
+  if (element) {
+    let elem_def = defender[`r${ELEMENT_NAME[element]}`] || 0;
+    if (elem_def) {
+      dam = dam * (100 - elem_def)/100;
+      resist = true;
+    }
+  }
+  dam -= defender.defense;
   dam = round(dam);
   dam = max(1, dam);
   return {
     dam,
-    style: 'hit',
+    style: element && ELEMENT_NAME[element] || 'hit',
+    resist,
   };
+}
+
+export function damage(attacker: StatsData, defender: StatsData): {
+  dam: number;
+  style: string;
+  resist: boolean;
+} {
+  return calcDamage({
+    dam: attacker.attack,
+    element: attacker.element,
+  }, defender);
 }
 
 export function basicAttackDamage(attacker: StatsData, defender: StatsData): {
   dam: number;
-  style: 'miss' | 'hit';
+  style: string;
+  resist: boolean;
 } {
-  return {
-    dam: max(1, 5 - defender.defense),
-    style: 'hit',
-  };
+  return calcDamage({
+    dam: 5,
+    element: ELEMENT_NONE,
+  }, defender);
 }
 
 export function xpToLevelUp(level: number): number {
   return 100;
 }
 
-export type Element = 'fire' | 'earth' | 'ice';
 export type SkillDetails = {
   mp_cost: number;
   element: Element;
@@ -67,7 +89,7 @@ export function skillDetails(item: Item): SkillDetails {
   assert(item.type === 'book');
   let { subtype, level } = item;
   let mp_cost;
-  let element: Element;
+  let element: ElementName;
   let dam;
   switch (subtype) {
     case 0:
@@ -90,17 +112,19 @@ export function skillDetails(item: Item): SkillDetails {
   }
   return {
     mp_cost,
-    element,
+    element: ELEMENT[element],
     dam,
   };
 }
 
 export function skillAttackDamage(skill_details: SkillDetails, defender: StatsData): {
   dam: number;
-  style: Element;
+  style: string;
+  resist: boolean;
 } {
-  return {
-    dam: max(1, skill_details.dam + 5 - defender.defense),
-    style: skill_details.element,
-  };
+  let dam = skill_details.dam + 5;
+  return calcDamage({
+    dam,
+    element: skill_details.element,
+  }, defender);
 }

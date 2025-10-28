@@ -1181,7 +1181,7 @@ function onBroadcast(update: EntityManagerEvent): void {
   if (msg === 'dstat') {
     assert(from);
     let target = from;
-    let { hp, source, action, type, fatal, pred_id, executor } = data as BroadcastDataDstat;
+    let { hp, source, action, type, fatal, pred_id, executor, resist } = data as BroadcastDataDstat;
     if (executor === myEntID()) {
       // I did this
       let target_ent = crawlerEntityManager().getEnt(target);
@@ -1191,22 +1191,24 @@ function onBroadcast(update: EntityManagerEvent): void {
     } else {
       // someone else did
       if (hp) {
-        addFloater(target, `${hp > 0 ? '+' : ''}${hp}`, 'damage');
+        addFloater(target, `${hp > 0 ? '+' : ''}${hp}${resist ? '\nRESIST!' : ''}`, 'damage');
         addFloater(source, null, 'attack');
       }
     }
 
     if (action === 'attack') {
       if (source === myEntID()) {
-        chat_ui.addChat(`You ${type} it for ${-hp} damage${fatal ? ', killing it' : ''}.`);
+        chat_ui.addChat(`You ${type} it for ${-hp} damage${resist ? ' (resisted)' : ''}` +
+          `${fatal ? ', killing it' : ''}.`);
       } else if (target === myEntID()) {
         if (type === 'opportunity') {
           chat_ui.addChat(`It opportunity attacks you for ${-hp} damage.`);
         } else {
-          chat_ui.addChat(`It hits you with ${type} for ${-hp} damage.`);
+          chat_ui.addChat(`It hits you with ${type} for ${-hp} damage${resist ? ' (resisted)' : ''}.`);
         }
       } else {
-        chat_ui.addChat(`${source} hits ${target} with ${type} for ${-hp} damage${fatal ? ', killing it' : ''}.`);
+        chat_ui.addChat(`${source} hits ${target} with ${type} for ${-hp} damage` +
+          `${resist ? ' (resisted)' : ''}${fatal ? ', killing it' : ''}.`);
       }
     }
   // } else if (msg === 'pickup') {
@@ -1258,19 +1260,21 @@ function doAttack(target_ent: Entity, action: Item | 'basic'): void {
   let target_stats = target_ent.data.stats;
   let mp_cost = 0;
   let my_ent = myEnt();
+  let resist;
   if (action === 'basic') {
     let attacker_stats = my_ent.data.stats;
-    ({ dam, style } = basicAttackDamage(attacker_stats, target_stats));
+    ({ dam, style, resist } = basicAttackDamage(attacker_stats, target_stats));
     mp_cost = -1;
   } else {
     let details = skillDetails(action);
-    ({ dam, style } = skillAttackDamage(details, target_stats));
+    ({ dam, style, resist } = skillAttackDamage(details, target_stats));
     ({ mp_cost } = details);
   }
 
   let target_hp = target_ent.getData('stats.hp', 0);
   let new_hp = max(0, target_hp - dam);
-  addFloater(target_ent.id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}`, new_hp ? '' : 'death');
+  addFloater(target_ent.id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}` +
+    `${resist ? '\nRESIST!' : ''}`, new_hp ? '' : 'death');
   let pred_ids: EntityPredictionID[] = [];
   target_ent.predictedSet(pred_ids, 'stats.hp', new_hp);
   assert.equal(pred_ids.length, 1);
@@ -1278,6 +1282,7 @@ function doAttack(target_ent: Entity, action: Item | 'basic'): void {
   let payload: ActionAttackPayload = {
     target_ent_id: target_ent.id,
     type: style,
+    resist,
     dam,
     pred_id,
     executor: myEntID(),
