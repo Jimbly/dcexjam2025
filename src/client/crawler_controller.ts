@@ -1156,6 +1156,9 @@ export class CrawlerController {
   setOnPlayerMove(fn: (old_pos: Vec2, new_pos: Vec2, move_dir: DirType) => void): void {
     this.on_player_move = fn;
   }
+  setOnEnterCell(fn: (new_pos: Vec2) => void): void {
+    this.on_enter_cell = fn;
+  }
   on_init_pos?: (pos: Vec2, rot: DirType) => void;
   setOnInitPos(fn: (pos: Vec2, rot: DirType) => void): void {
     this.on_init_pos = fn;

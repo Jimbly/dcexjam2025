@@ -64,6 +64,7 @@ import {
 } from 'glov/common/vmath';
 import {
   basicAttackDamage,
+  itemName,
   POTION_HEAL_AMOUNT,
   skillAttackDamage,
   SkillDetails,
@@ -138,6 +139,7 @@ import {
   crawlerSaveGame,
   crawlerScriptAPI,
   crawlerTurnBasedClearQueue,
+  crawlerTurnBasedMoveFinish,
   crawlerTurnBasedMovePreStart,
   crawlerTurnBasedQueued,
   crawlerTurnBasedScheduleStep,
@@ -155,7 +157,12 @@ import { crawlerScriptAPIDummyServer } from './crawler_script_api_client';
 import { crawlerOnScreenButton } from './crawler_ui';
 import { dialogNameRender } from './dialog_data';
 import { dialogMoveLocked, dialogRun, dialogStartup } from './dialog_system';
-import { EntityClient, entityManager } from './entity_game_client';
+import {
+  entitiesAt,
+  EntityClient,
+  EntityDataClient,
+  entityManager,
+} from './entity_game_client';
 import {
   game_height,
   game_width,
@@ -184,7 +191,7 @@ import {
 } from './status';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { abs, ceil, floor, max, min, round } = Math;
+const { abs, ceil, floor, max, min, random, round } = Math;
 
 declare module 'glov/client/settings' {
   export let ai_pause: 0 | 1; // TODO: move to ai.ts
@@ -1239,10 +1246,11 @@ function onBroadcast(update: EntityManagerEvent): void {
   if (msg === 'dstat') {
     assert(from);
     let target = from;
+    let entity_manager = entityManager();
+    let target_ent = entity_manager.getEnt(target);
     let { hp, source, action, type, fatal, pred_id, executor, resist } = data as BroadcastDataDstat;
     if (executor === myEntID()) {
       // I did this
-      let target_ent = crawlerEntityManager().getEnt(target);
       if (target_ent && pred_id) {
         target_ent.predictedClear(pred_id);
       }
@@ -1267,6 +1275,42 @@ function onBroadcast(update: EntityManagerEvent): void {
       } else {
         chat_ui.addChat(`${source} hits ${target} with ${type} for ${-hp} damage` +
           `${resist ? ' (resisted)' : ''}${fatal ? ', killing it' : ''}.`);
+      }
+      if (fatal && target_ent) {
+        let pos = target_ent.data.pos;
+        let loot: Item[] = [];
+        if (random() < 0.05) {
+          loot.push({
+            type: 'potion',
+            subtype: 0,
+            level: 1,
+            count: 1,
+          });
+        } else {
+          loot.push({
+            type: 'book',
+            subtype: floor(random() * 3),
+            level: 1,
+            count: 1,
+          });
+        }
+        let existing_ents = entitiesAt(entity_manager, pos, target_ent.data.floor, true);
+        existing_ents = existing_ents.filter((ent) => {
+          return ent.type_id === 'chest-local';
+        });
+        if (existing_ents.length) {
+          let contents = existing_ents[0].data.contents;
+          assert(contents);
+          existing_ents[0].data.contents = contents.concat(loot);
+        } else {
+          let new_ent: Partial<EntityDataClient> = {
+            floor: target_ent.data.floor,
+            pos,
+            type: 'chest-local',
+            contents: loot,
+          };
+          entity_manager.addClientOnlyEntityFromSerialized(new_ent);
+        }
       }
     }
   // } else if (msg === 'pickup') {
@@ -2160,6 +2204,78 @@ function onPlayerMove(old_pos: Vec2, new_pos: Vec2): void {
   crawlerTurnBasedMovePreStart();
 }
 
+function pickupOnClient(item: Item): void {
+  let my_ent = myEnt();
+  let inventory = my_ent.data.inventory;
+  let idx = -1;
+  if (!inventory) {
+    my_ent.data.inventory = inventory = [];
+    idx = 0;
+  } else {
+    let open_slot = inventory.length;
+    for (let ii = inventory.length - 1; ii >= 0; --ii) {
+      let elem = inventory[ii];
+      if (!elem) {
+        open_slot = ii;
+      } else if (elem.type === item.type && elem.subtype === item.subtype && elem.level === item.level) {
+        idx = ii;
+        break;
+      }
+    }
+    if (idx === -1) {
+      idx = open_slot;
+    }
+  }
+
+  let ops: ActionInventoryOp[] = [];
+  if (inventory[idx]) {
+    inventory[idx]!.count += item.count;
+    ops.push({
+      idx,
+      delta: item.count,
+    });
+  } else {
+    inventory[idx] = item;
+    ops.push({
+      idx,
+      delta: 1,
+      item,
+    });
+  }
+  let payload: ActionInventoryPayload = {
+    ops,
+    ready: false,
+  };
+  my_ent.applyBatchUpdate({
+    field: 'seq_inventory',
+    action_id: 'inv',
+    payload,
+    data_assignments: {
+      client_only: true,
+      inventory,
+    },
+  }, errorsToChat);
+  statusPush(`Picked up ${itemName(item)}`);
+}
+
+function onEnterCell(pos: Vec2): void {
+  let entity_manager = entityManager();
+  let game_state = crawlerGameState();
+  let { floor_id } = game_state;
+  let chests = entitiesAt(entity_manager, pos, floor_id, true).filter(function (ent) {
+    return ent.type_id === 'chest-local';
+  });
+  chests.forEach(function (chest) {
+    let contents = chest.data.contents;
+    assert(contents && contents.length);
+    for (let ii = 0; ii < contents.length; ++ii) {
+      pickupOnClient(contents[ii]);
+    }
+    entity_manager.deleteEntity(chest.id, 'pickup');
+  });
+  crawlerTurnBasedMoveFinish(pos);
+}
+
 function onInitPos(): void {
   // autoAttackCancel();
 }
@@ -2168,6 +2284,7 @@ function playInitShared(online: boolean): void {
   controller = crawlerController();
 
   controller.setOnPlayerMove(onPlayerMove);
+  controller.setOnEnterCell(onEnterCell);
   controller.setOnInitPos(onInitPos);
 
   uiAction(null);

@@ -14,9 +14,12 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* drop and pickup loot
-* equip UI?
-* add chests with potions and gear
+* equip UI
+* xp and level up
+* "floor level"
+* respawn / defeat mechanic
+* reward for floor mechanic
+* shops
 
 Assets to replace
 * panel / status message background
@@ -41,7 +44,8 @@ TODO
 * hide cheating commands like entset, stat
 * W on map screen is selecting Exit button, not moving player
 * Space on map screen after exit button selected is activating Wait, not closing the window
-* change W icon to basic attack when engaged
+* change W icon to basic attack icon when engaged
+* show actual item instead of chest graphic when there's a single item
 
 Credits
 =======

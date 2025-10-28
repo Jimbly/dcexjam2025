@@ -121,6 +121,17 @@ export function skillDetails(item: Item): SkillDetails {
   };
 }
 
+export function itemName(item: Item): string {
+  if (item.type === 'potion') {
+    return 'Potion';
+  }
+  if (item.type === 'book') {
+    let skill_details = skillDetails(item);
+    return `L${item.level} ${ELEMENT_NAME[skill_details.element]}`;
+  }
+  return 'Unknown';
+}
+
 export function skillAttackDamage(skill_details: SkillDetails, defender: StatsData): {
   dam: number;
   style: string;

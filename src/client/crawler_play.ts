@@ -752,7 +752,7 @@ function crawlerTurnBasedMoveStart(pos: Vec2): void {
   crawlerTurnBasedTick();
 }
 
-function crawlerTurnBasedMoveFinish(pos: Vec2): void {
+export function crawlerTurnBasedMoveFinish(pos: Vec2): void {
   // Finished a queued move, possibly because interrupted and starting a new one
   if (turn_based_allowed?.() !== false) {
     executeStep();

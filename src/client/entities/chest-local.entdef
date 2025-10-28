@@ -1,0 +1,27 @@
+---
+properties:
+  display_name: Chest (local)
+traits:
+- id: drawable
+- id: drawable_sprite
+  anim_data:
+    idle:
+      frames: [chest]
+      times: 1000
+    death:
+      frames: [chest-open]
+      times: 1000
+  sprite_data:
+    atlas: dcex
+    filter_min: LINEAR_MIPMAP_LINEAR
+    filter_mag: LINEAR
+    origin: [0.5, 1]
+  scale: 0.5
+  do_alpha: false
+  simple_anim:
+    - period: 700
+      scale: [1, 0.98]
+      easing: 1
+  shadow:
+    atlas: dcex
+    name: shadow

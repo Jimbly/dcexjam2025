@@ -350,6 +350,10 @@ class OfflineEntityManagerImpl<
     this.emit('ent_update', ent.id);
     return ent;
   }
+
+  addClientOnlyEntityFromSerialized(data: DataObject): Entity {
+    assert(false, 'Online-only');
+  }
 }
 
 export function offlineEntityManagerCreate<Entity extends EntityBaseClient>(

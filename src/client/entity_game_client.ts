@@ -35,7 +35,7 @@ type Entity = EntityClient;
 export function entitiesAt(cem: ClientEntityManagerInterface<Entity>,
   pos: [number, number] | ROVec2,
   floor_id: number,
-  skip_fading_out:boolean
+  skip_fading_out: boolean
 ): Entity[] {
   return cem.entitiesFind((ent) => entSamePos(ent, pos) && ent.data.floor === floor_id, skip_fading_out);
 }

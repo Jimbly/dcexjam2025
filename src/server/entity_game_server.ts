@@ -48,6 +48,7 @@ entityServerRegisterFieldDefs<EntityGameDataServer>({
   costume: { encoding: EntityFieldEncoding.Int },
   stats: { sub: EntityFieldSub.Record, encoding: EntityFieldEncoding.Int },
   inventory: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
+  contents: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
   hats: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
   books: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
   seq_ai_update: { encoding: EntityFieldEncoding.AnsiString },

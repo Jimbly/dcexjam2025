@@ -105,8 +105,8 @@ export type EntityGameDataCommon = {
   // ready_start?: number;
   last_pos: JSVec3;
 
-  // // Chests
-  // contents?: Item[];
+  // Chests
+  contents?: Item[];
 } & EntityBaseDataCommon;
 
 // eslint-disable-next-line @stylistic/max-len
