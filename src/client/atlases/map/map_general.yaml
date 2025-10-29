@@ -44,6 +44,14 @@ tiles:
 
   icon_question: [0,6]
   icon_exclamation: [1,6]
+  icon_dollar: [2,6]
+  icon_up: [3,6]
+  icon_plus: [4,6]
+  icon_book: [5,6]
+
+  icon_upgrades: [5,6]
+  icon_trades: [4,7]
+
   otherplayerdir0: [0,7]
   otherplayerdir1: [1,7]
   otherplayerdir2: [2,7]

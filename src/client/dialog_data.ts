@@ -27,6 +27,7 @@ import {
 } from './entity_game_client';
 import {
   myEntOptional,
+  showShop,
 } from './play';
 import { statusPush } from './status';
 
@@ -129,6 +130,28 @@ dialogIconsRegister({
 dialogRegister({
   nametest: function () {
     signWithName('Mr. Someone', 'Test of a sign with a name.', true);
+  },
+});
+
+dialogIconsRegister({
+  upgrades: (param: string, script_api: CrawlerScriptAPI): CrawlerScriptEventMapIcon => {
+    return 'icon_upgrades';
+  },
+});
+dialogRegister({
+  upgrades: function () {
+    showShop('upgrades');
+  },
+});
+
+dialogIconsRegister({
+  trades: (param: string, script_api: CrawlerScriptAPI): CrawlerScriptEventMapIcon => {
+    return 'icon_trades';
+  },
+});
+dialogRegister({
+  trades: function () {
+    showShop('trades');
   },
 });
 

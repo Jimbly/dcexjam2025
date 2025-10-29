@@ -74,45 +74,45 @@ const default_player_fields: Partial<EntityGameDataCommon> = {
     subtype: 0,
     level: 1,
     count: 10,
-  }, {
-    type: 'hat',
-    subtype: 0,
-    level: 1,
-    count: 1,
-  }, {
-    type: 'hat',
-    subtype: 1,
-    level: 2,
-    count: 1,
-  }, {
-    type: 'hat',
-    subtype: 2,
-    level: 3,
-    count: 1,
-  }, {
-    type: 'book',
-    subtype: 0,
-    level: 1,
-    count: 1,
-  }, {
-    type: 'book',
-    subtype: 1,
-    level: 2,
-    count: 1,
-  }, {
-    type: 'book',
-    subtype: 2,
-    level: 3,
-    count: 1,
+  // }, {
+  //   type: 'hat',
+  //   subtype: 0,
+  //   level: 1,
+  //   count: 1,
+  // }, {
+  //   type: 'hat',
+  //   subtype: 1,
+  //   level: 2,
+  //   count: 1,
+  // }, {
+  //   type: 'hat',
+  //   subtype: 2,
+  //   level: 3,
+  //   count: 1,
+  // }, {
+  //   type: 'book',
+  //   subtype: 0,
+  //   level: 1,
+  //   count: 1,
+  // }, {
+  //   type: 'book',
+  //   subtype: 1,
+  //   level: 2,
+  //   count: 1,
+  // }, {
+  //   type: 'book',
+  //   subtype: 2,
+  //   level: 3,
+  //   count: 1,
   }],
   // hats: [{
   // }],
   books: [{
-    type: 'book',
-    subtype: 1,
-    level: 2,
-    count: 1,
-  }, {
+  //   type: 'book',
+  //   subtype: 1,
+  //   level: 2,
+  //   count: 1,
+  // }, {
     type: 'book',
     subtype: 0,
     level: 1,

@@ -44,6 +44,7 @@ TODO
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * animate/grow critters on attack / hit
+* remove floor names from minimp, only full map?
 * death penalty: lose some inventory too? get kicked out of floor (maybe it gets reset?)
 * fix two hits on the same frame not showing floaters well
 * bug: visibility is different before/after turning camera/moving forward and back if directly facing a wall

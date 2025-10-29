@@ -239,7 +239,7 @@ const FRAME_LR_SPLIT = 288;
 
 const BATTLEZONE_RANGE = 3;
 const MAX_TICK_RANGE = 12; // if enemies are more steps than this from a player, use Manhattan dist instead
-const INVENTORY_GRID_W = 8;
+const INVENTORY_GRID_W = 9;
 const INVENTORY_GRID_H = 6;
 const INVENTORY_MAX_SIZE = INVENTORY_GRID_W * INVENTORY_GRID_H;
 
@@ -481,7 +481,7 @@ function inventoryIconDraw(param: {
       autoAtlas('ui', 'potion').draw(icon_param);
       break;
     default:
-      // TODO
+      unreachable(item.type);
   }
 }
 
@@ -492,9 +492,10 @@ type InventoryButtonParam = {
   item: Item;
   show_count: boolean;
   selected: boolean;
+  nointeract?: boolean;
 };
 function inventoryButton(param: InventoryButtonParam): boolean {
-  let { x, y, z, item, show_count, selected } = param;
+  let { x, y, z, item, show_count, selected, nointeract } = param;
   let button_param = {
     x,
     y,
@@ -504,7 +505,8 @@ function inventoryButton(param: InventoryButtonParam): boolean {
   };
   let ret = button({
     ...button_param,
-    base_name: selected ? 'buttonselected' : undefined,
+    base_name: selected ? 'buttonselected' : nointeract ? 'buttonframe' : undefined,
+    disabled: nointeract ? true : undefined,
     text: ' ',
   });
   // show icon
@@ -716,6 +718,170 @@ function equip(idx: number, swap_target_idx: number | null): void {
   my_ent.calcPlayerResist(currentFloorLevel());
 }
 
+function doCombine(src_idx: number, target_idx: number): void {
+  let my_ent = myEnt();
+  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
+  let item = inventory[src_idx];
+  assert(item);
+  assert(item.type === 'hat' || item.type === 'book');
+
+  let ops: ActionInventoryOp[] = [];
+  if (item.count === 2) {
+    // remove from inventory
+    inventory[src_idx] = null;
+  } else {
+    // decrement from inventory
+    item.count -= 2;
+  }
+  ops.push({
+    idx: src_idx,
+    delta: -2,
+  });
+  if (inventory[target_idx]) {
+    inventory[target_idx].count++;
+    ops.push({
+      idx: target_idx,
+      delta: 1,
+    });
+  } else {
+    let new_item = {
+      ...item,
+      level: item.level + 1,
+      count: 1,
+    };
+    inventory[target_idx] = new_item;
+    ops.push({
+      idx: target_idx,
+      item: new_item,
+    });
+  }
+
+  let payload: ActionInventoryPayload = {
+    ops,
+    ready: false,
+  };
+  my_ent.applyBatchUpdate({
+    field: 'seq_inventory',
+    action_id: 'inv',
+    payload,
+    data_assignments: {
+      client_only: true,
+      inventory,
+    },
+  }, errorsToChat);
+}
+
+function doDownvert(src_idx: number, target_idx: number, subtype: number): void {
+  let my_ent = myEnt();
+  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
+  let item = inventory[src_idx];
+  assert(item);
+  assert(item.type === 'hat' || item.type === 'book');
+
+  let ops: ActionInventoryOp[] = [];
+  if (item.count === 1) {
+    // remove from inventory
+    inventory[src_idx] = null;
+  } else {
+    // decrement from inventory
+    item.count--;
+  }
+  ops.push({
+    idx: src_idx,
+    delta: -1,
+  });
+  if (inventory[target_idx]) {
+    inventory[target_idx].count++;
+    ops.push({
+      idx: target_idx,
+      delta: 1,
+    });
+  } else {
+    let new_item = {
+      ...item,
+      subtype,
+      level: item.level - 1,
+      count: 1,
+    };
+    inventory[target_idx] = new_item;
+    ops.push({
+      idx: target_idx,
+      item: new_item,
+    });
+  }
+
+  let payload: ActionInventoryPayload = {
+    ops,
+    ready: false,
+  };
+  my_ent.applyBatchUpdate({
+    field: 'seq_inventory',
+    action_id: 'inv',
+    payload,
+    data_assignments: {
+      client_only: true,
+      inventory,
+    },
+  }, errorsToChat);
+}
+
+function doTradeForPotion(src_idx: number, target_idx: number): void {
+  let my_ent = myEnt();
+  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
+  let item = inventory[src_idx];
+  assert(item);
+  assert(item.type === 'hat' || item.type === 'book');
+
+  let ops: ActionInventoryOp[] = [];
+  if (item.count === 1) {
+    // remove from inventory
+    inventory[src_idx] = null;
+  } else {
+    // decrement from inventory
+    item.count--;
+  }
+  ops.push({
+    idx: src_idx,
+    delta: -1,
+  });
+  if (inventory[target_idx]) {
+    inventory[target_idx].count++;
+    ops.push({
+      idx: target_idx,
+      delta: 1,
+    });
+  } else {
+    let new_item: Item = {
+      type: 'potion',
+      subtype: 0,
+      level: 1,
+      count: 1,
+    };
+    inventory[target_idx] = new_item;
+    ops.push({
+      idx: target_idx,
+      item: new_item,
+    });
+  }
+
+  let payload: ActionInventoryPayload = {
+    ops,
+    ready: false,
+  };
+  my_ent.applyBatchUpdate({
+    field: 'seq_inventory',
+    action_id: 'inv',
+    payload,
+    data_assignments: {
+      client_only: true,
+      inventory,
+    },
+  }, errorsToChat);
+}
+
+
+type ShopType = 'inventory' | 'upgrades' | 'trades';
+
 const INVENTORY_LEFT_COLUMN = 52;
 const INVENTORY_PAD = 4;
 const INVENTORY_BETWEEN_ITEM_COLUMNS = 12;
@@ -734,20 +900,25 @@ const INVENTORY_INFO_YOFFS = INVENTORY_GRID_YOFFS +
   INVENTORY_GRID_H_PX +
   INVENTORY_PAD6 * 2;
 const INVENTORY_H = 290;
+const INVENTORY_SHOP_OPTIONS_YOFFS = INVENTORY_H - 60;
 const INVENTORY_X = floor((game_width - INVENTORY_W) / 2);
 const INVENTORY_Y = floor((game_height - INVENTORY_H) / 2);
+const INVENTORY_ACTION_W = 52;
+const TRADE_ACTION_W = 60;
 const style_inventory = fontStyleColored(null, palette_font[PAL_BLACK - 1]);
 const HAT_STACK_OFFS = [
   1,2,1,0,2,1,2,1,0,1,2,0,1
 ];
 class InventoryMenuAction extends UIAction {
-  constructor() {
+  constructor(public shop_type: ShopType) {
     super();
     myEntOptional()?.calcPlayerResist(currentFloorLevel());
   }
   selected_idx: [string, number] = ['null', 0];
   tick(): void {
     let z = Z.MODAL;
+
+    let { shop_type } = this;
 
     let my_ent = myEnt();
     let level = my_ent.getData('stats.level', 1);
@@ -758,7 +929,7 @@ class InventoryMenuAction extends UIAction {
     let { selected_idx } = this;
 
     if (engine.DEBUG && selected_idx[0] === 'null' && false) {
-      selected_idx = this.selected_idx = ['inv', 4];
+      selected_idx = this.selected_idx = ['inv', 2];
     }
 
     let x0 = INVENTORY_X + INVENTORY_HATS_XOFFS;
@@ -925,7 +1096,11 @@ class InventoryMenuAction extends UIAction {
         text: `${itemName(item)}${sel_loc === 'inv' ? ` (${item.count})` : ''}`,
       });
       y += TITLE_FONT_H + 2;
+      let hide_lines = false;
       function line(text: string): void {
+        if (hide_lines) {
+          return;
+        }
         y += markdownAuto({
           font_style: style_inventory,
           x, y, z,
@@ -954,19 +1129,28 @@ class InventoryMenuAction extends UIAction {
 
       y += 2;
 
+      let x1 = x0 + INVENTORY_GRID_W_PX;
       function action(text: string): boolean {
         return Boolean(button({
-          x, y, z,
+          x: x1 - INVENTORY_ACTION_W, y: y0, z,
+          w: INVENTORY_ACTION_W,
           text,
         }) || do_action);
       }
 
       function disabledAction(text: string): void {
+        if (hide_lines) {
+          return;
+        }
         button({
           x, y, z,
           disabled: true,
           text,
         });
+      }
+
+      if (shop_type !== 'inventory') {
+        hide_lines = true;
       }
 
       if (item.type === 'hat' || item.type === 'book') {
@@ -1029,7 +1213,246 @@ class InventoryMenuAction extends UIAction {
           }
         }
       }
+      hide_lines = false;
 
+      if (shop_type !== 'inventory') {
+        y = INVENTORY_Y + INVENTORY_SHOP_OPTIONS_YOFFS;
+        if (sel_loc !== 'inv') {
+          line(`Select a stack of items in your inventory to see ${shop_type.slice(0,-1)} options.`);
+        } else if (shop_type === 'upgrades') {
+          // show options
+          if (item.level === MAX_LEVEL) {
+            line('Maximum level reached.');
+          } else if (item.type !== 'hat' && item.type !== 'book') {
+            line('Cannot combine potions.');
+          } else {
+            line(`[c=level]UPGRADE[/c]: Combine 2 [c=level]L${item.level}[/c]s into a [c=level]L${item.level + 1}[/c]`);
+            y += 4;
+
+            let target_item: Item = {
+              ...item,
+              level: item.level + 1,
+              count: 0,
+            };
+            let target_idx = inventoryIndexForItemPickup(target_item);
+            if (target_idx === -1) {
+              line('Cannot combine: inventory full.');
+            } else {
+              if (inventory[target_idx]) {
+                target_item.count = inventory[target_idx].count;
+              }
+
+              let can_do = item.count >= 2;
+
+              x += 36;
+              inventoryButton({
+                x, y, z,
+                item,
+                show_count: true,
+                selected: false,
+                nointeract: true,
+              });
+              font.draw({
+                style: can_do ? style_inventory : style_mp_cost_over,
+                x, y: y + 24, z,
+                w: 20,
+                align: ALIGN.HCENTER,
+                text: 'x2',
+              });
+              x += 24;
+              autoAtlas('map', 'playerdir0').draw({
+                x: x + 4,
+                y: y + 4,
+                z,
+                w: 12,
+                h: 12,
+              });
+              x += 24;
+              inventoryButton({
+                x, y, z,
+                item: target_item,
+                show_count: true,
+                selected: false,
+                nointeract: true,
+              });
+              font.draw({
+                style: style_inventory,
+                x, y: y + 24, z,
+                w: 20,
+                align: ALIGN.HCENTER,
+                text: 'x1',
+              });
+              x += 24*1.5;
+              if (can_do) {
+                if (buttonText({
+                  x, y, z,
+                  w: INVENTORY_ACTION_W,
+                  text: 'Combine!',
+                })) {
+                  doCombine(selected_idx[1], target_idx);
+                }
+              } else {
+                font.draw({
+                  x, y: y - 2, z,
+                  style: style_mp_cost_over,
+                  w: x1 - x,
+                  align: ALIGN.HWRAP | ALIGN.HCENTER,
+                  text: 'Insufficient\nsource\nitems',
+                });
+              }
+            }
+          }
+        } else if (shop_type === 'trades') {
+          // show options
+          if (item.type !== 'hat' && item.type !== 'book') {
+            line('Cannot trade potions.');
+          } else {
+            // line(`[c=level]DOWNGRADE[/c]: Combine 1 [c=level]L${item.level}[/c]s into
+            y -= 12;
+
+            inventoryButton({
+              x, y, z,
+              item,
+              show_count: true,
+              selected: false,
+              nointeract: true,
+            });
+            font.draw({
+              style: style_inventory,
+              x, y: y + 22, z,
+              w: 20,
+              align: ALIGN.HCENTER,
+              text: 'x1',
+            });
+            x += 24;
+
+            for (let dsubtype = 1; dsubtype <= 2; ++dsubtype) {
+              let target_item: Item = {
+                ...item,
+                level: item.level - 1,
+                subtype: (item.subtype + dsubtype) % 3,
+                count: 0,
+              };
+              let target_idx = inventoryIndexForItemPickup(target_item);
+              if (!target_item.level) {
+                font.draw({
+                  x, y: y - 2, z,
+                  style: style_mp_cost_over,
+                  w: TRADE_ACTION_W,
+                  align: ALIGN.HWRAP | ALIGN.HCENTER,
+                  text: 'Already\nminimum\nlevel',
+                });
+              } else if (target_idx === -1) {
+                font.draw({
+                  x, y: y - 2, z,
+                  style: style_mp_cost_over,
+                  w: TRADE_ACTION_W,
+                  align: ALIGN.HWRAP | ALIGN.HCENTER,
+                  text: 'Inventory\nfull',
+                });
+              } else {
+                if (inventory[target_idx]) {
+                  target_item.count = inventory[target_idx].count;
+                }
+                autoAtlas('map', 'playerdir0').draw({
+                  x: x + 10,
+                  y: y + 4,
+                  z,
+                  w: 12,
+                  h: 12,
+                });
+
+                inventoryButton({
+                  x: x + 26, y, z,
+                  item: target_item,
+                  show_count: true,
+                  selected: false,
+                  nointeract: true,
+                });
+                font.draw({
+                  style: style_inventory,
+                  x: x + 26, y: y + 22, z,
+                  w: 20,
+                  align: ALIGN.HCENTER,
+                  text: 'x1',
+                });
+                if (buttonText({
+                  x, y: y + 24 + FONT_HEIGHT + 2, z,
+                  w: TRADE_ACTION_W,
+                  text: 'Downvert',
+                })) {
+                  doDownvert(selected_idx[1], target_idx, target_item.subtype);
+                }
+              }
+              x += TRADE_ACTION_W + INVENTORY_PAD;
+            } // ent for dsubtype
+            let target_item: Item = {
+              type: 'potion',
+              subtype: 0,
+              level: 1,
+              count: 0,
+            };
+            let target_idx = inventoryIndexForItemPickup(target_item);
+            if (target_idx === -1) {
+              font.draw({
+                x, y: y - 2, z,
+                style: style_mp_cost_over,
+                w: TRADE_ACTION_W,
+                align: ALIGN.HWRAP | ALIGN.HCENTER,
+                text: 'Inventory\nfull',
+              });
+            } else {
+              if (inventory[target_idx]) {
+                target_item.count = inventory[target_idx].count;
+              }
+              autoAtlas('map', 'playerdir0').draw({
+                x: x + 10,
+                y: y + 4,
+                z,
+                w: 12,
+                h: 12,
+              });
+
+              inventoryButton({
+                x: x + 26, y, z,
+                item: target_item,
+                show_count: true,
+                selected: false,
+                nointeract: true,
+              });
+              font.draw({
+                style: style_inventory,
+                x: x + 26, y: y + 22, z,
+                w: 20,
+                align: ALIGN.HCENTER,
+                text: 'x1',
+              });
+              if (buttonText({
+                x, y: y + 24 + FONT_HEIGHT + 2, z,
+                w: TRADE_ACTION_W,
+                text: 'Trade',
+              })) {
+                doTradeForPotion(selected_idx[1], target_idx);
+              }
+              x += TRADE_ACTION_W + INVENTORY_PAD;
+            }
+
+          }
+        }
+      }
+    } else if (shop_type !== 'inventory') {
+      let y = INVENTORY_Y + INVENTORY_SHOP_OPTIONS_YOFFS - 12;
+      markdownAuto({
+        font_style: style_inventory,
+        x: x0, y, z,
+        w: INVENTORY_GRID_W_PX,
+        align: ALIGN.HWRAP,
+        text: shop_type === 'upgrades' ?
+          '[c=level]UPGRADE[/c]: Combine 2 items into a [c=level]higher level[/c] item.' :
+          '[c=level]DOWNVERT[/c]: Convert 1 item into a\n  [c=level]lower level[/c] item of a different\n' +
+          '  element.\n\n' +
+          '[c=level]TRADE[/c]: Trade any 1 item for a healing\n  potion.'
+      });
     }
 
     x0 = INVENTORY_X + INVENTORY_GRID_XOFFS - 80 - INVENTORY_PAD;
@@ -1119,6 +1542,10 @@ class InventoryMenuAction extends UIAction {
 }
 InventoryMenuAction.prototype.name = 'InventoryMenu';
 InventoryMenuAction.prototype.is_overlay_menu = true;
+
+export function showShop(shop_type: ShopType): void {
+  uiAction(new InventoryMenuAction(shop_type));
+}
 
 function v2manhattan(a: ROVec2, b: ROVec2): number {
   return abs(a[0] - b[0]) + abs(a[1] - b[1]);
@@ -1595,15 +2022,15 @@ function drawStats(): void {
   x += floor((x1 - x) / 2) - 3;
   y = y0;
   let w = x1 - x;
-  font.draw({
-    style: style_stats,
-    x: x + STATS_X_INDENT,
-    y,
-    w,
-    align: ALIGN.HCENTER,
-    text: `${0} GP`,
-  });
-  y += FONT_HEIGHT;
+  // font.draw({
+  //   style: style_stats,
+  //   x: x + STATS_X_INDENT,
+  //   y,
+  //   w,
+  //   align: ALIGN.HCENTER,
+  //   text: `${0} GP`,
+  // });
+  y += floor(FONT_HEIGHT/2);
   font.draw({
     style: style_stats,
     x: x + STATS_X_INDENT,
@@ -2045,7 +2472,7 @@ function moveBlocked(): boolean {
   return false;
 }
 
-// TODO: move into crawler_play?
+// old-to-do: move into crawler_play?
 export function addFloater(ent_id: EntityID, message: string | null, anim?: string): void {
   let ent = crawlerEntityManager().getEnt(ent_id);
   if (ent) {
@@ -3036,7 +3463,7 @@ function playCrawl(): void {
     if (menu_up) {
       uiAction(null);
     } else {
-      uiAction(new InventoryMenuAction());
+      uiAction(new InventoryMenuAction('inventory'));
     }
   }
 
@@ -3251,7 +3678,7 @@ function playInitShared(online: boolean): void {
 
 
 function playOfflineLoading(): void {
-  // TODO
+  // not offline in DCJAM
 }
 
 function playInitOffline(): void {
@@ -3265,7 +3692,7 @@ function playInitEarly(room: ClientChannelWorker): void {
   playInitShared(true);
 
   if (engine.DEBUG && false) {
-    cur_action = new InventoryMenuAction();
+    cur_action = new InventoryMenuAction('trades');
   }
 }
 
@@ -3497,4 +3924,17 @@ export function playStartup(): void {
     color: palette_font[PAL_WHITE],
     outline_color: palette_font[PAL_BLUE],
   }));
+  markdownSetColorStyle('red', fontStyle(style_mp_cost, {
+    color: palette_font[PAL_RED],
+    outline_color: palette_font[PAL_RED - 2],
+  }));
+  markdownSetColorStyle('green', fontStyle(style_mp_cost, {
+    color: palette_font[PAL_GREEN],
+    outline_color: palette_font[PAL_GREEN + 2],
+  }));
+  markdownSetColorStyle('white', fontStyle(style_mp_cost, {
+    color: palette_font[PAL_WHITE],
+    outline_color: palette_font[PAL_BLUE],
+  }));
+  markdownSetColorStyle('level', style_item_level);
 }

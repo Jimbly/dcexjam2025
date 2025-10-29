@@ -921,6 +921,12 @@
         "open",
         "open",
         "solid"
+      ],
+      "events": [
+        {
+          "id": "dialog",
+          "param": "trades"
+        }
       ]
     },
     {
@@ -2003,6 +2009,12 @@
         "solid",
         "open",
         "open"
+      ],
+      "events": [
+        {
+          "id": "dialog",
+          "param": "upgrades"
+        }
       ]
     },
     {
