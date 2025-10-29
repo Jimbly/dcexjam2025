@@ -1686,8 +1686,12 @@ function drawStatsOverViewport(): void {
 const BATTLEZONE_HPAD = 2;
 const BATTLEZONE_X = FRAME_VERT_SPLIT + 12 + BATTLEZONE_HPAD;
 const BATTLEZONE_W = game_width - 12 - BATTLEZONE_X - BATTLEZONE_HPAD;
-let battlezone_is_waiting = false;
-let battlezone_is_waiting_time = 0;
+let battlezone_is_waiting_on_me = false;
+let battlezone_is_waiting_on_me_time = 0;
+const BATTLEZONE_OTHERS_FADE_TIME = 100;
+const BATTLEZONE_OTHERS_W = render_width / 2;
+let battlezone_is_waiting_for_others_time = 0;
+let battlezone_is_waiting_for_others_last_msg = '';
 function drawBattleZone(): void {
   let x = BATTLEZONE_X;
   let y = MINIMAP_Y + MINIMAP_H + 8;
@@ -1744,7 +1748,9 @@ function drawBattleZone(): void {
 
   let is_bz = true;
   let my_angle = crawlerController().getEffRot();
-  battlezone_is_waiting = false;
+  battlezone_is_waiting_on_me = false;
+  let battlezone_is_waiting_for_others = false;
+  let wait_others: string[] = [];
   for (let ii = 0; ii < players.length; ++ii) {
     let ent = players[ii];
     if (is_bz && !isInBattleZone(ent)) {
@@ -1802,8 +1808,13 @@ function drawBattleZone(): void {
     });
     let icon_x = x + BATTLEZONE_W - 12 - 3;
     if (is_bz && me.battle_zone) {
-      if (ent !== me && is_ready) {
-        battlezone_is_waiting = true;
+      if (ent !== me) {
+        if (is_ready) {
+          battlezone_is_waiting_on_me = true;
+        } else {
+          battlezone_is_waiting_for_others = true;
+          wait_others.push(ent.data.display_name || '???');
+        }
       }
       autoAtlas('ui', is_ready ? 'check': 'hourglass').draw({
         x: icon_x,
@@ -1890,18 +1901,58 @@ function drawBattleZone(): void {
     }
   }
 
-  if (battlezone_is_waiting && me.getData('ready')) {
-    battlezone_is_waiting = false;
+  if (me.getData('ready')) {
+    if (battlezone_is_waiting_on_me) {
+      battlezone_is_waiting_on_me = false;
+    }
+  } else {
+    battlezone_is_waiting_for_others = false;
   }
-  if (battlezone_is_waiting) {
-    battlezone_is_waiting_time += getScaledFrameDt();
-    if (battlezone_is_waiting_time > 2000) {
+  if (battlezone_is_waiting_on_me) {
+    battlezone_is_waiting_on_me_time += getScaledFrameDt();
+    if (battlezone_is_waiting_on_me_time > 2000) {
       statusSet('bzwait', 'Other players are waiting for you to take your action').fade();
     }
   } else {
-    battlezone_is_waiting_time = 0;
+    battlezone_is_waiting_on_me_time = 0;
   }
 
+  let alpha = 0;
+  if (battlezone_is_waiting_for_others) {
+    battlezone_is_waiting_for_others_time += getScaledFrameDt();
+    alpha = min(1, battlezone_is_waiting_for_others_time/BATTLEZONE_OTHERS_FADE_TIME);
+    wait_others = wait_others.concat(wait_others);
+    wait_others = wait_others.concat(wait_others);
+    if (wait_others.length > 3) {
+      wait_others[2] = `${wait_others.length - 2} others...`;
+      wait_others.length = 3;
+    }
+    battlezone_is_waiting_for_others_last_msg = `Waiting for:\n${wait_others.join('\n')}`;
+  } else {
+    battlezone_is_waiting_for_others_time = min(BATTLEZONE_OTHERS_FADE_TIME, battlezone_is_waiting_for_others_time);
+    battlezone_is_waiting_for_others_time -= getScaledFrameDt();
+    battlezone_is_waiting_for_others_time = max(0, battlezone_is_waiting_for_others_time);
+    alpha = battlezone_is_waiting_for_others_time / BATTLEZONE_OTHERS_FADE_TIME;
+  }
+  if (battlezone_is_waiting_for_others_last_msg && alpha) {
+    y = VIEWPORT_Y0 + floor(render_height * 0.7) + 20 - round(alpha * 20);
+    let text_h = font.draw({
+      alpha,
+      color: palette_font[PAL_BLACK - 1],
+      x: VIEWPORT_X0, y, z: Z.UI,
+      w: render_width,
+      align: ALIGN.HCENTER|ALIGN.HWRAP,
+      text: battlezone_is_waiting_for_others_last_msg,
+    });
+    const pad = 4;
+    drawBox({
+      x: VIEWPORT_X0 + (render_width - BATTLEZONE_OTHERS_W)/2,
+      y: y - pad,
+      z: Z.UI - 1,
+      w: BATTLEZONE_OTHERS_W,
+      h: text_h + pad * 2,
+    }, autoAtlas('pixely', 'panel'), 1, [1,1,1,alpha * 0.7]);
+  }
 }
 
 const ENEMY_HP_BAR_W = 100;
@@ -2623,7 +2674,7 @@ function drawFrames(): void {
   });
 
 
-  if (!canIssueAction()/*battlezone_is_waiting*/) {
+  if (!canIssueAction()) {
     z++;
     [0, QUICKBAR_FRAME_Y].forEach(function (y) {
       frame_sprites.horiz_red.draw({

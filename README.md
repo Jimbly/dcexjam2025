@@ -14,8 +14,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-add banner _if waiting on another player, not tick_
-add max MP to inventory screen
 * "floor level"
   * show floor level and # monsters alive on HUD?
 * respawn / defeat mechanic
