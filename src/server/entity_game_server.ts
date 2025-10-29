@@ -49,8 +49,8 @@ entityServerRegisterFieldDefs<EntityGameDataServer>({
   stats: { sub: EntityFieldSub.Record, encoding: EntityFieldEncoding.Int },
   inventory: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
   contents: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
-  hats: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
-  books: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
+  hats: { encoding: EntityFieldEncoding.JSON },
+  books: { encoding: EntityFieldEncoding.JSON },
   seq_ai_update: { encoding: EntityFieldEncoding.AnsiString },
   seq_player_move: { encoding: EntityFieldEncoding.AnsiString },
   seq_unready: { encoding: EntityFieldEncoding.AnsiString },
@@ -428,18 +428,36 @@ entityServerRegisterActions([{
     }
     for (let ii = 0; ii < param.ops.length; ++ii) {
       let op = param.ops[ii];
-      let { idx, delta, item } = op;
-      if (item) {
-        inventory[idx] = item;
-      } else {
-        assert(typeof delta === 'number');
-        assert(inventory[idx]);
-        inventory[idx].count += delta;
-        if (!inventory[idx].count) {
-          inventory[idx] = null;
+      let { list, idx, delta, item } = op;
+      let list_arr = inventory;
+      if (list) {
+        list_arr = this.data[list]!;
+        if (!list_arr) {
+          list_arr = this.data[list] = [];
         }
       }
-      this.dirtySub('inventory', idx);
+      if (item) {
+        if (list) {
+          list_arr.splice(idx, 0, item);
+        } else {
+          list_arr[idx] = item;
+        }
+      } else {
+        assert(typeof delta === 'number');
+        assert(list_arr[idx]);
+        list_arr[idx].count += delta;
+        if (!list_arr[idx].count) {
+          list_arr[idx] = null;
+          if (list) {
+            list_arr.splice(idx, 1);
+          }
+        }
+      }
+      if (list) {
+        this.dirty(list);
+      } else {
+        this.dirtySub('inventory', idx);
+      }
     }
     if (param.ready) {
       this.data.ready = true;

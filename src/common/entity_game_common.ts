@@ -45,6 +45,7 @@ export type ActionAttackPayload = {
 };
 
 export type ActionInventoryOp = {
+  list?: 'hats' | 'books';
   idx: number;
   delta?: number;
   item?: Item;
