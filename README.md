@@ -15,8 +15,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 
 **TODO**
 * "floor level"
-  * apply it when calculating player resistances
-  * don't allow using abilities beyond it
   * show floor level and # monsters alive on HUD?
 * respawn / defeat mechanic
 * damage buff on higher level monsters attacking us; decrease on us attacking them

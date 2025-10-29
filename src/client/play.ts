@@ -70,7 +70,9 @@ import {
 } from 'glov/common/vmath';
 import {
   basicAttackDamage,
+  hatDetails,
   itemName,
+  MAX_LEVEL,
   maxMP,
   POTION_HEAL_AMOUNT,
   rewardLevel,
@@ -430,6 +432,20 @@ class PauseMenuAction extends UIAction {
 PauseMenuAction.prototype.name = 'PauseMenu';
 PauseMenuAction.prototype.is_overlay_menu = true;
 
+export function currentFloorLevel(): number {
+  let game_state = crawlerGameState();
+  let { floor_id } = game_state;
+  let level = game_state.levels[floor_id];
+  if (!level) {
+    return MAX_LEVEL;
+  }
+  let { floorlevel } = level.props;
+  if (!floorlevel) {
+    return MAX_LEVEL;
+  }
+  return Number(floorlevel);
+}
+
 function inventoryIconDraw(param: {
   x: number;
   y: number;
@@ -605,7 +621,7 @@ function unequip(loc: 'hats' | 'books', src_idx: number, target_idx: number): vo
     },
   }, errorsToChat);
 
-  my_ent.calcPlayerResist();
+  my_ent.calcPlayerResist(currentFloorLevel());
 }
 
 function equip(idx: number, swap_target_idx: number | null): void {
@@ -691,7 +707,7 @@ function equip(idx: number, swap_target_idx: number | null): void {
     },
   }, errorsToChat);
 
-  my_ent.calcPlayerResist();
+  my_ent.calcPlayerResist(currentFloorLevel());
 }
 
 const INVENTORY_LEFT_COLUMN = 52;
@@ -714,7 +730,6 @@ const INVENTORY_INFO_YOFFS = INVENTORY_GRID_YOFFS +
 const INVENTORY_H = 290;
 const INVENTORY_X = floor((game_width - INVENTORY_W) / 2);
 const INVENTORY_Y = floor((game_height - INVENTORY_H) / 2);
-const MAX_LEVEL = 9;
 const style_inventory = fontStyleColored(null, palette_font[PAL_BLACK - 1]);
 const HAT_STACK_OFFS = [
   1,2,1,0,2,1,2,1,0,1,2,0,1
@@ -722,7 +737,7 @@ const HAT_STACK_OFFS = [
 class InventoryMenuAction extends UIAction {
   constructor() {
     super();
-    myEntOptional()?.calcPlayerResist();
+    myEntOptional()?.calcPlayerResist(currentFloorLevel());
   }
   selected_idx: [string, number] = ['null', 0];
   tick(): void {
@@ -730,7 +745,7 @@ class InventoryMenuAction extends UIAction {
 
     let my_ent = myEnt();
     let level = my_ent.getData('stats.level', 1);
-    let floor_level = 2;
+    let floor_level = currentFloorLevel();
     let inventory = my_ent.getData<(Item|null)[]>('inventory', []);
     let hats = my_ent.getData<Item[]>('hats', []);
     let books = my_ent.getData<Item[]>('books', []);
@@ -898,9 +913,11 @@ class InventoryMenuAction extends UIAction {
         let basic_damage = basicAttackDamage(my_ent.data.stats, { defense: 0 } as StatsData);
         let elem_name = ELEMENT_NAME[skill_details.element];
         line(`Cost: [c=mp]${skill_details.mp_cost} MP[/c]\n` +
-            `Deals [c=dam${elem_name}]${skill_details.dam + basic_damage.dam} ${elem_name} damage[/c].`);
+            `Deals [c=dam${elem_name}]${skill_details.dam + basic_damage.dam} ${elem_name} damage[/c]`);
       } else if (item.type === 'hat') {
-        // TODO
+        let hat_details = hatDetails(item);
+        let elem_name = ELEMENT_NAME[hat_details.element];
+        line(`[c=dam${elem_name}]+${hat_details.resist}% ${elem_name}[/c] resistance`);
       } else {
         unreachable(item.type);
       }
@@ -957,7 +974,7 @@ class InventoryMenuAction extends UIAction {
             // allow equipping
             if (is_at_floor_level) {
               line('Note: You can equip this, however you will be wielding more' +
-                ` ${item.type}s than the current Floor Level, so the lowest level item(s) will not be used.`);
+                ` ${item.type}s than the current Floor Level, so only the bottom (best) item(s) will be used.`);
             }
             if (action('Equip')) {
               equip(selected_idx[1], null);
@@ -970,6 +987,10 @@ class InventoryMenuAction extends UIAction {
         } else {
           assert(sel_loc === 'hats' || sel_loc === 'books');
           let target_idx = inventoryIndexForItemPickup(item);
+          if (selected_idx[1] >= floor_level) {
+            line('Note: Though this is equipped, you are wielding more' +
+              ` ${item.type}s than the current Floor Level, so only the bottom (best) item(s) will be used.`);
+          }
           if (target_idx === -1) {
             line('CANNOT unequip: inventory full');
           } else if (action('Unequip')) {
@@ -2256,7 +2277,7 @@ const color_disable_action = vec4(0,0,0,0.75);
 function doQuickbar(): void {
   let me = myEnt();
   let books = me.data.books || [];
-  let floor_level = 10;
+  let floor_level = currentFloorLevel();
 
   let game_state = crawlerGameState();
   let level = game_state.level;
@@ -2284,19 +2305,22 @@ function doQuickbar(): void {
     let action: Item | 'basic' = 'basic';
     let icon: string | undefined;
     let skill_details: SkillDetails | undefined;
+    let disable_button = false;
     if (ii === 10) {
       action = 'basic';
       icon = 'spell-basic';
     } else {
       let item_slot = ii - 1;
-      if (item_slot >= floor_level) {
-        disabled = true;
-      } else if (!books[item_slot]) {
+      if (!books[item_slot]) {
         disabled = true;
       } else {
         action = books[item_slot];
         skill_details = skillDetails(action);
         icon = `spell-${ELEMENT_NAME[skill_details.element]}`;
+        if (item_slot >= floor_level) {
+          disabled = true;
+          disable_button = true;
+        }
       }
     }
     let is_attack = true;
@@ -2324,6 +2348,7 @@ function doQuickbar(): void {
         img: autoAtlas('ui', icon),
         hotkey: KEYS[hotkey],
         // base_name: canIssueAction() ? undefined : 'button_disabled',
+        disabled: disable_button,
       }));
       if (!canIssueAction()) {
         drawRect2({
@@ -3040,7 +3065,7 @@ function onEnterCell(pos: Vec2): void {
 
 function onInitPos(): void {
   // autoAttackCancel();
-  myEnt().calcPlayerResist();
+  myEnt().calcPlayerResist(currentFloorLevel());
 }
 
 function playInitShared(online: boolean): void {

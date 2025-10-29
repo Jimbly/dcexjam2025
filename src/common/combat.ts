@@ -1,4 +1,5 @@
 export const POTION_HEAL_AMOUNT = 30;
+export const MAX_LEVEL = 9;
 
 import assert from 'assert';
 import { capitalize } from 'glov/common/util';

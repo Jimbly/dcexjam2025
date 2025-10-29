@@ -30,7 +30,7 @@ import {
 import { ActionAttackPayload } from '../common/entity_game_common';
 import { crawlerEntFactory, myEntID } from './crawler_entity_client';
 import { EntityClient, entityManager } from './entity_game_client';
-import { addFloater, myEnt } from './play';
+import { addFloater, currentFloorLevel, myEnt } from './play';
 import { statusSet } from './status';
 
 const { abs, floor, max, random } = Math;
@@ -412,7 +412,7 @@ function aiDoEnemy(
     return false;
   }
 
-  target_ent.calcPlayerResist();
+  target_ent.calcPlayerResist(currentFloorLevel());
   let target_stats = target_ent.data.stats;
   let attacker_stats = ent.data.stats;
   let { dam, style, resist } = damage(attacker_stats, target_stats);

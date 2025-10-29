@@ -31,7 +31,7 @@ import {
   Floater,
 } from './crawler_entity_client';
 
-const { random } = Math;
+const { min, random } = Math;
 
 type Entity = EntityClient;
 
@@ -148,14 +148,14 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
     return maxMP(level);
   }
 
-  calcPlayerResist(): void {
+  calcPlayerResist(floor_level: number): void {
     assert(this.isPlayer());
     let hats = this.getData<Item[]>('hats', []);
     let { stats } = this.data;
     stats.rfire = 0;
     stats.rearth = 0;
     stats.rice = 0;
-    for (let ii = 0; ii < hats.length; ++ii) {
+    for (let ii = 0; ii < min(hats.length, floor_level); ++ii) {
       let hat = hats[ii];
       let details = hatDetails(hat);
       stats[`r${ELEMENT_NAME[details.element]}`]! += details.resist;

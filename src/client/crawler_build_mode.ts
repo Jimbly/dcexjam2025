@@ -1102,6 +1102,7 @@ let level_prop_key_items: MenuItem[] = [
   'subtitle',
   'music',
   'noexplore',
+  'floorlevel',
   'new',
 ].map((name) => ({ name, tag: name }));
 

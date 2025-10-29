@@ -21,6 +21,7 @@ Hats
   X base = 9, inc = 1 => 51%
 [elemental] + x% fire damage
 [armored] + 1 DR/level?
++ max MP/HP
 
 Extra (books?)
 L1 S4 1MaxMP 10% more MP gain

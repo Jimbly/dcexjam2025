@@ -7,8 +7,8 @@ tiles:
   secret: [3, 0]
 
   door: [0, 1]
-  stairs_in: [1, 1]
-  stairs_out: [2, 1]
+  stairs_in: [2, 1]
+  stairs_out: [1, 1]
   arch: [3, 1]
 
   detail1: [0, 2]
