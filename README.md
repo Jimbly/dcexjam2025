@@ -14,14 +14,10 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* "floor level"
-  * show floor level and # monsters alive on HUD?
-* respawn / defeat mechanic
-* damage buff on higher level monsters attacking us; decrease on us attacking them
-  * give more max HP on levelup as well - need to add higher level monsters and figure that out
 * reward for floor mechanic?
 * shops / merging
 * player creation / renaming
+* potions heal 50% of max HP?
 
 Assets to replace
 * panel / status message background
@@ -29,6 +25,7 @@ Assets to replace
 * placeholder sounds in play.ts
 
 TODO
+* death animation should always switch to a blood particle within a few hundred ms (in sprite animation)
 * hunter/wander never move onto square outside of stairs_in
 * add compass/coords to UI
 * show an un-slotted, but available, quickbar slot as a different color
@@ -38,6 +35,7 @@ TODO
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * animate/grow critters on attack / hit
+* death penalty: lose some inventory too? get kicked out of floor (maybe it gets reset?)
 * fix two hits on the same frame not showing floaters well
 * bug: visibility is different before/after turning camera/moving forward and back if directly facing a wall
   * relatedly: moving backwards through a door and I could see the enemy on the other side
@@ -54,6 +52,7 @@ TODO
 * fix battle log messages, especially in OMP
 * player names over heads
 * add ability to drop items?
+* wider hats/books at least in inventory
 
 Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready

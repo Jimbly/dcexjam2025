@@ -175,6 +175,11 @@ export type CrawlerMapViewParam = {
   button_disabled: boolean;
 };
 
+let last_num_enemies: [number, number] = [0, 0];
+export function mapViewLastNumEnemies(): [number, number] {
+  return last_num_enemies;
+}
+
 export function crawlerMapViewDraw({
   game_state,
   x,
@@ -239,6 +244,7 @@ export function crawlerMapViewDraw({
   }
   let initial_entities = level.initial_entities || [];
   let total_enemies = initial_entities.length;
+  last_num_enemies = [num_enemies, total_enemies];
   //last_progress = level.seen_cells/level.total_cells;
   last_progress = total_enemies ? max(0, 1 - (num_enemies / total_enemies)) : 1;
   let floor_title = level.props.title as string || `Floor ${game_state.floor_id}`;

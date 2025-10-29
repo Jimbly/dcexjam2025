@@ -413,7 +413,17 @@ entityServerRegisterActions([{
   self_only: true,
   allowed_data_assignments: {
     'stats.xp': 'number',
+    'stats.hp': 'number',
+    'stats.hp_max': 'number',
     'stats.level': 'number',
+    seq_inventory: 'string',
+  },
+}, {
+  action_id: 'respawn',
+  self_only: true,
+  allowed_data_assignments: {
+    'stats.hp': 'number',
+    'stats.xp': 'number',
     seq_inventory: 'string',
   },
 }, {

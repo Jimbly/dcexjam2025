@@ -74,6 +74,7 @@ import {
   hatDetails,
   itemName,
   MAX_LEVEL,
+  maxHP,
   maxMP,
   POTION_HEAL_AMOUNT,
   rewardLevel,
@@ -136,6 +137,7 @@ import {
   crawlerMapViewDraw,
   crawlerMapViewStartup,
   mapViewActive,
+  mapViewLastNumEnemies,
   mapViewSetActive,
   mapViewToggle,
 } from './crawler_map_view';
@@ -206,7 +208,7 @@ import {
 } from './status';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { abs, ceil, floor, max, min, PI, random, round, sin } = Math;
+const { abs, ceil, cos, floor, max, min, PI, random, round, sin } = Math;
 
 declare module 'glov/client/settings' {
   export let ai_pause: 0 | 1; // TODO: move to ai.ts
@@ -276,6 +278,7 @@ let frame_sprites: {
   horiz_red: Sprite;
   vert_red: Sprite;
 };
+let dither128: Sprite;
 
 const outline_width = 2.5;
 const style_text = fontStyle(null, {
@@ -1533,14 +1536,15 @@ export function drawHealthBar(
 const HP_BAR_H = 12;
 
 const HP_BAR_W = 96;
-const STATS_BAR_W = BUTTON_W * 3 + 4;
+const STATS_BAR_W = 60;
 const STATS_X_INDENT = 2;
 const STATS_XP_BAR_H = 4;
 const style_stats = fontStyleColored(null, palette_font[PAL_WHITE + 1]);
 function drawStats(): void {
   let me = myEnt();
-  let x = VIEWPORT_X0 + render_width + 16;
-  let y = FRAME_HORIZ_SPLIT + 12 + 6;
+  let x = FRAME_VERT_SPLIT + 12 + 3;
+  let y0 = FRAME_HORIZ_SPLIT + 12 + 6;
+  let y = y0;
   let z = Z.UI;
   // drawRect(332, 80, 411, 243, z - 1, palette[PAL_BLACK]);
   let level = me.getData('stats.level', 1);
@@ -1551,10 +1555,6 @@ function drawStats(): void {
     // just when debugging / poking level stats
     prev_xp = 0;
   }
-  let hp = me.getData('stats.hp', 0);
-  let hp_max = me.getData('stats.hp_max', 1);
-  let mp = me.getData('stats.mp', 0);
-  let mp_max = me.maxMP();
   if (level === MAX_LEVEL) {
     font.draw({
       style: style_stats,
@@ -1587,12 +1587,60 @@ function drawStats(): void {
     drawBar(bar_sprites.xpbar, x, y, z, STATS_BAR_W, STATS_XP_BAR_H, xp/next_xp);
   }
 
-  // TODO: gold and floor level
+  // gold and floor level
+  let x1 = game_width - 12 - 3;
+  x += floor((x1 - x) / 2) - 3;
+  y = y0;
+  let w = x1 - x;
+  font.draw({
+    style: style_stats,
+    x: x + STATS_X_INDENT,
+    y,
+    w,
+    align: ALIGN.HCENTER,
+    text: `${0} GP`,
+  });
+  y += FONT_HEIGHT;
+  font.draw({
+    style: style_stats,
+    x: x + STATS_X_INDENT,
+    y,
+    w,
+    align: ALIGN.HCENTER,
+    text: `Floor Level ${currentFloorLevel()}`,
+  });
+  y += FONT_HEIGHT;
+
+  // enemy count
+  let num_enemies = mapViewLastNumEnemies();
+  x = FRAME_VERT_SPLIT + 12;
+  y = 16;
+  if (num_enemies && num_enemies[1]) {
+    let num = num_enemies[0];
+    w = (MINIMAP_X - 8) - x;
+    autoAtlas(num ? 'map' : 'ui', num ? 'enemy' : 'check').draw({
+      x: x + floor((w - 12)/2),
+      y, z,
+      w: 12, h: 12,
+    });
+    y += 12 + 2;
+    font.draw({
+      style: style_stats,
+      x, y, z,
+      w,
+      align: ALIGN.HCENTER,
+      text: `${num}`,
+    });
+  }
 
 
   z = Z.STATSBARS;
   x = 12*3;
   y = QUICKBAR_FRAME_Y;
+  let hp = me.getData('stats.hp', 0);
+  let hp_max = me.getData('stats.hp_max', 1);
+  let mp = me.getData('stats.mp', 0);
+  let mp_max = me.maxMP();
   let hp_param = {
     size: TINY_FONT_H,
     x, y, z: z + 1,
@@ -2031,9 +2079,14 @@ function giveXP(xp_reward: number): void {
       let old_mp = maxMP(cur_level);
       let new_mp = maxMP(new_level);
       let delta_mp = new_mp - old_mp;
-      let stat_delta = `+${delta_mp}MP`;
+      let old_hp = maxHP(cur_level);
+      let new_hp = maxHP(new_level);
+      let delta_hp = new_hp - old_hp;
+      let stat_delta = `+${delta_mp}MP, +${delta_hp}MaxHP`;
       chat_ui.addChat(`You level up to L${new_level}, ${stat_delta}`);
       data_assignments['stats.level'] = new_level;
+      data_assignments['stats.hp_max'] = new_hp;
+      data_assignments['stats.hp'] = my_ent.getData('stats.hp', 0) + delta_hp;
       statusPush('Level up!');
       statusPush(stat_delta);
     }
@@ -2143,7 +2196,7 @@ function onBroadcast(update: EntityManagerEvent): void {
         chat_ui.addChat(`${source} hits ${target} with ${type} for ${-hp} damage` +
           `${resist ? ' (resisted)' : ''}${fatal ? ', killing it' : ''}.`);
       }
-      if (fatal && target_ent) {
+      if (fatal && target_ent && target_ent.isEnemy()) {
         giveRewards(target_ent);
       }
     }
@@ -2167,24 +2220,58 @@ function onBroadcast(update: EntityManagerEvent): void {
 }
 
 function moveBlockDead(): boolean {
-  controller.setFadeOverride(0.75);
+  //controller.setFadeOverride(0.75);
+
+  let my_ent = myEnt();
+  if (my_ent.isAlive()) {
+    return false;
+  }
 
   let y = VIEWPORT_Y0;
   let w = render_width;
   let x = VIEWPORT_X0;
   let h = render_height;
   let z = Z.UI;
+  dither128.draw({
+    x, y, w, h,
+    z: z - 1,
+    color: palette[PAL_BLACK],
+    uvs: [0, 0, w/128, h/128],
+  });
 
-  font.drawSizedAligned(null,
-    x + floor(w/2), y + floor(h/2) - 16, z,
+  y += floor(h/3);
+  font.drawSizedAligned(style_text,
+    x + floor(w/2), y, z,
     uiTextHeight(), ALIGN.HCENTER|ALIGN.VBOTTOM,
     0, 0, 'You have died.');
+  y += 20;
+
+
+  let cur_level = my_ent.getData('stats.level', 1);
+  let last_level_xp = xpToLevelUp(cur_level - 1);
+  let cur_xp = my_ent.getData('stats.xp', 0);
+  let xp_since_level_up = max(0, cur_xp - last_level_xp);
+  let xp_loss = ceil(xp_since_level_up/2);
+  let new_xp = cur_xp - xp_loss;
+  font.drawSizedAlignedWrapped(style_text,
+    x, y, z, 0, uiTextHeight(), ALIGN.HCENTER|ALIGN.HWRAP,
+    w, 0, `Half of your XP since your last\nlevel up (${xp_loss}) will be lost.`);
+
+  y += 20 * 2;
 
   if (buttonText({
-    x: x + floor(w/2 - uiButtonWidth()/2), y: y + floor(h/2), z,
+    x: x + floor(w/2 - uiButtonWidth()/2), y, z,
     text: 'Respawn',
   })) {
-    controller.goToFloor(0, 'stairs_in', 'respawn');
+    controller.goToFloor(crawlerGameState().floor_id, 'stairs_in', 'respawn');
+    my_ent.applyBatchUpdate({
+      action_id: 'respawn',
+      field: 'seq_inventory',
+      data_assignments: {
+        'stats.hp': my_ent.getData('stats.hp_max', 1),
+        'stats.xp': new_xp,
+      },
+    }, errorsToChat);
   }
 
   return true;
@@ -2211,13 +2298,13 @@ function doAttack(target_ent: Entity, action: Item | 'basic'): void {
   let mp_cost = 0;
   let my_ent = myEnt();
   let resist;
+  let attacker_stats = my_ent.data.stats;
   if (action === 'basic') {
-    let attacker_stats = my_ent.data.stats;
     ({ dam, style, resist } = basicAttackDamage(attacker_stats, target_stats));
     mp_cost = -1;
   } else {
     let details = skillDetails(action);
-    ({ dam, style, resist } = skillAttackDamage(details, target_stats));
+    ({ dam, style, resist } = skillAttackDamage(details, attacker_stats, target_stats));
     ({ mp_cost } = details);
   }
 
@@ -3369,6 +3456,10 @@ export function playStartup(): void {
       name: 'frame-v-red',
     }),
   };
+
+  dither128 = spriteCreate({
+    name: 'dither128',
+  });
 
   controllerOnBumpEntity(bumpEntityCallback);
 

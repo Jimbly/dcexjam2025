@@ -5,7 +5,7 @@ import type { EntityClient } from '../client/entity_game_client';
 import type { EntityServer } from '../server/entity_game_server';
 import { ELEMENT, ElementName } from './entity_game_common';
 
-const { floor, random } = Math;
+const { ceil, floor, random } = Math;
 
 type Entity = EntityClient | EntityServer;
 
@@ -28,14 +28,14 @@ export function gameEntityTraitsCommonStartup(
     alloc_state: function (opts: StatsEnemyData, ent: Entity) {
       // TODO: use a callback that doesn't actually need to allocate any state on the entity?
       if (!ent.data.stats) {
-        let level = 1; // TODO: implicit from ent.data.floor
-        let hp = 17 + (level - 1) * 5 + floor(random() * opts.hp);
+        let level = 2; // TODO: implicit from ent.data.floor
+        let hp = 17 + (level - 1) + floor(random() * opts.hp);
         ent.data.stats = {
           hp,
           hp_max: hp,
           level,
           attack: opts.attack + (level - 1),
-          defense: opts.defense + (level - 1),
+          defense: ceil(opts.defense * level),
           // player-only:
           xp: 0,
           mp: 0,

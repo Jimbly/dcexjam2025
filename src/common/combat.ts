@@ -7,6 +7,21 @@ import { ELEMENT, Element, ELEMENT_NAME, ELEMENT_NONE, ElementName, Item, StatsD
 
 const { abs, pow, random, max, min, floor, round } = Math;
 
+function incomingDamageBuff(player_level: number, monster_level: number): number {
+  if (!monster_level || !player_level) {
+    return 1;
+  }
+  let d = monster_level - player_level;
+  if (d <= 0) {
+    return 1;
+  }
+  return d === 1 ? 2 : 4;
+}
+
+function outgoingDamagePenalty(player_level: number, monster_level: number): number {
+  return 1 / incomingDamageBuff(player_level, monster_level);
+}
+
 // return 0...1 weighted around 0.5
 export function bellish(xin: number, exp: number): number {
   // also reasonable: return easeInOut(xin, 1/exp);
@@ -60,26 +75,28 @@ function calcDamage(pair: {
   };
 }
 
-export function damage(attacker: StatsData, defender: StatsData): {
+export function damage(monster: StatsData, player: StatsData): {
   dam: number;
   style: string;
   resist: boolean;
 } {
   return calcDamage({
-    dam: attacker.attack,
-    element: attacker.element,
-  }, defender);
+    dam: monster.attack * incomingDamageBuff(player.level, monster.level),
+    element: monster.element,
+  }, player);
 }
 
-export function basicAttackDamage(attacker: StatsData, defender: StatsData): {
+const BASIC_DAMAGE = 5;
+
+export function basicAttackDamage(player: StatsData, monster: StatsData): {
   dam: number;
   style: string;
   resist: boolean;
 } {
   return calcDamage({
-    dam: 5,
+    dam: BASIC_DAMAGE * outgoingDamagePenalty(player.level, monster.level),
     element: ELEMENT_NONE,
-  }, defender);
+  }, monster);
 }
 
 const XP_TABLE = [
@@ -107,6 +124,10 @@ export function rewardLevel(my_level: number, enemy_level: number, highest_ally_
 
 export function maxMP(level: number): number {
   return 5 + (level - 1) * 2;
+}
+
+export function maxHP(player_level: number): number {
+  return 50 + (player_level - 1) * 10;
 }
 
 export type SkillDetails = {
@@ -190,14 +211,14 @@ export function itemName(item: Item): string {
   return 'Unknown';
 }
 
-export function skillAttackDamage(skill_details: SkillDetails, defender: StatsData): {
+export function skillAttackDamage(skill_details: SkillDetails, player: StatsData, monster: StatsData): {
   dam: number;
   style: string;
   resist: boolean;
 } {
-  let dam = skill_details.dam + 5;
+  let dam = skill_details.dam + BASIC_DAMAGE;
   return calcDamage({
-    dam,
+    dam: dam * outgoingDamagePenalty(player.level, monster.level),
     element: skill_details.element,
-  }, defender);
+  }, monster);
 }
