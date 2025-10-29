@@ -17,7 +17,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
 * reward for floor mechanic?
 * shops / merging
 * player creation / renaming
-* potions heal 50% of max HP?
 
 Assets to replace
 * panel / status message background

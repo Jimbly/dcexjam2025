@@ -1,4 +1,4 @@
-export const POTION_HEAL_AMOUNT = 30;
+export const POTION_HEAL_PORTION = 0.5;
 export const MAX_LEVEL = 9;
 
 import assert from 'assert';

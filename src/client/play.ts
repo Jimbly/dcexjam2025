@@ -76,7 +76,7 @@ import {
   MAX_LEVEL,
   maxHP,
   maxMP,
-  POTION_HEAL_AMOUNT,
+  POTION_HEAL_PORTION,
   rewardLevel,
   skillAttackDamage,
   SkillDetails,
@@ -935,7 +935,9 @@ class InventoryMenuAction extends UIAction {
         }).h + 2;
       }
       if (item.type === 'potion') {
-        line(`Heals for ${POTION_HEAL_AMOUNT} HP\nUse with [c=hotkey]H[/c] from the main screen.`);
+        line(`Heals for ${POTION_HEAL_PORTION*100}% Max HP` +
+          ` (${round(POTION_HEAL_PORTION * my_ent.getData('stats.hp_max',1))} HP)` +
+          '\nUse with [c=hotkey]H[/c] from the main screen.');
       } else if (item.type === 'book') {
         let skill_details = skillDetails(item);
         let basic_damage = basicAttackDamage(my_ent.data.stats, { defense: 0 } as StatsData);
@@ -2402,7 +2404,7 @@ function doHeal(): void {
   }
 
   let dstats: Partial<StatsData> = {};
-  let new_hp = min(hp_max, hp + POTION_HEAL_AMOUNT);
+  let new_hp = min(hp_max, hp + round(POTION_HEAL_PORTION * hp_max));
   dstats.hp = new_hp;
   let ops: ActionInventoryOp[] = [];
   ops.push({
