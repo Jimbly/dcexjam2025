@@ -14,6 +14,7 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
+* cute guy on inventory screen
 * xp and level up
 * "floor level"
   * apply it when calculating player resistances

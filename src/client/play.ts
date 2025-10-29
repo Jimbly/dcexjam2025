@@ -300,7 +300,7 @@ const style_mp_cost = fontStyle(null, {
 const style_item_level = fontStyle(null, {
   color: palette_font[PAL_YELLOW],
   outline_width: 3.5,
-  outline_color: palette_font[PAL_YELLOW - 2],
+  outline_color: palette_font[PAL_YELLOW - 5],
 });
 
 export function myEnt(): Entity {
