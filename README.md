@@ -14,13 +14,15 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* xp and level up
 * "floor level"
   * apply it when calculating player resistances
   * don't allow using abilities beyond it
+  * show floor level and # monsters alive on HUD?
 * respawn / defeat mechanic
-* reward for floor mechanic
-* shops
+* damage buff on higher level monsters attacking us; decrease on us attacking them
+  * give more max HP on levelup as well - need to add higher level monsters and figure that out
+* reward for floor mechanic?
+* shops / merging
 * player creation / renaming
 
 Assets to replace
@@ -51,6 +53,7 @@ TODO
 * change W icon to basic attack icon when engaged
 * show actual item instead of chest graphic when there's a single item
 * dither instead of blur for menuUp()
+* fix battle log messages, especially in OMP
 
 Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready

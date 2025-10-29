@@ -42,3 +42,15 @@ L1 enemies:
   20 HP (get 2-3 hits on optimal player, 3-4 on avg)
 3 hits x 20 enemies = 180 damage
   So, L1 PC = 50hp; heal for 30?
+
+
+XP sharing:
+  xp (and loot drops) given should be affected by the levels of who killed it
+  if a L1 and a L9 kill a L9, the L1 should get only L1 rewards
+  if a L1 and a L9 kill a L2, the L1 should get only L1 rewards
+  if a L2 and a L9 kill a L2, the L2 should still get L2 rewards
+  if a L1 and a L1 kill a L2, they should get L2 rewards
+  so: reward level -= max(0, min(highest friend, enemy) - my level)
+  get xp if:
+    ever hit them or they ever hit us (and we lived)
+      paint with radius of 3 if we hit something, so a melee helps all

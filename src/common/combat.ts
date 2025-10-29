@@ -81,8 +81,27 @@ export function basicAttackDamage(attacker: StatsData, defender: StatsData): {
   }, defender);
 }
 
+const XP_TABLE = [
+  20,
+  20,
+  66,
+  170,
+  402,
+  898,
+  1986,
+  4354,
+  9474,
+];
 export function xpToLevelUp(level: number): number {
-  return 100;
+  return XP_TABLE[level] || Infinity;
+}
+
+export function xpForDeath(enemy_level: number): number {
+  return pow(2, enemy_level - 1);
+}
+
+export function rewardLevel(my_level: number, enemy_level: number, highest_ally_level: number): number {
+  return enemy_level - max(0, min(highest_ally_level, enemy_level) - my_level);
 }
 
 export function maxMP(level: number): number {

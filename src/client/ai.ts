@@ -431,6 +431,10 @@ function aiDoEnemy(
     pred_id,
     executor: myEntID(),
   };
+  if (target_ent === myEnt() && dam < target_hp) {
+    // hit me, but didn't kill me
+    ent.hit_by_us = true;
+  }
   ent.applyAIUpdate('ai_attack', {}, payload, function (err) {
     if (err) {
       target_ent.predictedClear(pred_id);

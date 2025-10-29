@@ -31,6 +31,7 @@ export type BroadcastDataDstat = {
   type: string;
   resist?: boolean;
   fatal?: boolean;
+  highest_hitter?: number; // if fatal, highest level of anyone who it it
   pred_id?: number;
   executor: EntityID; // who did the logic / presumably already predicted it
 };
@@ -64,10 +65,11 @@ export type StatsData = {
   level: number;
   attack: number; // just monsters
   defense: number; // just monsters?
+  highest_hitter?: number; // just monsters
   element?: Element;
-  rfire?: number;
-  rearth?: number;
-  rice?: number;
+  rfire?: number; // only stored on monsters, re-cacl'd on players
+  rearth?: number; // only stored on monsters, re-cacl'd on players
+  rice?: number; // only stored on monsters, re-cacl'd on players
 };
 
 export type Item = {

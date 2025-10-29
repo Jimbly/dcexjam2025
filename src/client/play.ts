@@ -56,6 +56,7 @@ import { EntityManagerEvent } from 'glov/common/entity_base_common';
 import { DISPLAY_NAME_MAX_VISUAL_SIZE } from 'glov/common/net_common';
 import {
   EntityID,
+  TSMap,
 } from 'glov/common/types';
 import { capitalize, clamp, clone, easeOut, ridx } from 'glov/common/util';
 import { unreachable } from 'glov/common/verify';
@@ -70,12 +71,16 @@ import {
 import {
   basicAttackDamage,
   itemName,
+  maxMP,
   POTION_HEAL_AMOUNT,
+  rewardLevel,
   skillAttackDamage,
   SkillDetails,
   skillDetails,
+  xpForDeath,
   xpToLevelUp,
 } from '../common/combat';
+import { entManhattanDistance } from '../common/crawler_entity_common';
 import {
   BLOCK_MOVE,
   crawlerLoadData,
@@ -1483,7 +1488,6 @@ const HP_BAR_H = 12;
 const HP_BAR_W = 96;
 const STATS_BAR_W = BUTTON_W * 3 + 4;
 const STATS_X_INDENT = 2;
-const STATS_Y_PAD = 4;
 const STATS_XP_BAR_H = 4;
 const style_stats = fontStyleColored(null, palette_font[PAL_WHITE + 1]);
 function drawStats(): void {
@@ -1499,23 +1503,37 @@ function drawStats(): void {
   let hp_max = me.getData('stats.hp_max', 1);
   let mp = me.getData('stats.mp', 0);
   let mp_max = me.maxMP();
-  font.draw({
-    style: style_stats,
-    x: x + STATS_X_INDENT,
-    y,
-    text: `Level ${level}`,
-  });
-  y += FONT_HEIGHT - 2;
-  font.draw({
-    style: style_stats,
-    x: x + STATS_X_INDENT,
-    y,
-    text: `XP ${xp}/${next_xp}`,
-  });
-  y += FONT_HEIGHT;
-  drawBar(bar_sprites.xpbar, x, y, z, STATS_BAR_W, STATS_XP_BAR_H, xp/next_xp);
-  y += STATS_XP_BAR_H;
-  y += STATS_Y_PAD;
+  if (level === MAX_LEVEL) {
+    font.draw({
+      style: style_stats,
+      x: x + STATS_X_INDENT,
+      y,
+      text: `Level ${level} (Max)`,
+    });
+    y += FONT_HEIGHT - 2;
+    font.draw({
+      style: style_stats,
+      x: x + STATS_X_INDENT,
+      y,
+      text: `XP ${xp}`,
+    });
+  } else {
+    font.draw({
+      style: style_stats,
+      x: x + STATS_X_INDENT,
+      y,
+      text: `Level ${level}`,
+    });
+    y += FONT_HEIGHT - 2;
+    font.draw({
+      style: style_stats,
+      x: x + STATS_X_INDENT,
+      y,
+      text: `XP ${xp}/${next_xp}`,
+    });
+    y += FONT_HEIGHT;
+    drawBar(bar_sprites.xpbar, x, y, z, STATS_BAR_W, STATS_XP_BAR_H, xp/next_xp);
+  }
 
   // TODO: gold and floor level
 
@@ -1624,13 +1642,12 @@ function drawBattleZone(): void {
   let y = MINIMAP_Y + MINIMAP_H + 8;
   let z = Z.UI;
 
-  tiny_font.draw({
+  font.draw({
     color: palette_font[PAL_WHITE + 1],
     x: x + 1, y, z,
-    size: TINY_FONT_H,
     text: 'BattleZone',
   });
-  y += TINY_FONT_H + 1;
+  y += FONT_HEIGHT + 1;
 
   let entity_manager = entityManager();
   let game_state = crawlerGameState();
@@ -1682,13 +1699,12 @@ function drawBattleZone(): void {
     if (is_bz && !isInBattleZone(ent)) {
       y += 2;
       is_bz = false;
-      tiny_font.draw({
+      font.draw({
         color: palette_font[PAL_WHITE + 1],
         x: x + 1, y, z,
-        size: TINY_FONT_H,
         text: `Nearby (${players.length - ii})`,
       });
-      y += TINY_FONT_H + 1;
+      y += FONT_HEIGHT + 1;
     }
     let is_ready = ent.getData('ready', false);
     drawBox({
@@ -1793,13 +1809,12 @@ function drawBattleZone(): void {
   if (is_bz) {
     y += 2;
     is_bz = false;
-    tiny_font.draw({
+    font.draw({
       color: palette_font[PAL_WHITE + 1],
       x: x + 1, y, z,
-      size: TINY_FONT_H,
       text: 'Nearby (0)',
     });
-    y += TINY_FONT_H + 1;
+    y += FONT_HEIGHT + 1;
     if (players.length <= 1) {
       y += 12;
       font.draw({
@@ -1815,7 +1830,7 @@ function drawBattleZone(): void {
       font.draw({
         color: palette_font[PAL_WHITE + 2],
         x,
-        y: 324,
+        y: 180,
         z,
         w: BATTLEZONE_W,
         align: ALIGN.HCENTER | ALIGN.HWRAP,
@@ -1898,6 +1913,91 @@ export function addFloater(ent_id: EntityID, message: string | null, anim?: stri
   }
 }
 
+function giveXP(xp_reward: number): void {
+  let chat_ui = getChatUI();
+  let my_ent = myEnt();
+  let cur_xp = my_ent.getData('stats.xp', 0);
+  let cur_level = my_ent.getData('stats.level', 1);
+  let new_xp = cur_xp + xp_reward;
+  let data_assignments: TSMap<number> = {};
+  data_assignments['stats.xp'] = new_xp;
+  if (cur_level < MAX_LEVEL) {
+    let xp_for_level_up = xpToLevelUp(cur_level);
+    if (new_xp >= xp_for_level_up) {
+      let new_level = cur_level + 1;
+      playUISound('levelup');
+      let old_mp = maxMP(cur_level);
+      let new_mp = maxMP(new_level);
+      let delta_mp = new_mp - old_mp;
+      let stat_delta = `+${delta_mp}MP`;
+      chat_ui.addChat(`You level up to L${new_level}, ${stat_delta}`);
+      data_assignments['stats.level'] = new_level;
+      statusPush('Level up!');
+      statusPush(stat_delta);
+    }
+  }
+  my_ent.applyBatchUpdate({
+    field: 'seq_inventory',
+    action_id: 'give_xp',
+    data_assignments,
+  }, errorsToChat);
+}
+
+function giveRewards(target_ent: Entity): void {
+  let my_ent = myEnt();
+  let my_level = my_ent.getData('stats.level', 1);
+  let enemy_level = target_ent.getData('stats.level', 1);
+  let highest_hitter = target_ent.getData('stats.highest_hitter', 1);
+  let reward_level = rewardLevel(my_level, enemy_level, highest_hitter);
+  let entity_manager = entityManager();
+  let pos = target_ent.getData<JSVec3>('pos')!;
+  let loot: Item[] = [];
+  if (random() < 0.05) {
+    loot.push({
+      type: 'potion',
+      subtype: 0,
+      level: 1,
+      count: 1,
+    });
+  } else {
+    loot.push({
+      type: random() < 0.5 ? 'book' : 'hat',
+      subtype: floor(random() * 3),
+      level: reward_level,
+      count: 1,
+    });
+  }
+  let existing_ents = entitiesAt(entity_manager, pos, target_ent.data.floor, true);
+  existing_ents = existing_ents.filter((ent) => {
+    return ent.type_id === 'chest-local';
+  });
+  if (existing_ents.length) {
+    let contents = existing_ents[0].data.contents;
+    assert(contents);
+    existing_ents[0].data.contents = contents.concat(loot);
+  } else {
+    let new_ent: Partial<EntityDataClient> = {
+      floor: target_ent.data.floor,
+      pos,
+      type: 'chest-local',
+      contents: loot,
+    };
+    entity_manager.addClientOnlyEntityFromSerialized(new_ent);
+  }
+
+  let xp_reward = xpForDeath(reward_level);
+  statusPush(`+${xp_reward} XP`);
+  let chat_ui = getChatUI();
+  if (reward_level < enemy_level) {
+    chat_ui.addChat(`You gain ${xp_reward} XP (enemy L${enemy_level} > your L${my_level},` +
+      ` assist L${highest_hitter}, reward L${reward_level})`);
+  } else {
+    chat_ui.addChat(`You gain ${xp_reward} XP (enemy L${enemy_level})`);
+  }
+
+  giveXP(xp_reward);
+}
+
 function onBroadcast(update: EntityManagerEvent): void {
   let { from, msg, data } = update;
   let chat_ui = getChatUI();
@@ -1930,45 +2030,19 @@ function onBroadcast(update: EntityManagerEvent): void {
         } else {
           chat_ui.addChat(`It hits you with ${type} for ${-hp} damage${resist ? ' (resisted)' : ''}.`);
         }
+        if (!fatal) {
+          // hit me, but didn't kill me
+          let source_ent = entity_manager.getEnt(source);
+          if (source_ent) {
+            source_ent.hit_by_us = true;
+          }
+        }
       } else {
         chat_ui.addChat(`${source} hits ${target} with ${type} for ${-hp} damage` +
           `${resist ? ' (resisted)' : ''}${fatal ? ', killing it' : ''}.`);
       }
       if (fatal && target_ent) {
-        let pos = target_ent.data.pos;
-        let loot: Item[] = [];
-        if (random() < 0.05) {
-          loot.push({
-            type: 'potion',
-            subtype: 0,
-            level: 1,
-            count: 1,
-          });
-        } else {
-          loot.push({
-            type: random() < 0.5 ? 'book' : 'hat',
-            subtype: floor(random() * 3),
-            level: 1,
-            count: 1,
-          });
-        }
-        let existing_ents = entitiesAt(entity_manager, pos, target_ent.data.floor, true);
-        existing_ents = existing_ents.filter((ent) => {
-          return ent.type_id === 'chest-local';
-        });
-        if (existing_ents.length) {
-          let contents = existing_ents[0].data.contents;
-          assert(contents);
-          existing_ents[0].data.contents = contents.concat(loot);
-        } else {
-          let new_ent: Partial<EntityDataClient> = {
-            floor: target_ent.data.floor,
-            pos,
-            type: 'chest-local',
-            contents: loot,
-          };
-          entity_manager.addClientOnlyEntityFromSerialized(new_ent);
-        }
+        giveRewards(target_ent);
       }
     }
   // } else if (msg === 'pickup') {
@@ -2014,6 +2088,20 @@ function moveBlockDead(): boolean {
   return true;
 }
 
+function markActiveInCombat(): void {
+  let my_ent = myEnt();
+  let game_state = crawlerGameState();
+  let { floor_id } = game_state;
+  let pos = my_ent.getData<JSVec3>('pos')!;
+  let entity_manager = entityManager();
+  let ents = entity_manager.entitiesFind((ent) => {
+    return ent.data.floor === floor_id && entManhattanDistance(ent, pos) <= 3;
+  }, false);
+  for (let ii = 0; ii < ents.length; ++ii) {
+    ents[ii].hit_by_us = true;
+  }
+}
+
 function doAttack(target_ent: Entity, action: Item | 'basic'): void {
   let dam: number;
   let style: string;
@@ -2031,6 +2119,10 @@ function doAttack(target_ent: Entity, action: Item | 'basic'): void {
     ({ mp_cost } = details);
   }
 
+  if (dam > 0) {
+    target_ent.hit_by_us = true;
+    markActiveInCombat();
+  }
   let target_hp = target_ent.getData('stats.hp', 0);
   let new_hp = max(0, target_hp - dam);
   addFloater(target_ent.id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}` +

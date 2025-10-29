@@ -73,6 +73,8 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
   last_closest_ent: EntityID = 0;
   battle_zone: EntityID = 0; // on a player, if we share a battle zone with others, what's the lowest EntityID
 
+  hit_by_us = false; // whether or not we get XP from their death
+
   declare onDelete: (reason: string) => number;
   declare draw2D: (param: EntityDraw2DOpts) => void;
   declare draw?: (param: EntityDrawOpts) => void;
@@ -141,6 +143,7 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
   }
 
   maxMP(): number {
+    // Note: level up logic doesn't call this entity-scoped function
     let level = this.getData('stats.level', 1);
     return maxMP(level);
   }

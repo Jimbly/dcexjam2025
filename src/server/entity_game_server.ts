@@ -335,11 +335,21 @@ function handleActionAttack(
 
   let target_stats = target.data.stats;
   assert(target_stats.hp);
+
+  if (!target.is_player) {
+    let attacker_level = this.data.stats.level || 1;
+    if (!target_stats.highest_hitter || attacker_level > target_stats.highest_hitter) {
+      target.setDataSub('stats', 'highest_hitter', attacker_level);
+    }
+  }
+
+
   let new_hp = max(0, target_stats.hp - dam);
   target.setDataSub('stats', 'hp', new_hp);
   let ret: BroadcastDataDstat = { hp: -dam, source: this.id, action: 'attack', type, pred_id, executor, resist };
   if (!target_stats.hp) {
     ret.fatal = true;
+    ret.highest_hitter = target_stats.highest_hitter;
     if (target.is_player) {
       // client should respawn somewhere, eventually
     } else {
@@ -397,6 +407,14 @@ entityServerRegisterActions([{
   allowed_data_assignments: {
     ready: 'boolean',
     seq_unready: 'string',
+  },
+}, {
+  action_id: 'give_xp',
+  self_only: true,
+  allowed_data_assignments: {
+    'stats.xp': 'number',
+    'stats.level': 'number',
+    seq_inventory: 'string',
   },
 }, {
   action_id: 'inv',
