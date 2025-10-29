@@ -14,6 +14,8 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
+add banner _if waiting on another player, not tick_
+add max MP to inventory screen
 * "floor level"
   * show floor level and # monsters alive on HUD?
 * respawn / defeat mechanic
@@ -52,6 +54,8 @@ TODO
 * show actual item instead of chest graphic when there's a single item
 * dither instead of blur for menuUp()
 * fix battle log messages, especially in OMP
+* player names over heads
+* add ability to drop items?
 
 Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready

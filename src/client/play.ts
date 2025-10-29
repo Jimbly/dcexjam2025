@@ -36,6 +36,7 @@ import {
 } from 'glov/client/sprites';
 import {
   button,
+  buttonLastSpotRet,
   ButtonStateString,
   buttonText,
   drawBox,
@@ -297,6 +298,8 @@ const style_item_count = fontStyle(null, {
   outline_color: palette_font[PAL_BLACK - 5],
 });
 const style_mp_cost_over = fontStyle(null, {
+  outline_width: 3.5,
+  outline_color: palette_font[PAL_RED - 2],
   color: palette_font[PAL_RED],
 });
 const style_mp_cost = fontStyle(null, {
@@ -524,7 +527,7 @@ function inventoryButton(param: InventoryButtonParam): boolean {
       ...button_param,
       x: button_param.x + 1 - offs,
       y: button_param.y + offs,
-      style: style_mp_cost,
+      style: skill_details.mp_cost > myEnt().maxMP() ? style_mp_cost_over : style_mp_cost,
       size: TINY_FONT_H,
       z: z + 3,
       align: ALIGN.VBOTTOM,
@@ -579,7 +582,7 @@ function inventoryIndexForItemPickup(item: Item): number {
 
 function unequip(loc: 'hats' | 'books', src_idx: number, target_idx: number): void {
   let my_ent = myEnt();
-  let inventory = my_ent.getData<(Item|null)[]>('inventory', []);
+  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
   assert(target_idx !== -1);
   let src_list = my_ent.getData<Item[]>(loc, []);
   let item = src_list[src_idx];
@@ -626,7 +629,7 @@ function unequip(loc: 'hats' | 'books', src_idx: number, target_idx: number): vo
 
 function equip(idx: number, swap_target_idx: number | null): void {
   let my_ent = myEnt();
-  let inventory = my_ent.getData<(Item|null)[]>('inventory', []);
+  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
   let item = inventory[idx];
   assert(item);
   assert(item.type === 'hat' || item.type === 'book');
@@ -751,7 +754,7 @@ class InventoryMenuAction extends UIAction {
     let books = my_ent.getData<Item[]>('books', []);
     let { selected_idx } = this;
 
-    if (engine.DEBUG && selected_idx[0] === 'null') {
+    if (engine.DEBUG && selected_idx[0] === 'null' && false) {
       selected_idx = this.selected_idx = ['inv', 4];
     }
 
@@ -774,6 +777,7 @@ class InventoryMenuAction extends UIAction {
       align: ALIGN.HRIGHT,
       text: `Player L${level}`,
     });
+    let do_action = false;
     if (floor_level < level) {
       level_y = y0 + (BUTTON_W + INVENTORY_PAD) * (MAX_LEVEL - floor_level) - 3;
       autoAtlas('ui', 'inventory-separator').draw({
@@ -802,7 +806,19 @@ class InventoryMenuAction extends UIAction {
         x, y, z, w: BUTTON_W, h: BUTTON_W,
       };
       if (!item) {
-        drawBox(param, autoAtlas('ui', idx < level ? 'inventory-fillable' : 'inventory-empty'));
+        drawBox(param, autoAtlas('ui', idx < level ? 'inventory-fillable-hat' : 'inventory-locked'));
+        if (idx >= level) {
+          font.draw({
+            color: palette_font[4],
+            x: x0 + BUTTON_W,
+            y: param.y,
+            z,
+            w: INVENTORY_BETWEEN_ITEM_COLUMNS,
+            h: param.h,
+            align: ALIGN.HCENTER | ALIGN.VCENTER,
+            text: `L${idx + 1}`
+          });
+        }
       } else {
         if (inventoryButton({
           x, y, z,
@@ -811,6 +827,9 @@ class InventoryMenuAction extends UIAction {
           selected: selected_idx[0] === 'hats' && selected_idx[1] === idx,
         })) {
           this.selected_idx = selected_idx = ['hats', idx];
+          if (buttonLastSpotRet().double_click) {
+            do_action = true;
+          }
         }
       }
     }
@@ -825,7 +844,7 @@ class InventoryMenuAction extends UIAction {
         x, y, z, w: BUTTON_W, h: BUTTON_W,
       };
       if (!item) {
-        drawBox(param, autoAtlas('ui', idx < level ? 'inventory-fillable' : 'inventory-empty'));
+        drawBox(param, autoAtlas('ui', idx < level ? 'inventory-fillable-book' : 'inventory-locked'));
       } else {
         if (inventoryButton({
           x, y, z,
@@ -834,6 +853,9 @@ class InventoryMenuAction extends UIAction {
           selected: selected_idx[0] === 'books' && selected_idx[1] === idx,
         })) {
           this.selected_idx = selected_idx = ['books', idx];
+          if (buttonLastSpotRet().double_click) {
+            do_action = true;
+          }
         }
       }
     }
@@ -859,6 +881,9 @@ class InventoryMenuAction extends UIAction {
             selected: selected_idx[0] === 'inv' && selected_idx[1] === idx,
           })) {
             this.selected_idx = selected_idx = ['inv', idx];
+            if (buttonLastSpotRet().double_click) {
+              do_action = true;
+            }
           }
         }
       }
@@ -928,7 +953,7 @@ class InventoryMenuAction extends UIAction {
         return Boolean(button({
           x, y, z,
           text,
-        }));
+        }) || do_action);
       }
 
       function disabledAction(text: string): void {
@@ -985,10 +1010,11 @@ class InventoryMenuAction extends UIAction {
             // disabledAction('Equip');
           }
         } else {
+          line('This is currently equipped');
           assert(sel_loc === 'hats' || sel_loc === 'books');
           let target_idx = inventoryIndexForItemPickup(item);
           if (selected_idx[1] >= floor_level) {
-            line('Note: Though this is equipped, you are wielding more' +
+            line('Note: You are wielding more' +
               ` ${item.type}s than the current Floor Level, so only the bottom (best) item(s) will be used.`);
           }
           if (target_idx === -1) {
@@ -1517,9 +1543,14 @@ function drawStats(): void {
   let y = FRAME_HORIZ_SPLIT + 12 + 6;
   let z = Z.UI;
   // drawRect(332, 80, 411, 243, z - 1, palette[PAL_BLACK]);
-  let level = me.getData('stats.level', 0);
+  let level = me.getData('stats.level', 1);
   let xp = me.getData('stats.xp', 0);
+  let prev_xp = xpToLevelUp(level - 1);
   let next_xp = xpToLevelUp(level);
+  if (xp < prev_xp) {
+    // just when debugging / poking level stats
+    prev_xp = 0;
+  }
   let hp = me.getData('stats.hp', 0);
   let hp_max = me.getData('stats.hp_max', 1);
   let mp = me.getData('stats.mp', 0);
@@ -1550,7 +1581,7 @@ function drawStats(): void {
       style: style_stats,
       x: x + STATS_X_INDENT,
       y,
-      text: `XP ${xp}/${next_xp}`,
+      text: `XP ${xp - prev_xp}/${next_xp - prev_xp}`,
     });
     y += FONT_HEIGHT;
     drawBar(bar_sprites.xpbar, x, y, z, STATS_BAR_W, STATS_XP_BAR_H, xp/next_xp);
@@ -1602,7 +1633,6 @@ function drawStats(): void {
     color: palette_font[PAL_WHITE + 2],
   });
   spriteClipPop();
-
 }
 
 let color_temp = vec4();
@@ -2939,7 +2969,9 @@ export function play(dt: number): void {
   }
 
   battleZonePrep(); // before crawlerPlayTopOfFrame
-  battleZoneDebug();
+  if (engine.DEBUG && false) {
+    battleZoneDebug();
+  }
 
   let overlay_menu_up = Boolean(cur_action?.is_overlay_menu || dialogMoveLocked());
 

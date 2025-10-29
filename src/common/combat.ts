@@ -83,7 +83,7 @@ export function basicAttackDamage(attacker: StatsData, defender: StatsData): {
 }
 
 const XP_TABLE = [
-  20,
+  0,
   20,
   66,
   170,
