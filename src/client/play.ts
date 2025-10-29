@@ -57,7 +57,7 @@ import { DISPLAY_NAME_MAX_VISUAL_SIZE } from 'glov/common/net_common';
 import {
   EntityID,
 } from 'glov/common/types';
-import { clamp, clone, easeOut, ridx } from 'glov/common/util';
+import { capitalize, clamp, clone, easeOut, ridx } from 'glov/common/util';
 import { unreachable } from 'glov/common/verify';
 import {
   JSVec2,
@@ -597,6 +597,8 @@ function unequip(loc: 'hats' | 'books', src_idx: number, target_idx: number): vo
       [loc]: src_list,
     },
   }, errorsToChat);
+
+  my_ent.calcPlayerResist();
 }
 
 function equip(idx: number, swap_target_idx: number | null): void {
@@ -681,6 +683,8 @@ function equip(idx: number, swap_target_idx: number | null): void {
       [loc]: target_list,
     },
   }, errorsToChat);
+
+  my_ent.calcPlayerResist();
 }
 
 const INVENTORY_LEFT_COLUMN = 52;
@@ -700,12 +704,16 @@ const INVENTORY_GRID_YOFFS = INVENTORY_PAD6 * 2;
 const INVENTORY_INFO_YOFFS = INVENTORY_GRID_YOFFS +
   INVENTORY_GRID_H_PX +
   INVENTORY_PAD6 * 2;
-const INVENTORY_H = 300; // TODO
+const INVENTORY_H = 280;
 const INVENTORY_X = floor((game_width - INVENTORY_W) / 2);
 const INVENTORY_Y = floor((game_height - INVENTORY_H) / 2);
 const MAX_LEVEL = 9;
 const style_inventory = fontStyleColored(null, palette_font[PAL_BLACK - 1]);
 class InventoryMenuAction extends UIAction {
+  constructor() {
+    super();
+    myEntOptional()?.calcPlayerResist();
+  }
   selected_idx: [string, number] = ['null', 0];
   tick(): void {
     let z = Z.MODAL;
@@ -877,9 +885,10 @@ class InventoryMenuAction extends UIAction {
         line(`Heals for ${POTION_HEAL_AMOUNT} HP\nUse with [c=hotkey]H[/c] from the main screen.`);
       } else if (item.type === 'book') {
         let skill_details = skillDetails(item);
+        let basic_damage = basicAttackDamage(my_ent.data.stats, { defense: 0 } as StatsData);
         let elem_name = ELEMENT_NAME[skill_details.element];
         line(`Cost: [c=mp]${skill_details.mp_cost} MP[/c]\n` +
-            `Deals [c=dam${elem_name}]${skill_details.dam} ${elem_name} damage[/c].`);
+            `Deals [c=dam${elem_name}]${skill_details.dam + basic_damage.dam} ${elem_name} damage[/c].`);
       } else if (item.type === 'hat') {
         // TODO
       } else {
@@ -960,6 +969,38 @@ class InventoryMenuAction extends UIAction {
       }
 
     }
+
+    x0 = INVENTORY_X + INVENTORY_PAD;
+    y0 = INVENTORY_Y + INVENTORY_H - FONT_HEIGHT * 4 - INVENTORY_PAD - 4;
+    let y = y0;
+    title_font.draw({
+      style: style_inventory,
+      size: TITLE_FONT_H,
+      x: x0,
+      y,
+      z,
+      w: 80,
+      align: ALIGN.HCENTER,
+      text: 'Resistances',
+    });
+    y += TITLE_FONT_H;
+    (['fire', 'earth', 'ice'] as const).forEach(function (elem) {
+      markdownAuto({
+        x: x0,
+        y,
+        z,
+        w: 40,
+        align: ALIGN.HRIGHT,
+        text: `[c=dam${elem}]${capitalize(elem)}[/c]:`
+      });
+      markdownAuto({
+        x: x0 + 44,
+        y,
+        z,
+        text: `[c=dam${elem}]${my_ent.getData(`stats.r${elem}`, 0)}%[/c]`
+      });
+      y += FONT_HEIGHT;
+    });
 
     drawBox({
       x: INVENTORY_X - 4,
@@ -1858,7 +1899,7 @@ function onBroadcast(update: EntityManagerEvent): void {
           });
         } else {
           loot.push({
-            type: 'book',
+            type: random() < 0.5 ? 'book' : 'hat',
             subtype: floor(random() * 3),
             level: 1,
             count: 1,
@@ -2860,6 +2901,7 @@ function onEnterCell(pos: Vec2): void {
 
 function onInitPos(): void {
   // autoAttackCancel();
+  myEnt().calcPlayerResist();
 }
 
 function playInitShared(online: boolean): void {

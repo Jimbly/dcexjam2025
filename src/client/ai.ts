@@ -412,6 +412,7 @@ function aiDoEnemy(
     return false;
   }
 
+  target_ent.calcPlayerResist();
   let target_stats = target_ent.data.stats;
   let attacker_stats = ent.data.stats;
   let { dam, style, resist } = damage(attacker_stats, target_stats);

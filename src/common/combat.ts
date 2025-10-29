@@ -1,9 +1,10 @@
 export const POTION_HEAL_AMOUNT = 30;
 
 import assert from 'assert';
+import { capitalize } from 'glov/common/util';
 import { ELEMENT, Element, ELEMENT_NAME, ELEMENT_NONE, ElementName, Item, StatsData } from './entity_game_common';
 
-const { abs, pow, random, max, floor, round } = Math;
+const { abs, pow, random, max, min, floor, round } = Math;
 
 // return 0...1 weighted around 0.5
 export function bellish(xin: number, exp: number): number {
@@ -37,16 +38,20 @@ function calcDamage(pair: {
 } {
   let resist = false;
   let { dam, element } = pair;
+  let min_damage = 1;
   if (element) {
     let elem_def = defender[`r${ELEMENT_NAME[element]}`] || 0;
     if (elem_def) {
-      dam = dam * (100 - elem_def)/100;
+      dam = min(dam * (100 - elem_def)/100, dam - 1);
       resist = true;
+      if (elem_def >= 100) {
+        min_damage = 0;
+      }
     }
   }
   dam -= defender.defense;
   dam = round(dam);
-  dam = max(1, dam);
+  dam = max(min_damage, dam);
   return {
     dam,
     style: element && ELEMENT_NAME[element] || 'hit',
@@ -121,13 +126,46 @@ export function skillDetails(item: Item): SkillDetails {
   };
 }
 
+export type HatDetails = {
+  element: Element;
+  resist: number;
+};
+
+export function hatDetails(item: Item): HatDetails {
+  assert(item.type === 'hat');
+  let { subtype, level } = item;
+  let resist = 9 + level;
+  let element: ElementName;
+  switch (subtype) {
+    case 0:
+      element = 'fire';
+      break;
+    case 1:
+      element = 'earth';
+      break;
+    case 2:
+      element = 'ice';
+      break;
+    default:
+      assert(false);
+  }
+  return {
+    element: ELEMENT[element],
+    resist,
+  };
+}
+
 export function itemName(item: Item): string {
   if (item.type === 'potion') {
     return 'Potion';
   }
   if (item.type === 'book') {
     let skill_details = skillDetails(item);
-    return `L${item.level} ${ELEMENT_NAME[skill_details.element]}`;
+    return `L${item.level} Book of ${capitalize(ELEMENT_NAME[skill_details.element])}`;
+  }
+  if (item.type === 'hat') {
+    let hat_details = hatDetails(item);
+    return `L${item.level} ${capitalize(ELEMENT_NAME[hat_details.element])} Hat`;
   }
   return 'Unknown';
 }

@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { getFrameTimestamp } from 'glov/client/engine';
 import { EntityBaseClient } from 'glov/client/entity_base_client';
 import { ClientEntityManagerInterface } from 'glov/client/entity_manager_client';
@@ -10,11 +11,13 @@ import {
   NetErrorCallback,
 } from 'glov/common/types.js';
 import type { ROVec2 } from 'glov/common/vmath';
-import { maxMP } from '../common/combat';
+import { hatDetails, maxMP } from '../common/combat';
 import { EntityCrawlerDataCommon, entSamePos } from '../common/crawler_entity_common';
 import {
+  ELEMENT_NAME,
   entityGameCommonClass,
   EntityGameDataCommon,
+  Item,
 } from '../common/entity_game_common';
 import {
   crawlerEntClientDefaultDraw2D,
@@ -140,6 +143,20 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
   maxMP(): number {
     let level = this.getData('stats.level', 1);
     return maxMP(level);
+  }
+
+  calcPlayerResist(): void {
+    assert(this.isPlayer());
+    let hats = this.getData<Item[]>('hats', []);
+    let { stats } = this.data;
+    stats.rfire = 0;
+    stats.rearth = 0;
+    stats.rice = 0;
+    for (let ii = 0; ii < hats.length; ++ii) {
+      let hat = hats[ii];
+      let details = hatDetails(hat);
+      stats[`r${ELEMENT_NAME[details.element]}`]! += details.resist;
+    }
   }
 
   onCreate(is_initial: boolean): number {

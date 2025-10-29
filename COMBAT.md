@@ -16,7 +16,9 @@ Also want range=2 attacks? need particles and to change hunt/door behavior
 Healing from potions, which cost money (OMP -> fewer potions used)
 
 Hats
-[elemental] + x% resist/level
+[elemental] + base + inc/level % resist
+  want: 3 * base + (24 * inc) = 50%
+  X base = 9, inc = 1 => 51%
 [elemental] + x% fire damage
 [armored] + 1 DR/level?
 
