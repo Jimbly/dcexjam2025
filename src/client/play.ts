@@ -198,7 +198,7 @@ import {
 } from './status';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { abs, ceil, floor, max, min, random, round } = Math;
+const { abs, ceil, floor, max, min, PI, random, round, sin } = Math;
 
 declare module 'glov/client/settings' {
   export let ai_pause: 0 | 1; // TODO: move to ai.ts
@@ -430,12 +430,14 @@ function inventoryIconDraw(param: {
   y: number;
   z: number;
   item: Item;
+  scale?: number;
 }): void {
-  let { x, y, z, item } = param;
+  let { x, y, z, item, scale } = param;
   let icon_param = {
     x: x + 4,
     y: y + 4,
-    w: 12, h: 12,
+    w: 12 * (scale || 1),
+    h: 12 * (scale || 1),
     z: z + 1,
   };
   switch (item.type) {
@@ -709,6 +711,9 @@ const INVENTORY_X = floor((game_width - INVENTORY_W) / 2);
 const INVENTORY_Y = floor((game_height - INVENTORY_H) / 2);
 const MAX_LEVEL = 9;
 const style_inventory = fontStyleColored(null, palette_font[PAL_BLACK - 1]);
+const HAT_STACK_OFFS = [
+  1,2,1,0,2,1,2,1,0,1,2,0,1
+];
 class InventoryMenuAction extends UIAction {
   constructor() {
     super();
@@ -722,8 +727,8 @@ class InventoryMenuAction extends UIAction {
     let level = my_ent.getData('stats.level', 1);
     let floor_level = 2;
     let inventory = my_ent.getData<(Item|null)[]>('inventory', []);
-    let hats = my_ent.getData<(Item|null)[]>('hats', []);
-    let books = my_ent.getData<(Item|null)[]>('books', []);
+    let hats = my_ent.getData<Item[]>('hats', []);
+    let books = my_ent.getData<Item[]>('books', []);
     let { selected_idx } = this;
 
     if (engine.DEBUG && selected_idx[0] === 'null') {
@@ -970,7 +975,7 @@ class InventoryMenuAction extends UIAction {
 
     }
 
-    x0 = INVENTORY_X + INVENTORY_PAD;
+    x0 = INVENTORY_X + INVENTORY_GRID_XOFFS - 80 - INVENTORY_PAD;
     y0 = INVENTORY_Y + INVENTORY_H - FONT_HEIGHT * 4 - INVENTORY_PAD - 4;
     let y = y0;
     title_font.draw({
@@ -1001,6 +1006,48 @@ class InventoryMenuAction extends UIAction {
       });
       y += FONT_HEIGHT;
     });
+
+    let anim_t = engine.getFrameTimestamp() * 0.001;
+    let dir = ((anim_t + PI/2) % (PI * 2)) < PI;
+    let book_xoffs = 9;
+    let hat_xoffs = -1;
+    if (!dir) {
+      book_xoffs *= -1;
+      hat_xoffs *= -1;
+    }
+    x0 = INVENTORY_X + INVENTORY_PAD6 + 8 + round(sin(anim_t) * 8);
+    y0 = INVENTORY_Y + INVENTORY_H - INVENTORY_PAD6 - 6;
+    y = y0;
+    autoAtlas('player', dir ? 'player-right' : 'player-left').draw({
+      x: x0,
+      y,
+      z,
+      w: 12,
+      h: 12,
+    });
+    y -= 9;
+    for (let ii = 0; ii < hats.length; ++ii) {
+      let hat = hats[ii];
+      y -= 4;
+      inventoryIconDraw({
+        x: x0 - 5 + hat_xoffs + HAT_STACK_OFFS[ii],
+        y, z: z + 1 + ii,
+        item: hat,
+      });
+    }
+    y = y0;
+    y += 3;
+    for (let ii = 0; ii < books.length; ++ii) {
+      let book = books[ii];
+      let elem = ELEMENT_NAME[1 + (book.subtype % 3)];
+      y -= 6;
+      autoAtlas('ui', `spellbook-side-${elem}`).draw({
+        x: x0 - 1 + book_xoffs + HAT_STACK_OFFS[HAT_STACK_OFFS.length - 1 - ii],
+        y, z: z + 1 + ii + 10,
+        w: 12,
+        h: 12,
+      });
+    }
 
     drawBox({
       x: INVENTORY_X - 4,
@@ -2928,6 +2975,10 @@ function playInitEarly(room: ClientChannelWorker): void {
   // game_state.setSeed(room_public_data.seed);
 
   playInitShared(true);
+
+  if (engine.DEBUG && false) {
+    cur_action = new InventoryMenuAction();
+  }
 }
 
 export function autosave(): void {

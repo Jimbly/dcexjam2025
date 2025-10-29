@@ -14,7 +14,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* cute guy on inventory screen
 * xp and level up
 * "floor level"
   * apply it when calculating player resistances
@@ -51,6 +50,7 @@ TODO
 * Space on map screen after exit button selected is activating Wait, not closing the window
 * change W icon to basic attack icon when engaged
 * show actual item instead of chest graphic when there's a single item
+* dither instead of blur for menuUp()
 
 Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
