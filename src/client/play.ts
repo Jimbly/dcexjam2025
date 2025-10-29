@@ -171,7 +171,7 @@ import {
 import { crawlerScriptAPIDummyServer } from './crawler_script_api_client';
 import { crawlerOnScreenButton } from './crawler_ui';
 import { dialogNameRender } from './dialog_data';
-import { dialogMoveLocked, dialogRun, dialogStartup } from './dialog_system';
+import { dialog, dialogMoveLocked, dialogRun, dialogStartup } from './dialog_system';
 import {
   entitiesAt,
   EntityClient,
@@ -339,9 +339,11 @@ abstract class UIAction {
   abstract tick(): void;
   declare name: string;
   declare is_overlay_menu: boolean;
+  declare is_fullscreen_ui: boolean;
 }
 UIAction.prototype.name = 'UnknownAction';
 UIAction.prototype.is_overlay_menu = false;
+UIAction.prototype.is_fullscreen_ui = false;
 
 let cur_action: UIAction | null = null;
 
@@ -1542,8 +1544,35 @@ class InventoryMenuAction extends UIAction {
 }
 InventoryMenuAction.prototype.name = 'InventoryMenu';
 InventoryMenuAction.prototype.is_overlay_menu = true;
+InventoryMenuAction.prototype.is_fullscreen_ui = true;
+
+
+function checkForFreeHealingPotion(): void {
+  let my_ent = myEnt();
+  let inventory = my_ent.getData<(Item|null)[]>('inventory', []);
+  for (let ii = 0; ii < inventory.length; ++ii) {
+    let item = inventory[ii];
+    if (item) {
+      if (item.level <= 1) {
+        return;
+      }
+    }
+  }
+  // no potions, no L1 things to trade
+  dialog('sign', 'You seem down on your luck... have a free potion on the house!');
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  pickupOnClient({
+    type: 'potion',
+    level: 1,
+    subtype: 0,
+    count: 1,
+  });
+}
 
 export function showShop(shop_type: ShopType): void {
+  if (shop_type === 'trades') {
+    checkForFreeHealingPotion();
+  }
   uiAction(new InventoryMenuAction(shop_type));
 }
 
@@ -3252,7 +3281,7 @@ function playCrawl(): void {
   let dt = getScaledFrameDt();
 
   const frame_map_view = mapViewActive();
-  const is_fullscreen_ui = false; // any game-mode fullscreen UIs up?
+  const is_fullscreen_ui = cur_action?.is_fullscreen_ui;
   let dialog_viewport = {
     x: VIEWPORT_X0 + 8,
     w: render_width - 16,
@@ -3269,6 +3298,7 @@ function playCrawl(): void {
     dialog_viewport.w = game_width;
     dialog_viewport.y = 0;
     dialog_viewport.h = game_height - 3;
+    dialog_viewport.z = Z.MODAL + 100;
   }
   dialogRun(dt, dialog_viewport, false);
 

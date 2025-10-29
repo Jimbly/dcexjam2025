@@ -14,15 +14,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* town functional layout
-  * shops / merging
-    * trades:
-      * upgrades: 2 L1R -> 1 L2R
-      * shop: 1 L2R -> 1L1G/B (or, functionally similar: 2 L1R -> 1L1R/G/B)
-      * shop: 1 Lxy -> 1 HealPot (higher level heals more?)
-      * maybe later: refinement: 2L2R -> 1L1R +1
-    * other shops:
-      * somewhere: free healpot if you have no L1 spells and have no healpots
 * drops: on 50% of kills, drop avg(monster level / 2) level items (so, floor(floor/2)+0/1), 1:8 potions
 * player creation / renaming
 
