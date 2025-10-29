@@ -1199,7 +1199,8 @@ function battleZonePrep(): void {
     }
     if (other_ent.isPlayer()) {
       players.push(other_ent);
-    } else if (other_ent.isEnemy()) {
+    } else /*if (other_ent.isEnemy())*/ {
+      // note: doing non-enemies so they still wander and such
 
       let pos = other_ent.getData<JSVec3>('pos')!;
       let idx = pos[0] + pos[1] * stride;
@@ -1233,7 +1234,7 @@ function battleZonePrep(): void {
           enemy_ent.closest_ent = player_ent_id;
           enemy_ent.closest_ent_dist = dist;
         }
-        if (dist <= BATTLEZONE_RANGE) {
+        if (dist <= BATTLEZONE_RANGE && enemy_ent.isEnemy()) {
           enemy_ent.in_zone_ents.push(player_ent_id);
         }
       }
@@ -1971,8 +1972,6 @@ function drawBattleZone(): void {
   if (battlezone_is_waiting_for_others) {
     battlezone_is_waiting_for_others_time += getScaledFrameDt();
     alpha = min(1, battlezone_is_waiting_for_others_time/BATTLEZONE_OTHERS_FADE_TIME);
-    wait_others = wait_others.concat(wait_others);
-    wait_others = wait_others.concat(wait_others);
     if (wait_others.length > 3) {
       wait_others[2] = `${wait_others.length - 2} others...`;
       wait_others.length = 3;

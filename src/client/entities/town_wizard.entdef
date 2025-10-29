@@ -1,18 +1,14 @@
 ---
 traits:
-- id: wander
 - id: drawable
-  biasL: [-0.25, 0.3]
-  biasF: [0, -0.25]
-  biasR: [-0.25, 0.5]
 - id: drawable_sprite
   anim_data:
     idle:
-      frames: [cat-1, cat-2]
-      times: 600
+      frames: [wiz2, wiz1, wiz2, wiz2, wiz4, wiz1, wiz4, wiz2, wiz2, wiz3, wiz2, wiz3, wiz2, wiz2]
+      times: 220
   sprite_data:
     atlas: dcex
     filter_min: LINEAR_MIPMAP_LINEAR
     filter_mag: LINEAR
     origin: [0.5, 1]
-  scale: 0.4
+  scale: 0.9

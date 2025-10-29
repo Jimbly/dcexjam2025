@@ -1,0 +1,14 @@
+---
+traits:
+- id: drawable
+- id: drawable_sprite
+  anim_data:
+    idle:
+      frames: [redguy2, redguy1, redguy2, redguy2, redguy4, redguy2, redguy2, redguy3, redguy2, redguy3, redguy2, redguy2]
+      times: 240
+  sprite_data:
+    atlas: dcex
+    filter_min: LINEAR_MIPMAP_LINEAR
+    filter_mag: LINEAR
+    origin: [0.5, 0.9375]
+  scale: 0.8

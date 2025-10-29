@@ -95,7 +95,7 @@ import {
 import { crawlerRenderGetThumbnail, crawlerRenderViewportGet } from './crawler_render';
 import { statusPush } from './status';
 
-const { floor, min } = Math;
+const { floor, min, round } = Math;
 
 declare module 'glov/client/settings' {
   export let build_mode_help: 0 | 1;
@@ -714,7 +714,7 @@ function adjustCellHeight(delta: number): void {
     statusPush('Out of bounds');
     return;
   }
-  target_cell.h += delta / 16;
+  target_cell.h = round(target_cell.h * 12 + delta) / 12; // DCJAM
 
   crawlerBuildModeCommit();
 }

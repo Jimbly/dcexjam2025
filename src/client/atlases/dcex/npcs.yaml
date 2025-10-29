@@ -1,0 +1,12 @@
+---
+tile_res: 14
+tiles:
+  wiz1: [0, 0]
+  wiz2: [1, 0]
+  wiz3: [2, 0]
+  wiz4: [3, 0]
+
+  redguy1: [0, 1]
+  redguy2: [1, 1]
+  redguy3: [2, 1]
+  redguy4: [3, 1]
