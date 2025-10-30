@@ -1,6 +1,7 @@
 import assert from 'assert';
 import { autoAtlas } from 'glov/client/autoatlas';
 import { cmd_parse } from 'glov/client/cmds';
+import { editBox } from 'glov/client/edit_box';
 import * as engine from 'glov/client/engine';
 import { EntityPredictionID } from 'glov/client/entity_base_client';
 import {
@@ -20,7 +21,7 @@ import {
 } from 'glov/client/input';
 import { markdownAuto } from 'glov/client/markdown';
 import { markdownSetColorStyle } from 'glov/client/markdown_renderables';
-import { ClientChannelWorker, netSubs } from 'glov/client/net';
+import { ClientChannelWorker, netClient, netSubs } from 'glov/client/net';
 import { MenuItem } from 'glov/client/selection_box';
 import * as settings from 'glov/client/settings';
 import {
@@ -46,6 +47,7 @@ import {
   modalDialog,
   playUISound,
   print,
+  uiButtonHeight,
   uiButtonWidth,
   uiGetFont,
   uiGetTitleFont,
@@ -187,7 +189,7 @@ import {
   VIEWPORT_Y0,
 } from './globals';
 import { levelGenTest } from './level_gen_test';
-import { tinyFont } from './main';
+import { chatUI, tinyFont } from './main';
 import { tickMusic } from './music';
 import {
   PAL_BLACK,
@@ -402,6 +404,13 @@ class PauseMenuAction extends UIAction {
       });
     }
     items.push({
+      name: 'Character Customization...',
+      cb: function () {
+        uiAction(null);
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        uiAction(new SetupMenuAction());
+      },
+    }, {
       name: isOnline() ? 'Return to Title' : 'Save and Exit',
       cb: function () {
         if (!isOnline()) {
@@ -1552,6 +1561,123 @@ InventoryMenuAction.prototype.name = 'InventoryMenu';
 InventoryMenuAction.prototype.is_overlay_menu = true;
 InventoryMenuAction.prototype.is_fullscreen_ui = true;
 
+
+const SETUP_W = 300;
+const SETUP_H = game_height / 2;
+const SETUP_X = floor((game_width - SETUP_W)/2);
+const SETUP_Y = floor((game_height - SETUP_H)/2);
+const SETUP_EDIT_W = DISPLAY_NAME_MAX_VISUAL_SIZE.width;
+class SetupMenuAction extends UIAction {
+  display_name: string;
+  orig_name: string;
+  did_auto_random = false;
+  constructor() {
+    super();
+    this.display_name = myEnt().getData('display_name', '???');
+    this.orig_name = this.display_name;
+  }
+  tick(): void {
+
+    let z = Z.MODAL;
+
+    let x = SETUP_X + floor((SETUP_W - SETUP_EDIT_W)/2);
+    let y = SETUP_Y;
+
+    y += 12;
+    title_font.draw({
+      style: style_inventory,
+      size: TITLE_FONT_H,
+      x, y, z, w: SETUP_EDIT_W,
+      align: ALIGN.HCENTER,
+      text: 'Character Customization',
+    });
+
+    y += 48;
+
+    font.draw({
+      style: style_inventory,
+      x, y, z,
+      text: 'Name',
+    });
+    const button_w = 60;
+    if (buttonText({
+      x: x + SETUP_EDIT_W + 8,
+      y: y + 4,
+      z,
+      w: button_w,
+      text: 'Random',
+    }) || !this.did_auto_random && this.display_name.startsWith('anon')) {
+      this.did_auto_random = true;
+      netClient().send<string, null>('random_name', null, null, (ignored?: unknown, data?: string): void => {
+        if (data) {
+          while (title_font.getStringWidth(null, DISPLAY_NAME_MAX_VISUAL_SIZE.font_height, data) >
+            DISPLAY_NAME_MAX_VISUAL_SIZE.width
+          ) {
+            data = data.slice(0, -1);
+          }
+          this.display_name = data;
+        }
+      });
+    }
+    y += FONT_HEIGHT;
+    this.display_name = editBox<string>({
+      x, y: y + 2, z,
+      w: SETUP_EDIT_W,
+      type: 'text',
+      max_visual_size_font: title_font,
+      max_visual_size: DISPLAY_NAME_MAX_VISUAL_SIZE,
+      initial_select: true,
+    }, this.display_name).text;
+    y += uiButtonHeight() - 4;
+    title_font.draw({
+      x, y, z,
+      style: style_inventory,
+      size: TITLE_FONT_H,
+      text: this.display_name,
+    });
+
+
+    // Profile picture?
+    // Clothing color?
+    // Starting spell book / hat?
+
+    if (buttonText({
+      x: SETUP_X + SETUP_W - 12 - button_w ,
+      y: SETUP_Y + SETUP_H - 12 - uiButtonHeight(),
+      w: button_w,
+      z,
+      text: 'Okay',
+    })) {
+      uiAction(null);
+      if (this.orig_name !== this.display_name) {
+        chatUI().cmdParse(`rename ${this.display_name}`);
+      }
+      if (!myEnt().getData('did_setup')) {
+        crawlerMyApplyBatchUpdate({
+          action_id: 'setup',
+          field: 'seq_player_move',
+          data_assignments: {
+            did_setup: true,
+          },
+        }, errorsToChat);
+      }
+    }
+
+
+    drawBox({
+      x: SETUP_X - 4,
+      y: SETUP_Y - 4,
+      w: SETUP_W + 8,
+      h: SETUP_H + 8,
+      z: z - 1,
+    }, autoAtlas('ui', 'panel-thick'));
+
+    menuUp();
+  }
+}
+SetupMenuAction.prototype.name = 'SetupMenu';
+SetupMenuAction.prototype.is_overlay_menu = true;
+SetupMenuAction.prototype.is_fullscreen_ui = true;
 
 function checkForFreeHealingPotion(): void {
   let my_ent = myEnt();
@@ -3285,6 +3411,10 @@ function playCrawl(): void {
     controller.setMoveBlocker(moveBlockDead);
   }
 
+  if (!myEnt().getData('did_setup') && !cur_action) {
+    uiAction(new SetupMenuAction());
+  }
+
   let down = {
     menu: 0,
     inv: 0,
@@ -3504,7 +3634,10 @@ function playCrawl(): void {
         mapViewSetActive(false);
         // inventory_up = false;
       }
-      if (cur_action) { //?.name === 'PauseMenu') {
+      if (cur_action?.name === 'SetupMenu') {
+        uiAction(null);
+        uiAction(new PauseMenuAction());
+      } else if (cur_action) { //?.name === 'PauseMenu') {
         uiAction(null);
       }
     } else {
