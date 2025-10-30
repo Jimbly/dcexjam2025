@@ -2140,8 +2140,8 @@
       ],
       "events": [
         {
-          "id": "floor_delta",
-          "param": "1"
+          "id": "dialog",
+          "param": "floorlist 1"
         }
       ]
     },

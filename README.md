@@ -15,6 +15,17 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 
 **TODO**
 * level entrances from town
+  * MVP: just open a full-screen "choose a floor" dialog
+  * server tracks (in public channel state):
+    * for each floor level:
+      * floor IDs that have or recently had players, and who they were - prune after an hour of inactivity?
+      * floor clearing progress of each
+      * total number of community clears
+  * player sees list and chooses:
+    * New if none are active
+      * And optionally if all are > 25% cleared
+    * Join if there are active ones
+  * exit returns to town - or, it prompts "continue to next floor or go to town"
 * audio pass
 * show enemy HP for more interesting combat choices?
 
@@ -35,7 +46,8 @@ TODO
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * animate/grow critters on attack / hit
-* remove floor names from minimp, only full map?
+* use floaters to show player numbers on floors
+* remove floor names from minimap, only full map?
 * death penalty: lose some inventory too? get kicked out of floor (maybe it gets reset?)
 * fix two hits on the same frame not showing floaters well
 * bug: visibility is different before/after turning camera/moving forward and back if directly facing a wall
@@ -53,9 +65,12 @@ TODO
 * fix battle log messages, especially in OMP
 * player names over heads
 * wider hats/books at least in inventory
+* spellbooks should be better colors
 * hall of fame on main menu (just XP)
 * disable inventory access when within 1 unobstructed tile of an enemy
 * play sound and display message when all monsters have been cleared
+* on town level show player levels instead of where waiting/checkmarks are (or, do for all nearby players?)
+* golden hat reward for final level (if it shows on players)
 
 Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready

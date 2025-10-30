@@ -34,7 +34,7 @@ import { textureDefaultFilters } from 'glov/client/textures';
 import { uiSetPanelColor } from 'glov/client/ui';
 import * as ui from 'glov/client/ui';
 import { getURLBase } from 'glov/client/urlhash';
-import { v4copy, vec4 } from 'glov/common/vmath';
+import { v4copy } from 'glov/common/vmath';
 // import './client_cmds.js'; // for side effects
 import { crawlerBuildModeStartup } from './crawler_build_mode';
 import { drawableSpriteLoadNear } from './crawler_entity_client';
@@ -44,6 +44,7 @@ import {
 } from './crawler_play.js';
 import { crawlerRenderSetLODBiasRange } from './crawler_render';
 import { game_height, game_width } from './globals';
+import { PAL_BLACK, palette } from './palette';
 import { playStartup } from './play';
 import { SOUND_DATA } from './sound_data';
 import { titleInit, titleStartup } from './title';
@@ -60,8 +61,9 @@ Z.FLOATERS = 125;
 Z.DIALOG = 140;
 Z.STATUS = 160;
 Z.CHAT_FOCUSED = 100;
-Z.FRAMES = Z.MAP + 5;
-Z.STATSBARS = Z.FRAMES + 5;
+Z.FRAMES = Z.MAP + 5; // 110
+Z.STATSBARS = Z.FRAMES + 5; // 115
+Z.FLOORLIST = Z.STATSBARS + 5; // 120
 
 let fonts: Font[] | undefined;
 let tiny_font: Font;
@@ -75,7 +77,7 @@ crawlerOnPixelyChange(function (new_value: number): void {
   // engine.setFonts(fonts[new_value] || fonts[2]);
 });
 
-const clear_color = vec4(0, 0, 0, 1);
+const clear_color = palette[PAL_BLACK];
 
 export let chat_ui: ChatUI;
 

@@ -27,6 +27,7 @@ import {
 } from './entity_game_client';
 import {
   myEntOptional,
+  showFloorList,
   showShop,
 } from './play';
 import { statusPush } from './status';
@@ -154,6 +155,13 @@ dialogRegister({
     showShop('trades');
   },
 });
+
+dialogRegister({
+  floorlist: function (param: string) {
+    showFloorList(Number(param));
+  },
+});
+
 
 // generic / non-iconic
 dialogRegister({

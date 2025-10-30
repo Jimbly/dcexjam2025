@@ -19,10 +19,25 @@ import {
   EntityBaseCommon,
   EntityBaseDataCommon,
 } from 'glov/common/entity_base_common';
-import { EntityID } from 'glov/common/types';
+import { EntityID, TSMap } from 'glov/common/types';
 import { JSVec3 } from 'glov/common/vmath';
 
-// import type { JSVec3 } from './crawler_state';
+export type FloorPlayerData = {
+  player_level: number;
+  is_active: boolean;
+  last_active: number;
+};
+
+export type FloorRoomData = {
+  last_active: number;
+  recent_players: TSMap<FloorPlayerData>; // user_id -> player data
+  enemies_left: number;
+  enemies_total: number;
+};
+
+export type FloorData = {
+  rooms: Partial<Record<number, FloorRoomData>>; // floor_id -> room data
+};
 
 export type BroadcastDataDstat = {
   hp: number;

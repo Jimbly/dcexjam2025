@@ -21,7 +21,8 @@ import {
 } from 'glov/client/input';
 import { markdownAuto } from 'glov/client/markdown';
 import { markdownSetColorStyle } from 'glov/client/markdown_renderables';
-import { ClientChannelWorker, netClient, netSubs } from 'glov/client/net';
+import { ClientChannelWorker, netClient, netSubs, netUserId } from 'glov/client/net';
+import { ScrollArea, scrollAreaCreate } from 'glov/client/scroll_area';
 import { MenuItem } from 'glov/client/selection_box';
 import * as settings from 'glov/client/settings';
 import {
@@ -58,10 +59,11 @@ import { webFSAPI } from 'glov/client/webfs';
 import { EntityManagerEvent } from 'glov/common/entity_base_common';
 import { DISPLAY_NAME_MAX_VISUAL_SIZE } from 'glov/common/net_common';
 import {
+  ChannelDataClients,
   EntityID,
   TSMap,
 } from 'glov/common/types';
-import { capitalize, clamp, clone, easeOut, ridx } from 'glov/common/util';
+import { capitalize, clamp, clone, easeOut, ridx, secondsToFriendlyString } from 'glov/common/util';
 import { unreachable } from 'glov/common/verify';
 import {
   JSVec2,
@@ -93,6 +95,7 @@ import {
   DirType,
   DX,
   DY,
+  WEST,
 } from '../common/crawler_state';
 import {
   ActionAttackPayload,
@@ -100,6 +103,8 @@ import {
   ActionInventoryPayload,
   BroadcastDataDstat,
   ELEMENT_NAME,
+  FloorData,
+  FloorRoomData,
   Item,
   StatsData,
 } from '../common/entity_game_common';
@@ -153,6 +158,7 @@ import {
   crawlerPlayTopOfFrame,
   crawlerPlayWantMode,
   crawlerPrepAndRenderFrame,
+  crawlerRoom,
   crawlerSaveGame,
   crawlerScriptAPI,
   crawlerTurnBasedClearQueue,
@@ -1708,6 +1714,368 @@ export function showShop(shop_type: ShopType): void {
   uiAction(new InventoryMenuAction(shop_type));
 }
 
+function isOnFloorList(): boolean {
+  let game_state = crawlerGameState();
+  let { floor_id } = game_state;
+  let level = game_state.levels[floor_id];
+  if (!level) {
+    return true;
+  }
+  let pos = myEnt().getData<JSVec3>('pos')!;
+  let cell = level.getCell(pos[0], pos[1]);
+  if (!cell) {
+    return true;
+  }
+  return Boolean(cell.events?.[0].param.startsWith('floorlist'));
+}
+
+function closeFloorList(): void {
+  uiAction(null);
+  crawlerScriptAPI().forceMove(WEST);
+}
+
+function perc(n: number): string {
+  return `${round(n * 100)}%`;
+}
+
+function fourdigit(n: number): string {
+  let s = String(n).slice(-4);
+  while (s[0] === '0' && s.length > 1) {
+    s = s.slice(1);
+  }
+  return s;
+}
+
+function displayNameForUser(user_id: string): string {
+  let room = crawlerRoom();
+  let clients = room.getChannelData<ChannelDataClients>('public.clients', {});
+  for (let client_id in clients) {
+    let { ids } = clients[client_id]!;
+    if (ids.user_id === user_id && ids.display_name) {
+      return ids.display_name;
+    }
+  }
+  return netSubs().getChannelImmediate(`user.${user_id}`).getChannelData('public.display_name', user_id);
+}
+
+const FLOORLIST_W = FRAME_VERT_SPLIT - 12;
+const FLOORLIST_H = QUICKBAR_FRAME_Y - 12 - 5;
+const FLOORLIST_X = 12;
+const FLOORLIST_Y = 12;
+class FloorListAction extends UIAction {
+  scroll_area: ScrollArea;
+  constructor(public base_floor: number) {
+    super();
+    this.scroll_area = scrollAreaCreate({
+      background_color: null,
+      auto_hide: true,
+    });
+  }
+  tick(): void {
+    let room = crawlerRoom();
+    let my_ent = myEnt();
+    let my_level = my_ent.getData('stats.level', 1);
+
+    let z = Z.FLOORLIST;
+    let x = FLOORLIST_X;
+    let y = FLOORLIST_Y;
+
+    this.scroll_area.begin({
+      x, y, z,
+      h: FLOORLIST_H,
+      w: FLOORLIST_W + 13,
+    });
+    x = 0;
+    y = 0;
+
+    y += 4;
+    function titleLine(text: string): void {
+      title_font.draw({
+        style: style_inventory,
+        size: TITLE_FONT_H,
+        x: 0, y, z, w: FLOORLIST_W,
+        align: ALIGN.HCENTER,
+        text,
+      });
+      y += TITLE_FONT_H + 2;
+    }
+
+    let now = floor(Date.now() / 1000);
+    let floor_data: Partial<Record<number, FloorData>> = room.getChannelData('public.floors', {});
+    // example data
+    if (0) {
+      floor_data = {
+        1: {
+          rooms: {
+            10: {
+              last_active: now,
+              enemies_total: 22,
+              enemies_left: 7,
+              recent_players: {
+                anon484576: {
+                  player_level: 1,
+                  last_active: now,
+                  is_active: true,
+                },
+              },
+            },
+            11: {
+              last_active: now - 300000,
+              enemies_total: 22,
+              enemies_left: 0,
+              recent_players: {
+                jimbly: {
+                  player_level: 1,
+                  last_active: now - 300000,
+                  is_active: false,
+                },
+                jeff: {
+                  player_level: 2,
+                  last_active: now,
+                  is_active: true,
+                },
+              },
+            },
+          },
+        },
+        3: {
+          rooms: {
+            12: {
+              last_active: now,
+              enemies_total: 22,
+              enemies_left: 22,
+              recent_players: {
+                anon484576: {
+                  player_level: 1,
+                  last_active: now,
+                  is_active: true,
+                },
+              },
+            },
+          },
+        },
+      };
+    }
+
+    type RoomRecord = {
+      floor_level: number;
+      floor_id: number;
+      room_data: FloorRoomData;
+    };
+    let my_last_room: RoomRecord & {
+      last_active: number;
+    } | null = null;
+    let my_user_id = netUserId()!;
+    for (let floor_level_str in floor_data) {
+      let floor_level = Number(floor_level_str);
+      let by_level = floor_data[floor_level]!;
+      for (let floor_id_str in by_level.rooms) {
+        let floor_id = Number(floor_id_str);
+        let room_data = by_level.rooms[floor_id]!;
+        let my_rec = room_data.recent_players[my_user_id];
+        if (my_rec) {
+          if (!my_last_room || my_rec.last_active > my_last_room.last_active) {
+            my_last_room = {
+              last_active: my_rec.last_active,
+              floor_level,
+              floor_id,
+              room_data,
+            };
+          }
+        }
+      }
+    }
+
+    const button_w = 80; // fits 4-digit floor_ids
+    const FLOORLIST_PAD = 4;
+    const FLOORLIST_BUTTON_H2 = round(uiButtonHeight() * 1.5);
+    // const FLOORLIST_BUTTON_H3 = uiButtonHeight() * 2;
+    const CARD_W = FLOORLIST_W - 12;
+    const CARD_PAD = 6;
+
+    function drawRoomCard(rec: RoomRecord): void {
+      x = floor((FLOORLIST_W - CARD_W) / 2);
+      let { room_data } = rec;
+      let y_start = y;
+      y += CARD_PAD;
+
+      let my_rec = room_data.recent_players[my_user_id];
+
+      let button_x = x + CARD_W - button_w - CARD_PAD;
+      buttonText({
+        x: button_x, y, z,
+        w: button_w,
+        h: FLOORLIST_BUTTON_H2,
+        align: ALIGN.HWRAP | ALIGN.HCENTER,
+        markdown: true,
+        text: `${my_rec ? 'RESUME' : 'JOIN'}\nLevel [c=${rec.floor_level > my_level ? 'red' : 'level'}]` +
+          `${rec.floor_level}[/c] #${fourdigit(rec.floor_id)}`,
+      });
+      let ymax = y + FLOORLIST_BUTTON_H2;
+
+      if (my_rec) {
+        font.draw({
+          style: style_inventory,
+          x: x + CARD_PAD, y, z,
+          text: 'Last played ' +
+            `${secondsToFriendlyString(now - my_rec.last_active).split(',')[0]} ago`,
+        });
+        y += FONT_HEIGHT;
+      }
+      let completion_perc = 1 - room_data.enemies_left/room_data.enemies_total;
+      let completion = `${perc(completion_perc)} Complete`;
+      font.draw({
+        style: style_inventory,
+        x: x + CARD_PAD, y, z,
+        text: `${completion}`,
+      });
+      y += FONT_HEIGHT;
+      let cur_players = [];
+      for (let user_id in room_data.recent_players) {
+        if (user_id === my_user_id) {
+          continue;
+        }
+        let player_rec = room_data.recent_players[user_id]!;
+        if (player_rec.is_active) {
+          cur_players.push(displayNameForUser(user_id));
+        }
+      }
+
+      if (cur_players.length) {
+        y += font.draw({
+          style: style_inventory,
+          x: x + CARD_PAD, y, z,
+          align: ALIGN.HWRAP,
+          w: button_x - FLOORLIST_PAD - (x + CARD_PAD),
+          text: `Players: ${cur_players.join(', ')}`,
+        });
+      }
+      if (rec.floor_level > my_level) {
+        y += font.draw({
+          style: style_mp_cost_over,
+          x: x + CARD_PAD, y, z,
+          align: ALIGN.HWRAP,
+          w: button_x - FLOORLIST_PAD - (x + CARD_PAD),
+          text: `Warning: floor level (${rec.floor_level}) exceeds player level (${my_level})`,
+        });
+      }
+
+      y = max(y, ymax);
+      y += CARD_PAD;
+      drawBox({
+        x, y: y_start, z: z - 0.5,
+        w: CARD_W,
+        h: y - y_start,
+      }, autoAtlas('ui', 'panel-overlay'));
+      y += 2;
+    }
+
+    if (my_last_room) {
+      drawRoomCard(my_last_room);
+    }
+
+    titleLine('Start Fresh');
+    x = floor((FLOORLIST_W - button_w * 3 - FLOORLIST_PAD * 2)/2);
+    for (let ii = this.base_floor; ii < this.base_floor + 3; ++ii) {
+      buttonText({
+        x, y, z,
+        w: button_w,
+        h: FLOORLIST_BUTTON_H2,
+        align: ALIGN.HWRAP | ALIGN.HCENTER,
+        markdown: true,
+        text: `NEW Floor\nLevel [c=${ii > my_level ? 'red' : 'level'}]${ii}[/c]`,
+      });
+      x += button_w + FLOORLIST_PAD;
+    }
+    y += FLOORLIST_BUTTON_H2 + FLOORLIST_PAD;
+
+    let options: RoomRecord[] = [];
+    for (let floor_level_str in floor_data) {
+      let floor_level = Number(floor_level_str);
+      let by_level = floor_data[floor_level]!;
+      for (let floor_id_str in by_level.rooms) {
+        let floor_id = Number(floor_id_str);
+        let room_data = by_level.rooms[floor_id]!;
+        let dt = now - room_data.last_active;
+        if (dt < 60) {
+          options.push({
+            floor_level,
+            floor_id,
+            room_data,
+          });
+        }
+      }
+    }
+
+    titleLine('Join Others');
+    if (options.length) {
+      y += 1; // that "J"...
+      for (let ii = 0; ii < options.length; ++ii) {
+        drawRoomCard(options[ii]);
+      }
+    } else {
+      y += 2;
+      font.draw({
+        style: style_inventory,
+        x: 0, y, z, w: FLOORLIST_W,
+        align: ALIGN.HCENTER,
+        text: 'No other players currently in The Tower',
+      });
+      y += FONT_HEIGHT + 2;
+    }
+
+
+    // if (buttonText({
+    //   x: 0 + FLOORLIST_W - 12 - button_w * 2 - 4,
+    //   y: 0 + FLOORLIST_H - 12 - uiButtonHeight(),
+    //   w: button_w,
+    //   z,
+    //   text: 'Okay',
+    // })) {
+    //   uiAction(null);
+    // }
+
+    y = max(y, FLOORLIST_H - 12 - uiButtonHeight());
+    if (buttonText({
+      x: FLOORLIST_W - 12 - button_w,
+      y,
+      w: button_w,
+      z,
+      text: 'Cancel',
+    })) {
+      closeFloorList();
+    }
+    y += uiButtonHeight();
+
+    y += FLOORLIST_PAD;
+
+    this.scroll_area.end(y);
+
+    if (!isOnFloorList() && !(engine.DEBUG && true)) {
+      uiAction(null);
+    }
+
+    drawBox({
+      x: FLOORLIST_X - 4,
+      y: FLOORLIST_Y - 4,
+      w: FLOORLIST_W + 8,
+      h: FLOORLIST_H + 8,
+      z: z - 1,
+    }, autoAtlas('ui', 'panel-thick'));
+
+    // menuUp();
+  }
+}
+FloorListAction.prototype.name = 'FloorList';
+FloorListAction.prototype.is_overlay_menu = false;
+FloorListAction.prototype.is_fullscreen_ui = false;
+
+export function showFloorList(base_floor: number): void {
+  if (!cur_action) {
+    uiAction(new FloorListAction(base_floor));
+  }
+}
+
 function v2manhattan(a: ROVec2, b: ROVec2): number {
   return abs(a[0] - b[0]) + abs(a[1] - b[1]);
 }
@@ -1977,7 +2345,7 @@ function battleZoneDebug(): void {
   let y = 40;
   let z = Z.DEBUG;
   let my_ent = myEntOptional();
-  if (!my_ent || engine.defines.LEVEL_GEN || cur_action) {
+  if (!my_ent || engine.defines.LEVEL_GEN || cur_action?.is_overlay_menu) {
     return;
   }
   const text_height = uiTextHeight();
@@ -3531,7 +3899,7 @@ function playCrawl(): void {
   // Escape / open/close menu button - *before* pauseMenu()
   button_x0 = 409;
   button_y0 = 16;
-  let menu_up = frame_map_view || build_mode || overlay_menu_up;
+  let menu_up = frame_map_view || build_mode || overlay_menu_up || cur_action?.name === 'FloorList';
   let menu_keys = [KEYS.ESC];
   let menu_pads = [PAD.START];
   if (menu_up) {
@@ -3540,13 +3908,15 @@ function playCrawl(): void {
   crawlerButton(0, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, cur_action?.name === 'PauseMenu');
   button_x0 = 331;
   button_y0 = MOVE_BUTTONS_Y0;
-  if (!build_mode && !controller.ignoreGameplay()) {
+  if (!build_mode && !controller.ignoreGameplay() && cur_action?.name !== 'FloorList') {
     //button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]);
     crawlerButton(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B]);
     crawlerButton(0, 1, 7, 'inv', [KEYS.I], [PAD.Y], cur_action?.name === 'InventoryMenu');
   }
 
   cur_action?.tick();
+
+  locked_dialog ||= cur_action?.name === 'FloorList';
 
   // Note from #moraff: moved earlier so player motion doesn't interrupt it
   if (!frame_map_view) {
@@ -3623,7 +3993,9 @@ function playCrawl(): void {
   }
 
   if (up_edge.menu) {
-    if (menu_up) {
+    if (cur_action?.name === 'FloorList') {
+      closeFloorList();
+    } else if (menu_up) {
       if (build_mode && mapViewActive()) {
         mapViewSetActive(false);
         // but stay in build mode
@@ -3697,7 +4069,7 @@ function playCrawl(): void {
       z: Z.MAP,
       level_gen_test: false,
       script_api,
-      button_disabled: overlay_menu_up,
+      button_disabled: overlay_menu_up || locked_dialog,
     });
   }
 
@@ -3875,8 +4247,9 @@ function playInitEarly(room: ClientChannelWorker): void {
 
   playInitShared(true);
 
-  if (engine.DEBUG && false) {
-    cur_action = new InventoryMenuAction('trades');
+  if (engine.DEBUG && true) {
+    // cur_action = new InventoryMenuAction('trades');
+    cur_action = new FloorListAction(1);
   }
 }
 
