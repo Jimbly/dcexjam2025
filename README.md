@@ -1,7 +1,7 @@
 DCEXJam2025 - Theme: (Pagoda Mushroom Image)
 ============================
 
-Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
+Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 
 **BattleZone Rules**
 * After an action flag as ready
@@ -14,8 +14,10 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Title TBD"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* drops: on 50% of kills, drop avg(monster level / 2) level items (so, floor(floor/2)+0/1), 1:8 potions
 * player creation / renaming
+* level entrances from town
+* audio pass
+* show enemy HP for more interesting combat choices?
 
 Assets to replace
 * panel / status message background
@@ -24,12 +26,13 @@ Assets to replace
 
 TODO
 * add scrollbar to inventory, remove limit; add sort button
-* reward for floor mechanic?
+* add ability to drop items?
+* reward for floor mechanic? - boss with level + 1 and/or hp x2 that drops regular level + 1
 * death animation should always switch to a blood particle within a few hundred ms (in sprite animation)
 * hunter/wander never move onto square outside of stairs_in
 * add compass/coords to UI
 * show an un-slotted, but available, quickbar slot as a different color
-* battlezone: option to skip (set other player as ready) if they have not taken an action in 10 seconds; maybe exit to menu if skipped 3 times in a row
+* battlezone: option to skip (set other player as ready) if they have not taken an action in 10 seconds; maybe kick to menu if skipped 3 times in a row
 * battlezone: tick even if in background
 * add critical hits/misses to combat system?
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
@@ -52,8 +55,10 @@ TODO
 * dither instead of blur for menuUp()
 * fix battle log messages, especially in OMP
 * player names over heads
-* add ability to drop items?
 * wider hats/books at least in inventory
+* hall of fame on main menu (just XP)
+* disable inventory access when within 1 unobstructed tile of an enemy
+* play sound and display message when all monsters have been cleared
 
 Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready

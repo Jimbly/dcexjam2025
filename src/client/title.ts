@@ -1,4 +1,5 @@
 
+import { autoAtlas } from 'glov/client/autoatlas';
 import * as engine from 'glov/client/engine';
 import { localStorageGetJSON } from 'glov/client/local_storage';
 import { netSubs } from 'glov/client/net';
@@ -8,10 +9,10 @@ import {
   print,
   uiButtonHeight,
   uiButtonWidth,
-  uiGetTitleFont,
   uiTextHeight,
 } from 'glov/client/ui';
 import * as urlhash from 'glov/client/urlhash';
+import { Item } from '../common/entity_game_common';
 import { createAccountUI } from './account_ui';
 import {
   crawlerCommStart,
@@ -23,15 +24,25 @@ import {
   crawlerPlayWantNewGame,
   SavedGameData,
 } from './crawler_play';
+import { game_height, game_width } from './globals';
 import * as main from './main';
 import { tickMusic } from './music';
+import { drawHatDude } from './play';
 
-
-const { max } = Math;
 
 type AccountUI = ReturnType<typeof createAccountUI>;
 
 let account_ui: AccountUI;
+
+let hats: Item[] = [];
+for (let ii = 0; ii < 7; ++ii) {
+  hats.push({
+    type: 'hat',
+    subtype: Math.floor(Math.random() * 3),
+    level: 7 - ii,
+    count: 1,
+  });
+}
 
 function title(dt: number): void {
   main.chat_ui.run({
@@ -40,29 +51,38 @@ function title(dt: number): void {
 
   tickMusic(null);
 
-  let y = 40;
-  if (engine.DEBUG || true) {
-    let next_y = account_ui.showLogin({
-      x: 10,
-      y: 10,
-      pad: 2,
-      text_w: 120,
-      label_w: 80,
-      style: null,
-      center: false,
-      button_width: uiButtonWidth(),
-      font_height_small: uiTextHeight(),
-    });
+  const scale = 2;
+  autoAtlas('title', 'text').draw({
+    w: 108*scale,
+    h: 24*scale,
+    x: (game_width - 108*scale)/2,
+    y: 24,
+  });
 
-    y = max(next_y + 2, y);
-  }
+  autoAtlas('title', 'tower').draw({
+    w: 60*scale,
+    h: 108*scale,
+    x: game_width - 12 - 60*scale,
+    y: game_height - 12 - 108*scale,
+  });
+
+  let y = 120;
+  let login_w = 120/2+80;
+  y = account_ui.showLogin({
+    x: (game_width - login_w)/2,
+    y,
+    pad: 4,
+    text_w: 120,
+    label_w: 80,
+    style: null,
+    center: false,
+    button_width: login_w,
+    font_height_small: uiTextHeight(),
+  });
+
+  drawHatDude(20, game_height - 12 - 24, Z.UI, scale, hats, []);
 
   let x = 10;
-  uiGetTitleFont().draw({
-    size: 14,
-    x, y,
-    text: 'Crawler Demo',
-  });
   x += 10;
   y += 14 + 2;
   // @ts-expect-error truthy
@@ -105,7 +125,10 @@ function title(dt: number): void {
   }
   if (netSubs().loggedIn()) {
     if (buttonText({
-      x, y, text: 'Online Test',
+      x: (game_width - login_w)/2,
+      y,
+      w: login_w,
+      text: 'Play Online',
     })) {
       urlhash.go('?c=the');
     }
@@ -114,6 +137,8 @@ function title(dt: number): void {
   if (crawlerCommWant()) {
     crawlerCommStart();
   }
+
+  main.chat_ui.runLate();
 }
 
 export function titleInit(dt: number): void {
@@ -126,7 +151,7 @@ export function titleStartup(): void {
   crawlerCommStartup({
     channel_type: 'game',
     lobby_state: titleInit,
-    title_func: (value: string) => 'MiniMMO Crawler', //  | "${value}"`,
+    title_func: (value: string) => 'Tower of Hats', //  | "${value}"`,
     chat_ui: main.chat_ui,
   });
 }

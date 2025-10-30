@@ -463,8 +463,8 @@ function inventoryIconDraw(param: {
 }): void {
   let { x, y, z, item, scale } = param;
   let icon_param = {
-    x: x + 4,
-    y: y + 4,
+    x: x + 4 * (scale || 1),
+    y: y + 4 * (scale || 1),
     w: 12 * (scale || 1),
     h: 12 * (scale || 1),
     z: z + 1,
@@ -881,6 +881,53 @@ function doTradeForPotion(src_idx: number, target_idx: number): void {
   }, errorsToChat);
 }
 
+const HAT_STACK_OFFS = [
+  1,2,1,0,2,1,2,1,0,1,2,0,1
+];
+export function drawHatDude(x0: number, y0: number, z: number, scale: number, hats: Item[], books: Item[]): void {
+  let anim_t = engine.getFrameTimestamp() * 0.001;
+  let dir = ((anim_t + PI/2) % (PI * 2)) < PI;
+  let book_xoffs = 9 * scale;
+  let hat_xoffs = -1 * scale;
+  if (!dir) {
+    book_xoffs *= -1;
+    hat_xoffs *= -1;
+  }
+  x0 += 8 * scale + round(sin(anim_t) * 8 * scale);
+  let y = y0;
+  autoAtlas('player', dir ? 'player-right' : 'player-left').draw({
+    x: x0,
+    y,
+    z,
+    w: 12 * scale,
+    h: 12 * scale,
+  });
+  y -= 9 * scale;
+  for (let ii = 0; ii < hats.length; ++ii) {
+    let hat = hats[ii];
+    y -= 4 * scale;
+    inventoryIconDraw({
+      x: x0 - 5 * scale + hat_xoffs + HAT_STACK_OFFS[ii] * scale,
+      y, z: z + 1 + ii,
+      item: hat,
+      scale,
+    });
+  }
+  y = y0;
+  y += 3 * scale;
+  for (let ii = 0; ii < books.length; ++ii) {
+    let book = books[ii];
+    let elem = ELEMENT_NAME[1 + (book.subtype % 3)];
+    y -= 6 * scale;
+    autoAtlas('ui', `spellbook-side-${elem}`).draw({
+      x: x0 - scale + book_xoffs + HAT_STACK_OFFS[HAT_STACK_OFFS.length - 1 - ii] * scale,
+      y, z: z + 1 + ii + 10,
+      w: 12 * scale,
+      h: 12 * scale,
+    });
+  }
+}
+
 
 type ShopType = 'inventory' | 'upgrades' | 'trades';
 
@@ -908,9 +955,6 @@ const INVENTORY_Y = floor((game_height - INVENTORY_H) / 2);
 const INVENTORY_ACTION_W = 52;
 const TRADE_ACTION_W = 60;
 const style_inventory = fontStyleColored(null, palette_font[PAL_BLACK - 1]);
-const HAT_STACK_OFFS = [
-  1,2,1,0,2,1,2,1,0,1,2,0,1
-];
 class InventoryMenuAction extends UIAction {
   constructor(public shop_type: ShopType) {
     super();
@@ -1489,47 +1533,9 @@ class InventoryMenuAction extends UIAction {
       y += FONT_HEIGHT;
     });
 
-    let anim_t = engine.getFrameTimestamp() * 0.001;
-    let dir = ((anim_t + PI/2) % (PI * 2)) < PI;
-    let book_xoffs = 9;
-    let hat_xoffs = -1;
-    if (!dir) {
-      book_xoffs *= -1;
-      hat_xoffs *= -1;
-    }
-    x0 = INVENTORY_X + INVENTORY_PAD6 + 8 + round(sin(anim_t) * 8);
+    x0 = INVENTORY_X + INVENTORY_PAD6;
     y0 = INVENTORY_Y + INVENTORY_H - INVENTORY_PAD6 - 6;
-    y = y0;
-    autoAtlas('player', dir ? 'player-right' : 'player-left').draw({
-      x: x0,
-      y,
-      z,
-      w: 12,
-      h: 12,
-    });
-    y -= 9;
-    for (let ii = 0; ii < hats.length; ++ii) {
-      let hat = hats[ii];
-      y -= 4;
-      inventoryIconDraw({
-        x: x0 - 5 + hat_xoffs + HAT_STACK_OFFS[ii],
-        y, z: z + 1 + ii,
-        item: hat,
-      });
-    }
-    y = y0;
-    y += 3;
-    for (let ii = 0; ii < books.length; ++ii) {
-      let book = books[ii];
-      let elem = ELEMENT_NAME[1 + (book.subtype % 3)];
-      y -= 6;
-      autoAtlas('ui', `spellbook-side-${elem}`).draw({
-        x: x0 - 1 + book_xoffs + HAT_STACK_OFFS[HAT_STACK_OFFS.length - 1 - ii],
-        y, z: z + 1 + ii + 10,
-        w: 12,
-        h: 12,
-      });
-    }
+    drawHatDude(x0, y0, z, 1, hats, books);
 
     drawBox({
       x: INVENTORY_X - 4,
@@ -2555,6 +2561,7 @@ function giveXP(xp_reward: number): void {
   }, errorsToChat);
 }
 
+let reward_luck = 0;
 function giveRewards(target_ent: Entity): void {
   let my_ent = myEnt();
   let my_level = my_ent.getData('stats.level', 1);
@@ -2563,6 +2570,13 @@ function giveRewards(target_ent: Entity): void {
   let reward_level = rewardLevel(my_level, enemy_level, highest_hitter);
   let entity_manager = entityManager();
   let pos = target_ent.getData<JSVec3>('pos')!;
+  let give_reward = random() < (0.5 + reward_luck * 0.1);
+  if (!give_reward) {
+    reward_luck++;
+    return;
+  } else {
+    reward_luck--;
+  }
   let loot: Item[] = [];
   if (random() < 0.05) {
     loot.push({
@@ -2572,10 +2586,17 @@ function giveRewards(target_ent: Entity): void {
       count: 1,
     });
   } else {
+    let loot_mod = (reward_level + 1) % 2;
+    let loot_level = floor((reward_level + 1) / 2);
+    if (loot_mod) {
+      if (random() < 0.5) {
+        loot_level++;
+      }
+    }
     loot.push({
       type: random() < 0.5 ? 'book' : 'hat',
       subtype: floor(random() * 3),
-      level: reward_level,
+      level: loot_level,
       count: 1,
     });
   }

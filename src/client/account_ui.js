@@ -345,17 +345,21 @@ AccountUI.prototype.showLogin = function (param) {
           ui.provideUserString('Your User ID', user_id);
         }
       } else {
-        ui.font.drawSizedAligned(style, x + button_width + 8,
-          y + logged_in_font_height * -0.25,
-          Z.UI, logged_in_font_height, calign | glov_font.ALIGN.VCENTER | glov_font.ALIGN.HFIT, text_w, button_height,
+        // DCJAM
+        ui.font.drawSizedAligned(style, x,
+          y,
+          Z.UI, logged_in_font_height, calign | glov_font.ALIGN.HCENTERFIT,
+          button_width, button_height,
           'Logged in as:');
-        ui.font.drawSizedAligned(style, x + button_width + 8,
-          y + logged_in_font_height * 0.75,
-          Z.UI, logged_in_font_height, calign | glov_font.ALIGN.VCENTER | glov_font.ALIGN.HFIT, text_w, button_height,
+        ui.font.drawSizedAligned(style, x,
+          y + logged_in_font_height,
+          Z.UI, logged_in_font_height, calign | glov_font.ALIGN.HCENTERFIT,
+          button_width, button_height,
           name);
-        if (click({ x: x + button_width + 8, y, w: text_w, h: logged_in_font_height * 2, button: 0 })) {
+        if (click({ x: x, y, w: button_width, h: logged_in_font_height * 2, button: 0 })) {
           ui.provideUserString('Your User ID', user_id);
         }
+        y += logged_in_font_height * 2 + pad;
       }
 
       if (ui.buttonText({
@@ -379,11 +383,11 @@ AccountUI.prototype.showLogin = function (param) {
     }
   }
   if (login_message) {
-    let w = ui.font.drawSizedAligned(style, center ? x - 400 : x, y, Z.UI, font_height * 1.5,
+    // DCJAM
+    let w = ui.font.drawSizedAligned(style, x, y, Z.UI, font_height * 1.5,
       glov_font.ALIGN.HVCENTERFIT,
-      center ? 800 : 400, min_h, login_message);
-    w += 100;
-    ui.drawRect(x - (center ? w / 2 : 50), y, x + (center ? w / 2 : w - 50), y + min_h, Z.UI - 0.5, vec4(0,0,0,0.25));
+      button_width, min_h, login_message);
+    ui.drawRect(x - 20, y, x + w + 20, y + min_h, Z.UI - 0.5, vec4(0,0,0,0.25));
     y += min_h;
   }
   return y;
