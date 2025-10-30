@@ -19,7 +19,7 @@ import {
   crawlerScriptRegisterEvent,
   CrawlerScriptWhen,
 } from '../common/crawler_script';
-import { CrawlerCell, WEST } from '../common/crawler_state';
+import { CrawlerCell, SOUTH, WEST } from '../common/crawler_state';
 import { crawlerScriptAPI } from './crawler_play';
 import {
   DialogParam,
@@ -198,7 +198,7 @@ crawlerScriptRegisterEvent({
       let cur_floor = api.getFloor();
       api.floorDelta(TOWN_FLOOR - cur_floor, 'stairs_in', false);
     } else {
-      api.floorAbsolute(TOWN_FLOOR, town_pos[0], town_pos[1], WEST);
+      api.floorAbsolute(TOWN_FLOOR, town_pos[0], town_pos[1], town_pos[1] <= 5 ? SOUTH : WEST);
     }
   },
 });

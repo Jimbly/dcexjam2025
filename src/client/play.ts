@@ -96,6 +96,7 @@ import {
   DirType,
   DX,
   DY,
+  SOUTH,
   WEST,
 } from '../common/crawler_state';
 import {
@@ -1736,8 +1737,12 @@ function isOnFloorList(): boolean {
 }
 
 function closeFloorList(): void {
+  let dir: DirType = WEST;
+  if (cur_action && (cur_action as FloorListAction).base_floor === 7) {
+    dir = SOUTH;
+  }
   uiAction(null);
-  crawlerScriptAPI().forceMove(WEST);
+  crawlerScriptAPI().forceMove(dir);
 }
 
 function perc(n: number): string {
@@ -1780,6 +1785,10 @@ function joinFloor(floor_id: number): void {
   let my_pos = my_ent.getData<JSVec3>('pos')!;
   setMiscField('town_leave_pos', [my_pos[0], my_pos[1], my_pos[2]]);
   crawlerScriptAPI().floorDelta(floor_id - my_floor_id, 'stairs_in', false);
+}
+
+function allocateNewFloor(floor_level: number): void {
+  // TODO
 }
 
 const FLOORLIST_W = FRAME_VERT_SPLIT - 12;
@@ -2039,7 +2048,7 @@ class FloorListAction extends UIAction {
         disabled_focusable: true,
         tooltip: disabled_floors[ii] ? 'Please join an active level below instead.' : undefined,
       })) {
-        // TODO
+        allocateNewFloor(ii);
       }
       x += button_w + FLOORLIST_PAD;
     }
