@@ -3022,8 +3022,8 @@ function drawEnemyStats(ent: Entity): void {
   drawHealthBar(ENEMY_HP_BAR_X, ENEMY_HP_BAR_Y, Z.UI, ENEMY_HP_BAR_W, bar_h, hp, hp_max, show_text);
   if (ent.display_name) {
     font.drawSizedAligned(style_text, ENEMY_HP_BAR_X, ENEMY_HP_BAR_Y + bar_h, Z.UI,
-      uiTextHeight(), ALIGN.HVCENTERFIT,
-      ENEMY_HP_BAR_W, bar_h, `${ent.display_name} (L${ent.data.stats.level})`);
+      uiTextHeight(), ALIGN.HVCENTER,
+      ENEMY_HP_BAR_W, bar_h, `${ent.display_name} (L${ent.data.stats.level}${ent.is_boss ? ', Boss' : ''})`);
   }
 }
 
@@ -3120,13 +3120,13 @@ function giveRewards(target_ent: Entity): void {
   let reward_level = rewardLevel(my_level, enemy_level, highest_hitter);
   let entity_manager = entityManager();
   let pos = target_ent.getData<JSVec3>('pos')!;
-  let give_reward = random() < (0.5 + reward_luck * 0.1);
+  let give_reward = target_ent.is_boss ? true : random() < (0.5 + reward_luck * 0.1);
   if (!give_reward) {
     reward_luck++;
   } else {
     reward_luck--;
     let loot: Item[] = [];
-    if (random() < 0.05) {
+    if (random() < 0.05 && !target_ent.is_boss) {
       loot.push({
         type: 'potion',
         subtype: 0,
@@ -3136,6 +3136,9 @@ function giveRewards(target_ent: Entity): void {
     } else {
       let loot_mod = (reward_level + 1) % 2;
       let loot_level = floor((reward_level + 1) / 2);
+      if (target_ent.is_boss) {
+        loot_level++;
+      }
       if (loot_mod) {
         if (random() < 0.5) {
           loot_level++;

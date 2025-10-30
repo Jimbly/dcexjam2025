@@ -67,6 +67,8 @@ function entityTraitsServerStartup(ent_factory: TraitFactory<Entity, DataObject>
         if (opts.element) {
           stats[`r${opts.element}`] = 50;
           stats.element = ELEMENT[opts.element];
+        } else {
+          stats.rfire = stats.rice = stats.rearth = 40;
         }
       }
       return undefined;

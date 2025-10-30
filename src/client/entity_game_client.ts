@@ -90,6 +90,7 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
   declare ai_move_min_time: number;
   declare ai_move_rand_time: number;
   declare display_name: string;
+  declare is_boss: boolean;
 
   constructor(data_in: DataObject) {
     super(data_in);
@@ -175,3 +176,4 @@ EntityClient.prototype.do_split = true;
 EntityClient.prototype.ai_move_min_time = 500;
 EntityClient.prototype.ai_move_rand_time = 500;
 EntityClient.prototype.display_name = '?';
+EntityClient.prototype.is_boss = false;

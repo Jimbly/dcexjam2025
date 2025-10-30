@@ -1,12 +1,14 @@
 ---
 properties:
   display_name: Flame
+  is_boss: false
 traits:
 - id: blocks_player
 - id: enemy
 - id: stats_enemy
   hp: 2
   attack: 3
+  defense: 0
   element: fire
 - id: hunter
 - id: wander

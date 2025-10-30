@@ -1,12 +1,14 @@
 ---
 properties:
   display_name: Fire Skull
+  is_boss: false
 traits:
 - id: blocks_player
 - id: enemy
 - id: stats_enemy
   hp: 5
   attack: 4
+  defense: 0
   element: fire
 - id: hunter
 - id: wander

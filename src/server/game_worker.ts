@@ -183,6 +183,11 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
     });
 
     cb(level_data);
+
+    // queue up a save (need to save `floorlevel` if nothing else) once everything's loaded
+    this.game_state.getLevelForFloorAsync(floor_id, (level) => {
+      this.levelSave(level, floor_id, null, false);
+    });
   }
 
   allocateFloor(floor_level: number): number {

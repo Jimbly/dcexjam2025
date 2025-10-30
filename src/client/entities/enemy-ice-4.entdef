@@ -1,12 +1,14 @@
 ---
 properties:
   display_name: Squirter
+  is_boss: false
 traits:
 - id: blocks_player
 - id: enemy
 - id: stats_enemy
   hp: 5
   attack: 3
+  defense: 0.3334
   element: ice
 - id: hunter
 - id: wander

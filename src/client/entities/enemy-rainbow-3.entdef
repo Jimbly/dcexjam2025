@@ -1,12 +1,14 @@
 ---
 properties:
   display_name: Etherial
+  is_boss: true
 traits:
 - id: blocks_player
 - id: enemy
 - id: stats_enemy
   hp: -2
   attack: 3
+  defense: 0.75
 - id: hunter
 - id: wander
 - id: drawable

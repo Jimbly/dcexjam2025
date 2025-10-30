@@ -153,12 +153,14 @@ let data = {
     let output = `---
 properties:
   display_name: ${entry.name}
+  is_boss: ${entry.hp < 0}
 traits:
 - id: blocks_player
 - id: enemy
 - id: stats_enemy
   hp: ${entry.hp || 5}
   attack: ${entry.attack || 3}
+  defense: ${entry.defense || 0}
 `;
     if (color !== 'rainbow') {
       output += `  element: ${color}\n`;

@@ -1,12 +1,14 @@
 ---
 properties:
   display_name: Watcher
+  is_boss: false
 traits:
 - id: blocks_player
 - id: enemy
 - id: stats_enemy
   hp: 8
   attack: 3
+  defense: 0
   element: earth
 - id: hunter
 - id: wander
