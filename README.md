@@ -14,13 +14,7 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* hook up actual new floor logic
-* audio pass
 * show enemy HP for more interesting combat choices?
-
-Assets to replace
-* chat send/receive/join/leave sounds
-* placeholder sounds in play.ts
 
 TODO
 * add scrollbar to inventory, remove limit? add sort button
@@ -62,6 +56,7 @@ TODO
 * on town level show player levels instead of where waiting/checkmarks are (or, do for all nearby players?)
 * golden hat reward for final level (if it shows on players)
 * prompt to advance to the next floor upon leaving? always does and you can backtrack if needed?
+* forward + left quickly when in battle zone doesn't do the turn
 
 Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready

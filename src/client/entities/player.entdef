@@ -31,8 +31,33 @@ traits:
     idle-away:
       frames: [away]
       times: 1000
+    attack:
+      frames: [attack]
+      loop: false
+      transition_to: idle
+      times: 500
+    attack-right:
+      frames: [right-attack]
+      loop: false
+      transition_to: idle-right
+      times: 500
+    attack-towards:
+      frames: [towards-attack]
+      loop: false
+      transition_to: idle-towards
+      times: 500
+    attack-left:
+      frames: [left-attack]
+      loop: false
+      transition_to: idle-left
+      times: 500
+    attack-away:
+      frames: [away-attack]
+      loop: false
+      transition_to: idle-away
+      times: 500
     death:
-      frames: [0]
+      frames: [dead]
       times: 1000
     pit:
       frames: [0]

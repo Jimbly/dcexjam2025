@@ -163,6 +163,9 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
   }
 
   onCreate(is_initial: boolean): number {
+    if (!this.isAlive() && this.triggerAnimation) {
+      this.triggerAnimation('death');
+    }
     return is_initial ? 0 : 250;
   }
 }

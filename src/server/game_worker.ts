@@ -237,6 +237,7 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
     let { entity_manager, game_state } = this;
     let { entities } = entity_manager;
     let now = msToSS2020(Date.now());
+    now = Math.floor(now / 10) * 10;
 
     // Determine current data
     let players: TSMap<{ floor_id: number }> = {};

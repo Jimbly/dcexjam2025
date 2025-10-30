@@ -217,6 +217,10 @@ export function dynGeomForward() {
   return forward;
 }
 
+export function dynGeomUp() {
+  return up;
+}
+
 let temp = vec3();
 let target_right = vec3();
 export function dynGeomSpriteSetup(params) {

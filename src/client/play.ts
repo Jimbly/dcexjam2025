@@ -212,6 +212,7 @@ import {
   palette_font,
 } from './palette';
 import { renderAppStartup } from './render_app';
+import { SOUND_DATA } from './sound_data';
 import {
   statusPush,
   statusSet,
@@ -1356,6 +1357,7 @@ class InventoryMenuAction extends UIAction {
                   x, y, z,
                   w: INVENTORY_ACTION_W,
                   text: 'Combine!',
+                  sound_button: 'shop',
                 })) {
                   doCombine(selected_idx[1], target_idx);
                 }
@@ -1448,6 +1450,7 @@ class InventoryMenuAction extends UIAction {
                   x, y: y + 24 + FONT_HEIGHT + 2, z,
                   w: TRADE_ACTION_W,
                   text: 'Downvert',
+                  sound_button: 'shop',
                 })) {
                   doDownvert(selected_idx[1], target_idx, target_item.subtype);
                 }
@@ -1499,6 +1502,7 @@ class InventoryMenuAction extends UIAction {
                 x, y: y + 24 + FONT_HEIGHT + 2, z,
                 w: TRADE_ACTION_W,
                 text: 'Trade',
+                sound_button: 'shop',
               })) {
                 doTradeForPotion(selected_idx[1], target_idx);
               }
@@ -2152,7 +2156,7 @@ function closestPlayerToIgnoreWalls(ent: Entity): EntityID {
       // not on current floor
       continue;
     }
-    if (!other_ent.isPlayer()) {
+    if (!other_ent.isPlayer() || !other_ent.isAlive()) {
       continue;
     }
     let dist = v2manhattan(pos, other_ent.getData<JSVec3>('pos')!);
@@ -2211,7 +2215,9 @@ function battleZonePrep(): void {
       continue;
     }
     if (other_ent.isPlayer()) {
-      players.push(other_ent);
+      if (other_ent.isAlive()) {
+        players.push(other_ent);
+      }
     } else /*if (other_ent.isEnemy())*/ {
       // note: doing non-enemies so they still wander and such
 
@@ -2434,7 +2440,7 @@ function aiStepAllowed(): boolean {
   for (let ent_id in entities) {
     let other_ent = entities[ent_id]!;
     if (other_ent.data.floor !== floor_id || other_ent.fading_out ||
-      !other_ent.isPlayer()
+      !other_ent.isPlayer() || !other_ent.isAlive()
     ) {
       // not on current floor
       continue;
@@ -2452,7 +2458,7 @@ function aiStep(): void {
   if (buildModeActive() || settings.ai_pause || engine.defines.LEVEL_GEN) {
     return;
   }
-  playUISound('rollover');
+  // playUISound('rollover');
   let entity_manager = entityManager();
   let entities = entity_manager.entities;
   let game_state = crawlerGameState();
@@ -3105,6 +3111,7 @@ function giveXP(xp_reward: number): void {
       data_assignments['stats.hp'] = my_ent.getData('stats.hp', 0) + delta_hp;
       statusPush('Level up!');
       statusPush(stat_delta);
+      playUISound('levelup');
     }
   }
   my_ent.applyBatchUpdate({
@@ -3112,6 +3119,15 @@ function giveXP(xp_reward: number): void {
     action_id: 'give_xp',
     data_assignments,
   }, errorsToChat);
+}
+
+function playSoundFromEnt(ent: Entity, sound_id: keyof typeof SOUND_DATA): void {
+  let pos = ent.getData<JSVec3>('pos')!;
+
+  playUISound(sound_id, {
+    pos: [pos[0] + 0.5, pos[1] + 0.5, 0.5],
+    volume: 1,
+  });
 }
 
 let reward_luck = 0;
@@ -3208,12 +3224,16 @@ function onBroadcast(update: EntityManagerEvent): void {
     } else {
       // someone else did
       if (hp) {
-        addFloater(target, `${hp > 0 ? '+' : ''}${hp}${resist ? '\nRESIST!' : ''}`, 'damage');
+        addFloater(target, `${hp > 0 ? '+' : ''}${hp}${resist ? '\nRESIST!' : ''}`, fatal ? 'death' : 'damage');
         addFloater(source, null, 'attack');
       }
     }
 
     if (action === 'attack') {
+      if (fatal && target_ent) {
+        playSoundFromEnt(target_ent, target_ent === myEnt() ?
+          'death_me' : target_ent.isPlayer() ? 'death_otherplayer' : 'death_enemy');
+      }
       if (source === myEntID()) {
         chat_ui.addChat(`You ${type} it for ${-hp} damage${resist ? ' (resisted)' : ''}` +
           `${fatal ? ', killing it' : ''}.`);
@@ -3345,10 +3365,12 @@ function doAttack(target_ent: Entity, action: Item | 'basic'): void {
   if (action === 'basic') {
     ({ dam, style, resist } = basicAttackDamage(attacker_stats, target_stats));
     mp_cost = -1;
+    playUISound('basicattack');
   } else {
     let details = skillDetails(action);
     ({ dam, style, resist } = skillAttackDamage(details, attacker_stats, target_stats));
     ({ mp_cost } = details);
+    playUISound(`spell${ELEMENT_NAME[details.element]}`);
   }
 
   if (dam > 0) {
@@ -3395,7 +3417,7 @@ function doAttack(target_ent: Entity, action: Item | 'basic'): void {
 
 function bumpEntityCallback(target_ent_id: EntityID): void {
   if (!canIssueAction()) {
-    playUISound('msg_out_err');
+    playUISound('invalid_action');
     return;
   }
   let me = myEnt();
@@ -3431,7 +3453,7 @@ function doHeal(): void {
     }
   }
   if (inv_idx === -1) {
-    playUISound('msg_out_err');
+    playUISound('user_error');
     statusSet('heal', 'Oh no!  Out of potions.').counter = 2500;
     return;
   }
@@ -3439,10 +3461,12 @@ function doHeal(): void {
   let hp = my_ent.getData('stats.hp', 0);
   let hp_max = my_ent.getData('stats.hp_max', 1);
   if (hp >= hp_max) {
-    playUISound('msg_out_err');
+    playUISound('user_error');
     statusSet('heal', 'Already fully healed.').counter = 2500;
     return;
   }
+
+  playUISound('potion');
 
   let dstats: Partial<StatsData> = {};
   let new_hp = min(hp_max, hp + round(POTION_HEAL_PORTION * hp_max));
@@ -3560,6 +3584,7 @@ function doQuickbar(): void {
         hotkey: KEYS[hotkey],
         // base_name: canIssueAction() ? undefined : 'button_disabled',
         disabled: disable_button,
+        sound_button: null,
       }));
       if (!canIssueAction()) {
         drawRect2({
@@ -3594,7 +3619,7 @@ function doQuickbar(): void {
           if (action !== 'basic') {
             let { mp_cost } = skill_details!;
             if (mp_cost > myEnt().getData('stats.mp', 0)) {
-              playUISound('msg_out_err');
+              playUISound('user_error');
               statusPush('Insufficient MP').counter = 2500;
               continue;
             }
@@ -3606,13 +3631,13 @@ function doQuickbar(): void {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         onDisabledAction();
       } else if (all_disabled) {
-        playUISound('msg_out_err');
+        playUISound('invalid_action');
         statusSet('onDisabledAction', 'Cannot attack while moving').counter = 2500;
       } else if (!can_attack) {
-        playUISound('msg_out_err');
+        playUISound('user_error');
         statusSet('onDisabledAction', 'No target for your attack').counter = 2500;
       } else {
-        playUISound('msg_out_err');
+        playUISound('invalid_action');
         statusSet('onDisabledAction', 'Unknown error');
       }
     }
@@ -3628,6 +3653,7 @@ function doQuickbar(): void {
     ...heal_button_param,
     shrink: 12/16,
     hotkey: KEYS.H,
+    sound_button: null,
     img: autoAtlas('ui', 'potion'),
   })) {
     if (all_disabled) {
@@ -3835,7 +3861,7 @@ function drawFrames(): void {
 }
 
 function onDisabledAction(): void {
-  playUISound('msg_out_err');
+  playUISound('invalid_action');
   statusSet('onDisabledAction', 'Please wait for other players to take their turn').counter = 2500;
 }
 
@@ -4226,10 +4252,12 @@ function pickupOnClient(item: Item): boolean {
   assert(inventory);
 
   if (idx === -1) {
-    playUISound('msg_out_err');
+    playUISound('user_error');
     statusPush('Cannot pickup: Inventory full');
     return false;
   }
+
+  playUISound('pickup');
 
   let ops: ActionInventoryOp[] = [];
   if (inventory[idx]) {

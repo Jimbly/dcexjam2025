@@ -5,6 +5,7 @@ tiles:
   away: [1, 0]
   left: [2, 0]
   towards: [3, 0]
+  dead: [4, 0]
 
   right-attack: [0, 1]
   away-attack: [1, 1]
