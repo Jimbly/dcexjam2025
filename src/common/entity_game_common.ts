@@ -73,6 +73,10 @@ export type ActionInventoryPayload = {
   ready: boolean;
 };
 
+export type ActionNewFloorPayload = {
+  floor_level: number;
+};
+
 export type StatsData = {
   hp: number;
   hp_max: number;

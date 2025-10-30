@@ -1,4 +1,5 @@
 import assert from 'assert';
+import fs from 'fs';
 import { CmdRespFunc } from 'glov/common/cmd_parse';
 import {
   ClientHandlerSource,
@@ -22,7 +23,10 @@ import {
 } from 'glov/server/entity_manager_server';
 import { CrawlerJoinPayload } from '../common/crawler_entity_common';
 import '../common/crawler_events'; // side effects: register events
-import { CrawlerLevel } from '../common/crawler_state';
+import {
+  CrawlerLevel,
+  CrawlerLevelSerialized,
+} from '../common/crawler_state';
 import { FloorData, Item } from '../common/entity_game_common';
 import { CrawlerWorker } from './crawler_worker';
 import {
@@ -33,16 +37,18 @@ import {
   serverEntityAlloc,
 } from './server_entities';
 
-const GAME_WORKER_VERSION = 1;
+const GAME_WORKER_VERSION = 2;
 const ENT_VERSION = 1; // Drops all serialized ents when this changes
 
 type Entity = EntityServer;
 
 type GameWorkerPrivateChannelData = {
   version: number;
+  last_floor_id: number;
 };
 type GameWorkerPublicChannelData = {
   seed: string;
+  floors: Partial<Record<number, FloorData>>;
 };
 
 type ChannelDataDiffer = ReturnType<typeof channelDataDifferCreate>;
@@ -89,6 +95,7 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
       public_data.seed = data && data.seed || 'test';
     }
     private_data.version = GAME_WORKER_VERSION;
+    private_data.last_floor_id = 100;
     this.initCrawlerState();
   }
 
@@ -135,10 +142,28 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
   }
 
   // generator?: LevelGenerator;
-  // levelFallbackProvider(floor_id: number, cb: (level_data: CrawlerLevelSerialized)=> void): void {
+  // levelFallbackProvider(floor_id: number, cb: (level_data: CrawlerLevelSerialized) => void): void {
   //   assert(this.generator);
   //   this.generator.provider(floor_id, cb);
   // }
+  floor_level_for_id: Record<number, number> = {};
+  levelFallbackProvider(floor_id: number, cb: (level_data: CrawlerLevelSerialized) => void): void {
+    let floor_level = this.floor_level_for_id[floor_id] || 1;
+    let file = './src/client/levels/level2.json';
+    assert(fs.existsSync(file));
+    let data = fs.readFileSync(file, 'utf8');
+    let level_data: CrawlerLevelSerialized = JSON.parse(data);
+    level_data.props = level_data.props || {};
+    level_data.props.floorlevel = String(floor_level);
+    cb(level_data);
+  }
+
+  allocateFloor(floor_level: number): number {
+    let floor_id = this.data.private.last_floor_id + 1;
+    this.setChannelData('private.last_floor_id', floor_id);
+    this.floor_level_for_id[floor_id] = floor_level;
+    return floor_id;
+  }
 
   initCrawlerState(): void {
     this.entity_manager = createServerEntityManager<Entity,GameWorker>({
@@ -267,12 +292,9 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
     // Update public data
     this.differ.start();
     let expire_time = now - 30*24*60*60;
-    type PubData = {
-      floors: Partial<Record<number, FloorData>>;
-    };
-    let old_floors: Partial<Record<number, FloorData>> = (this.data.public as unknown as PubData).floors;
+    let old_floors: Partial<Record<number, FloorData>> = this.data.public.floors;
     if (!old_floors) {
-      old_floors = (this.data.public as unknown as PubData).floors = {};
+      old_floors = this.data.public.floors = {};
     }
     let seen_rooms: Partial<Record<number, boolean>> = {};
     for (let floor_level_str in old_floors) {

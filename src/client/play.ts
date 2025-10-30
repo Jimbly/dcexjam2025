@@ -181,7 +181,7 @@ import {
 } from './crawler_render_entities';
 import { crawlerScriptAPIDummyServer } from './crawler_script_api_client';
 import { crawlerOnScreenButton } from './crawler_ui';
-import { dialogNameRender } from './dialog_data';
+import { allocateNewFloor, dialogNameRender } from './dialog_data';
 import { dialog, dialogMoveLocked, dialogRun, dialogStartup } from './dialog_system';
 import {
   entitiesAt,
@@ -339,7 +339,7 @@ export function myEntOptional(): Entity | undefined {
 //   return crawlerEntityManager() as ClientEntityManagerInterface<Entity>;
 // }
 
-function errorsToChat(err: unknown): void {
+export function errorsToChat(err: unknown): void {
   if (err) {
     getChatUI().addChat(`Error executing action: ${err}`, 'error');
   }
@@ -365,6 +365,10 @@ function uiAction(action: UIAction | null): void {
   } else {
     cur_action = null;
   }
+}
+
+export function uiActionClear(): void {
+  uiAction(null);
 }
 
 const PAUSE_MENU_W = floor(160/346*game_width);
@@ -1778,17 +1782,13 @@ function anyActive(recent_players: TSMap<FloorPlayerData>): boolean {
   return false;
 }
 
-function joinFloor(floor_id: number): void {
+export function joinFloorFromTown(floor_id: number): void {
   uiAction(null);
   let my_ent = myEnt();
   let my_floor_id = my_ent.data.floor;
   let my_pos = my_ent.getData<JSVec3>('pos')!;
   setMiscField('town_leave_pos', [my_pos[0], my_pos[1], my_pos[2]]);
   crawlerScriptAPI().floorDelta(floor_id - my_floor_id, 'stairs_in', false);
-}
-
-function allocateNewFloor(floor_level: number): void {
-  // TODO
 }
 
 const FLOORLIST_W = FRAME_VERT_SPLIT - 12;
@@ -1943,7 +1943,7 @@ class FloorListAction extends UIAction {
         text: `${my_rec ? 'RESUME' : 'JOIN'}\nLevel [c=${rec.floor_level > my_level ? 'red' : 'level'}]` +
           `${rec.floor_level}[/c] #${fourdigit(rec.floor_id)}`,
       })) {
-        joinFloor(rec.floor_id);
+        joinFloorFromTown(rec.floor_id);
       }
       let ymax = y + FLOORLIST_BUTTON_H2;
 
@@ -3126,57 +3126,64 @@ function giveRewards(target_ent: Entity): void {
   let give_reward = random() < (0.5 + reward_luck * 0.1);
   if (!give_reward) {
     reward_luck++;
-    return;
   } else {
     reward_luck--;
-  }
-  let loot: Item[] = [];
-  if (random() < 0.05) {
-    loot.push({
-      type: 'potion',
-      subtype: 0,
-      level: 1,
-      count: 1,
-    });
-  } else {
-    let loot_mod = (reward_level + 1) % 2;
-    let loot_level = floor((reward_level + 1) / 2);
-    if (loot_mod) {
-      if (random() < 0.5) {
-        loot_level++;
+    let loot: Item[] = [];
+    if (random() < 0.05) {
+      loot.push({
+        type: 'potion',
+        subtype: 0,
+        level: 1,
+        count: 1,
+      });
+    } else {
+      let loot_mod = (reward_level + 1) % 2;
+      let loot_level = floor((reward_level + 1) / 2);
+      if (loot_mod) {
+        if (random() < 0.5) {
+          loot_level++;
+        }
       }
+      loot.push({
+        type: random() < 0.5 ? 'book' : 'hat',
+        subtype: floor(random() * 3),
+        level: loot_level,
+        count: 1,
+      });
     }
-    loot.push({
-      type: random() < 0.5 ? 'book' : 'hat',
-      subtype: floor(random() * 3),
-      level: loot_level,
-      count: 1,
+    let existing_ents = entitiesAt(entity_manager, pos, target_ent.data.floor, true);
+    existing_ents = existing_ents.filter((ent) => {
+      return ent.type_id === 'chest-local';
     });
-  }
-  let existing_ents = entitiesAt(entity_manager, pos, target_ent.data.floor, true);
-  existing_ents = existing_ents.filter((ent) => {
-    return ent.type_id === 'chest-local';
-  });
-  if (existing_ents.length) {
-    let contents = existing_ents[0].data.contents;
-    assert(contents);
-    existing_ents[0].data.contents = contents.concat(loot);
-  } else {
-    let new_ent: Partial<EntityDataClient> = {
-      floor: target_ent.data.floor,
-      pos,
-      type: 'chest-local',
-      contents: loot,
-    };
-    entity_manager.addClientOnlyEntityFromSerialized(new_ent);
+    if (existing_ents.length) {
+      let contents = existing_ents[0].data.contents;
+      assert(contents);
+      existing_ents[0].data.contents = contents.concat(loot);
+    } else {
+      let new_ent: Partial<EntityDataClient> = {
+        floor: target_ent.data.floor,
+        pos,
+        type: 'chest-local',
+        contents: loot,
+      };
+      entity_manager.addClientOnlyEntityFromSerialized(new_ent);
+    }
   }
 
-  let xp_reward = xpForDeath(reward_level);
+  let xp_reward_level = min(reward_level, my_level + 2);
+  let xp_reward = xpForDeath(xp_reward_level);
   statusPush(`+${xp_reward} XP`);
   let chat_ui = getChatUI();
-  if (reward_level < enemy_level) {
-    chat_ui.addChat(`You gain ${xp_reward} XP (enemy L${enemy_level} > your L${my_level},` +
-      ` assist L${highest_hitter}, reward L${reward_level})`);
+  if (xp_reward_level < enemy_level) {
+    if (xp_reward_level < reward_level) {
+      // capped by my level
+      chat_ui.addChat(`You gain ${xp_reward} XP (enemy L${enemy_level} >> your L${my_level},` +
+        ` capped to reward L${xp_reward_level})`);
+    } else {
+      // capped by a friend
+      chat_ui.addChat(`You gain ${xp_reward} XP (enemy L${enemy_level} > your L${my_level},` +
+        ` assist L${highest_hitter}, reward L${reward_level})`);
+    }
   } else {
     chat_ui.addChat(`You gain ${xp_reward} XP (enemy L${enemy_level})`);
   }
@@ -3227,7 +3234,7 @@ function onBroadcast(update: EntityManagerEvent): void {
         chat_ui.addChat(`${source} hits ${target} with ${type} for ${-hp} damage` +
           `${resist ? ' (resisted)' : ''}${fatal ? ', killing it' : ''}.`);
       }
-      if (fatal && target_ent && target_ent.isEnemy()) {
+      if (fatal && target_ent && target_ent.isEnemy() && target_ent.hit_by_us) {
         giveRewards(target_ent);
       }
     }
@@ -3293,6 +3300,7 @@ function moveBlockDead(): boolean {
   if (buttonText({
     x: x + floor(w/2 - uiButtonWidth()/2), y, z,
     text: 'Respawn',
+    hotkeys: [KEYS.SPACE, KEYS.R],
   })) {
     controller.goToFloor(crawlerGameState().floor_id, 'stairs_in', 'respawn');
     my_ent.applyBatchUpdate({
@@ -3313,12 +3321,16 @@ function markActiveInCombat(): void {
   let game_state = crawlerGameState();
   let { floor_id } = game_state;
   let pos = my_ent.getData<JSVec3>('pos')!;
+  let my_level = my_ent.getData('stats.level', 1);
   let entity_manager = entityManager();
   let ents = entity_manager.entitiesFind((ent) => {
     return ent.data.floor === floor_id && entManhattanDistance(ent, pos) <= 3;
   }, false);
   for (let ii = 0; ii < ents.length; ++ii) {
-    ents[ii].hit_by_us = true;
+    let ent = ents[ii];
+    if (ent.data.stats?.level <= my_level + 1) {
+      ent.hit_by_us = true;
+    }
   }
 }
 

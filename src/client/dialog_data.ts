@@ -20,21 +20,27 @@ import {
   CrawlerScriptWhen,
 } from '../common/crawler_script';
 import { CrawlerCell, SOUTH, WEST } from '../common/crawler_state';
+import { ActionNewFloorPayload } from '../common/entity_game_common';
+import { crawlerMyActionSend } from './crawler_entity_client';
 import { crawlerScriptAPI } from './crawler_play';
 import {
   DialogParam,
   dialogPush,
   dialogRegister,
+  dialogReset,
 } from './dialog_system';
 import {
   entitiesAt,
   entityManager,
 } from './entity_game_client';
 import {
+  errorsToChat,
+  joinFloorFromTown,
   myEnt,
   myEntOptional,
   showFloorList,
   showShop,
+  uiActionClear,
 } from './play';
 import { statusPush } from './status';
 
@@ -203,6 +209,26 @@ crawlerScriptRegisterEvent({
   },
 });
 
+export function allocateNewFloor(floor_level: number): void {
+  uiActionClear();
+  dialogPush({
+    name: '',
+    text: 'Entering The Tower...',
+  });
+  let payload: ActionNewFloorPayload = {
+    floor_level,
+  };
+  crawlerMyActionSend({
+    action_id: 'new_floor',
+    payload,
+  }, function (err, result?: number) {
+    dialogReset();
+    errorsToChat(err);
+    if (!err && result) {
+      joinFloorFromTown(result);
+    }
+  });
+}
 
 cmd_parse.register({
   cmd: 'status',

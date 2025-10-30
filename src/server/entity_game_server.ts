@@ -18,6 +18,7 @@ import {
 import {
   ActionAttackPayload,
   ActionInventoryPayload,
+  ActionNewFloorPayload,
   BroadcastDataDstat,
   entityGameCommonClass,
   EntityGameDataCommon,
@@ -25,6 +26,7 @@ import {
   StatsData,
 } from '../common/entity_game_common';
 import { EntityCrawlerDataServer, EntityCrawlerServer } from './crawler_entity_server';
+import { GameWorker } from './game_worker';
 
 const { max, floor } = Math;
 
@@ -502,5 +504,17 @@ entityServerRegisterActions([{
       this.dirty('ready');
     }
     resp_func();
+  },
+}, {
+  action_id: 'new_floor',
+  self_only: true,
+  handler: function ({ payload }, resp_func) {
+    let param = payload as ActionNewFloorPayload;
+    let { floor_level } = param;
+
+    let worker: GameWorker = this.entity_manager.worker;
+
+    let floor_id = worker.allocateFloor(floor_level);
+    resp_func(null, floor_id);
   },
 }]);
