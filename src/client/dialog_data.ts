@@ -10,11 +10,16 @@ import {
   uiTextHeight,
 } from 'glov/client/ui';
 import { WithRequired } from 'glov/common/types';
+import { JSVec3 } from 'glov/common/vmath';
 import { dialogIconsRegister } from '../common/crawler_events';
 import {
   CrawlerScriptAPI,
   CrawlerScriptEventMapIcon,
+  CrawlerScriptEventMapIcons,
+  crawlerScriptRegisterEvent,
+  CrawlerScriptWhen,
 } from '../common/crawler_script';
+import { CrawlerCell, WEST } from '../common/crawler_state';
 import { crawlerScriptAPI } from './crawler_play';
 import {
   DialogParam,
@@ -26,6 +31,7 @@ import {
   entityManager,
 } from './entity_game_client';
 import {
+  myEnt,
   myEntOptional,
   showFloorList,
   showShop,
@@ -180,6 +186,23 @@ dialogRegister({
     }
   },
 });
+
+crawlerScriptRegisterEvent({
+  key: 'town',
+  when: CrawlerScriptWhen.POST,
+  map_icon: CrawlerScriptEventMapIcons.NONE,
+  func: (api: CrawlerScriptAPI, cell: CrawlerCell, param: string) => {
+    const TOWN_FLOOR = 10;
+    let town_pos = myEnt().getData<JSVec3>('town_leave_pos');
+    if (!town_pos) {
+      let cur_floor = api.getFloor();
+      api.floorDelta(TOWN_FLOOR - cur_floor, 'stairs_in', false);
+    } else {
+      api.floorAbsolute(TOWN_FLOOR, town_pos[0], town_pos[1], WEST);
+    }
+  },
+});
+
 
 cmd_parse.register({
   cmd: 'status',

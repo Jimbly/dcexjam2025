@@ -117,7 +117,7 @@ crawlerScriptRegisterEvent({
     let params = param.split(' ');
     let delta = Number(params[0]);
     if (api.getFloor() + delta < 0) {
-      api.status('stairs', 'This is where you came in, try to find the stairs down instead.');
+      api.status('stairs', 'This is where you arrived, try to find an entrance to the tower instead.');
       return;
     }
     let idx = 1;

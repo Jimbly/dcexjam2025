@@ -6,9 +6,11 @@ import {
   HandlerSource,
   NetErrorCallback,
   NetResponseCallback,
+  TSMap,
 } from 'glov/common/types';
-import { isInteger } from 'glov/common/util';
+import { empty, isInteger, msToSS2020 } from 'glov/common/util';
 import { v3copy } from 'glov/common/vmath';
+import { channelDataDifferCreate } from 'glov/server/channel_data_differ';
 import { ChannelServer } from 'glov/server/channel_server';
 import { ChannelData } from 'glov/server/channel_worker';
 import { chattableWorkerInit } from 'glov/server/chattable_worker';
@@ -21,7 +23,7 @@ import {
 import { CrawlerJoinPayload } from '../common/crawler_entity_common';
 import '../common/crawler_events'; // side effects: register events
 import { CrawlerLevel } from '../common/crawler_state';
-import { Item } from '../common/entity_game_common';
+import { FloorData, Item } from '../common/entity_game_common';
 import { CrawlerWorker } from './crawler_worker';
 import {
   EntityServer,
@@ -43,14 +45,18 @@ type GameWorkerPublicChannelData = {
   seed: string;
 };
 
+type ChannelDataDiffer = ReturnType<typeof channelDataDifferCreate>;
+
 export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
   game_id: string;
   declare entity_manager: ServerEntityManager<Entity, GameWorker>;
   declare data: ChannelData<GameWorkerPrivateChannelData, GameWorkerPublicChannelData>;
+  differ: ChannelDataDiffer;
 
   constructor(channel_server: ChannelServer, channel_id: string, channel_data: DataObject) {
     super(channel_server, channel_id, channel_data);
 
+    this.differ = channelDataDifferCreate(this);
     this.game_id = this.channel_subid;
 
     if (!this.exists()) {
@@ -201,6 +207,133 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
   // scriptAPICreate(): CrawlerScriptAPIServer {
   //   return gameScriptAPIServerCreate();
   // }
+
+  updateFloorData(): void {
+    let { entity_manager, game_state } = this;
+    let { entities } = entity_manager;
+    let now = msToSS2020(Date.now());
+
+    // Determine current data
+    let players: TSMap<{ floor_id: number }> = {};
+    let new_floors: Partial<Record<number, FloorData>> = {};
+    for (let ent_id_str in entities) {
+      let ent = entities[ent_id_str]!;
+      let floor_id = ent.data.floor || 0;
+      if (!floor_id) {
+        continue;
+      }
+      let level = game_state.levels[floor_id];
+      if (!level || !level.initial_entities) {
+        continue;
+      }
+      let floor_level_str = level.props.floorlevel;
+      if (!floor_level_str) {
+        continue;
+      }
+      let floor_level = Number(floor_level_str);
+      assert(floor_level >= 1);
+      let floor_data = new_floors[floor_level];
+      if (!floor_data) {
+        floor_data = new_floors[floor_level] = {
+          rooms: {},
+        };
+      }
+      let room_data = floor_data.rooms[floor_id];
+      if (!room_data) {
+        room_data = floor_data.rooms[floor_id] = {
+          last_active: 0,
+          recent_players: {},
+          enemies_left: 0,
+          enemies_total: level.initial_entities.length,
+        };
+      }
+      if (ent.isEnemy()) {
+        room_data.enemies_left++;
+      } else if (ent.isPlayer()) {
+        let user_id = ent.data.user_id;
+        assert(user_id);
+        room_data.last_active = now;
+        room_data.recent_players[user_id] = {
+          player_level: ent.data.stats.level,
+          is_active: true,
+          last_active: now,
+        };
+        players[user_id] = {
+          floor_id,
+        };
+      }
+    }
+
+    // Update public data
+    this.differ.start();
+    let expire_time = now - 30*24*60*60;
+    type PubData = {
+      floors: Partial<Record<number, FloorData>>;
+    };
+    let old_floors: Partial<Record<number, FloorData>> = (this.data.public as unknown as PubData).floors;
+    if (!old_floors) {
+      old_floors = (this.data.public as unknown as PubData).floors = {};
+    }
+    let seen_rooms: Partial<Record<number, boolean>> = {};
+    for (let floor_level_str in old_floors) {
+      let floor_level = Number(floor_level_str);
+      let old_floor_data = old_floors[floor_level]!;
+      let new_floor_data = new_floors[floor_level] || { rooms: {} };
+      for (let floor_id_str in old_floor_data.rooms) {
+        let floor_id = Number(floor_id_str);
+        let old_room_data = old_floor_data.rooms[floor_id]!;
+        let new_room_data = new_floor_data.rooms[floor_id];
+        let seen_users: TSMap<boolean> = {};
+        if (new_room_data) {
+          // merge in
+          seen_rooms[floor_id] = true;
+          old_room_data.last_active = new_room_data.last_active;
+          old_room_data.enemies_left = new_room_data.enemies_left;
+          for (let user_id in new_room_data.recent_players) {
+            let new_rec = new_room_data.recent_players[user_id]!;
+            old_room_data.recent_players[user_id] = new_rec;
+            seen_users[user_id] = true;
+          }
+        }
+        for (let user_id in old_room_data.recent_players) {
+          let rec = old_room_data.recent_players[user_id]!;
+          if (rec.last_active < expire_time) {
+            delete old_room_data.recent_players[user_id];
+          } else if (!seen_users[user_id] && rec.is_active) {
+            delete rec.is_active;
+          }
+        }
+        if (empty(old_room_data.recent_players)) {
+          delete old_floor_data.rooms[floor_id];
+        }
+      }
+    }
+    // add in new rooms
+    for (let floor_level_str in new_floors) {
+      let floor_level = Number(floor_level_str);
+      let new_floor_data = new_floors[floor_level]!;
+      let old_floor_data = old_floors[floor_level];
+      if (!old_floor_data) {
+        old_floor_data = old_floors[floor_level] = {
+          rooms: {},
+        };
+      }
+      for (let floor_id_str in new_floor_data.rooms) {
+        let floor_id = Number(floor_id_str);
+        if (seen_rooms[floor_id]) {
+          continue;
+        }
+        old_floor_data.rooms[floor_id] = new_floor_data.rooms[floor_id]!;
+      }
+    }
+
+    this.differ.end();
+  }
+
+  tick(dt: number, server_time: number): void {
+    this.entity_manager.tick(dt, server_time);
+    this.updateFloorData(); // TODO: call after appropriate data changes
+  }
 }
 GameWorker.prototype.user_fields_to_subscribe = ['public.display_name'];
 GameWorker.prototype.overrides_constructor = true;

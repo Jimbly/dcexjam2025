@@ -55,6 +55,7 @@ import {
   uiTextHeight,
 } from 'glov/client/ui';
 import * as urlhash from 'glov/client/urlhash';
+import * as walltime from 'glov/client/walltime';
 import { webFSAPI } from 'glov/client/webfs';
 import { EntityManagerEvent } from 'glov/common/entity_base_common';
 import { DISPLAY_NAME_MAX_VISUAL_SIZE } from 'glov/common/net_common';
@@ -104,6 +105,7 @@ import {
   BroadcastDataDstat,
   ELEMENT_NAME,
   FloorData,
+  FloorPlayerData,
   FloorRoomData,
   Item,
   StatsData,
@@ -464,7 +466,7 @@ export function currentFloorLevel(): number {
   }
   let { floorlevel } = level.props;
   if (!floorlevel) {
-    return MAX_LEVEL;
+    return MAX_LEVEL + 1;
   }
   return Number(floorlevel);
 }
@@ -1567,6 +1569,16 @@ InventoryMenuAction.prototype.name = 'InventoryMenu';
 InventoryMenuAction.prototype.is_overlay_menu = true;
 InventoryMenuAction.prototype.is_fullscreen_ui = true;
 
+function setMiscField<T extends keyof EntityDataClient>(field: T, value: EntityDataClient[T]): void {
+  crawlerMyApplyBatchUpdate({
+    action_id: 'misc',
+    field: 'seq_player_move',
+    data_assignments: {
+      [field]: value,
+    },
+  }, errorsToChat);
+}
+
 
 const SETUP_W = 300;
 const SETUP_H = game_height / 2;
@@ -1659,13 +1671,7 @@ class SetupMenuAction extends UIAction {
         chatUI().cmdParse(`rename ${this.display_name}`);
       }
       if (!myEnt().getData('did_setup')) {
-        crawlerMyApplyBatchUpdate({
-          action_id: 'setup',
-          field: 'seq_player_move',
-          data_assignments: {
-            did_setup: true,
-          },
-        }, errorsToChat);
+        setMiscField('did_setup', true);
       }
     }
 
@@ -1758,6 +1764,24 @@ function displayNameForUser(user_id: string): string {
   return netSubs().getChannelImmediate(`user.${user_id}`).getChannelData('public.display_name', user_id);
 }
 
+function anyActive(recent_players: TSMap<FloorPlayerData>): boolean {
+  for (let user_id in recent_players) {
+    if (recent_players[user_id]!.is_active) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function joinFloor(floor_id: number): void {
+  uiAction(null);
+  let my_ent = myEnt();
+  let my_floor_id = my_ent.data.floor;
+  let my_pos = my_ent.getData<JSVec3>('pos')!;
+  setMiscField('town_leave_pos', [my_pos[0], my_pos[1], my_pos[2]]);
+  crawlerScriptAPI().floorDelta(floor_id - my_floor_id, 'stairs_in', false);
+}
+
 const FLOORLIST_W = FRAME_VERT_SPLIT - 12;
 const FLOORLIST_H = QUICKBAR_FRAME_Y - 12 - 5;
 const FLOORLIST_X = 12;
@@ -1800,7 +1824,7 @@ class FloorListAction extends UIAction {
       y += TITLE_FONT_H + 2;
     }
 
-    let now = floor(Date.now() / 1000);
+    let now = walltime.seconds();
     let floor_data: Partial<Record<number, FloorData>> = room.getChannelData('public.floors', {});
     // example data
     if (0) {
@@ -1827,7 +1851,6 @@ class FloorListAction extends UIAction {
                 jimbly: {
                   player_level: 1,
                   last_active: now - 300000,
-                  is_active: false,
                 },
                 jeff: {
                   player_level: 2,
@@ -1902,7 +1925,7 @@ class FloorListAction extends UIAction {
       let my_rec = room_data.recent_players[my_user_id];
 
       let button_x = x + CARD_W - button_w - CARD_PAD;
-      buttonText({
+      if (buttonText({
         x: button_x, y, z,
         w: button_w,
         h: FLOORLIST_BUTTON_H2,
@@ -1910,7 +1933,9 @@ class FloorListAction extends UIAction {
         markdown: true,
         text: `${my_rec ? 'RESUME' : 'JOIN'}\nLevel [c=${rec.floor_level > my_level ? 'red' : 'level'}]` +
           `${rec.floor_level}[/c] #${fourdigit(rec.floor_id)}`,
-      });
+      })) {
+        joinFloor(rec.floor_id);
+      }
       let ymax = y + FLOORLIST_BUTTON_H2;
 
       if (my_rec) {
@@ -1974,22 +1999,8 @@ class FloorListAction extends UIAction {
       drawRoomCard(my_last_room);
     }
 
-    titleLine('Start Fresh');
-    x = floor((FLOORLIST_W - button_w * 3 - FLOORLIST_PAD * 2)/2);
-    for (let ii = this.base_floor; ii < this.base_floor + 3; ++ii) {
-      buttonText({
-        x, y, z,
-        w: button_w,
-        h: FLOORLIST_BUTTON_H2,
-        align: ALIGN.HWRAP | ALIGN.HCENTER,
-        markdown: true,
-        text: `NEW Floor\nLevel [c=${ii > my_level ? 'red' : 'level'}]${ii}[/c]`,
-      });
-      x += button_w + FLOORLIST_PAD;
-    }
-    y += FLOORLIST_BUTTON_H2 + FLOORLIST_PAD;
-
     let options: RoomRecord[] = [];
+    let disabled_floors: Record<number, boolean> = {};
     for (let floor_level_str in floor_data) {
       let floor_level = Number(floor_level_str);
       let by_level = floor_data[floor_level]!;
@@ -1997,15 +2008,42 @@ class FloorListAction extends UIAction {
         let floor_id = Number(floor_id_str);
         let room_data = by_level.rooms[floor_id]!;
         let dt = now - room_data.last_active;
-        if (dt < 60) {
+        if (dt < 60 && (
+          room_data.enemies_left ||
+          room_data.recent_players[my_user_id] ||
+          anyActive(room_data.recent_players)
+        )) {
           options.push({
             floor_level,
             floor_id,
             room_data,
           });
+          if (room_data.enemies_left > 0.75 * room_data.enemies_total) {
+            disabled_floors[floor_level] = true;
+          }
         }
       }
     }
+
+    titleLine('Start Fresh');
+    x = floor((FLOORLIST_W - button_w * 3 - FLOORLIST_PAD * 2)/2);
+    for (let ii = this.base_floor; ii < this.base_floor + 3; ++ii) {
+      if (buttonText({
+        x, y, z,
+        w: button_w,
+        h: FLOORLIST_BUTTON_H2,
+        align: ALIGN.HWRAP | ALIGN.HCENTER,
+        markdown: true,
+        text: `NEW Floor\nLevel [c=${ii > my_level ? 'red' : 'level'}]${ii}[/c]`,
+        disabled: disabled_floors[ii],
+        disabled_focusable: true,
+        tooltip: disabled_floors[ii] ? 'Please join an active level below instead.' : undefined,
+      })) {
+        // TODO
+      }
+      x += button_w + FLOORLIST_PAD;
+    }
+    y += FLOORLIST_BUTTON_H2 + FLOORLIST_PAD;
 
     titleLine('Join Others');
     if (options.length) {
@@ -2016,7 +2054,7 @@ class FloorListAction extends UIAction {
     } else {
       y += 2;
       font.draw({
-        style: style_inventory,
+        color: palette_font[5],
         x: 0, y, z, w: FLOORLIST_W,
         align: ALIGN.HCENTER,
         text: 'No other players currently in The Tower',
@@ -2046,6 +2084,16 @@ class FloorListAction extends UIAction {
       closeFloorList();
     }
     y += uiButtonHeight();
+
+    if (engine.DEBUG && true) {
+      y += font.draw({
+        color: 0x000000ff,
+        x: 6, y, z,
+        w: FLOORLIST_W - 12,
+        align: ALIGN.HWRAP,
+        text: JSON.stringify(floor_data, undefined, 2),
+      });
+    }
 
     y += FLOORLIST_PAD;
 
@@ -2560,21 +2608,23 @@ function drawStats(): void {
   //   text: `${0} GP`,
   // });
   y += floor(FONT_HEIGHT/2);
-  font.draw({
-    style: style_stats,
-    x: x + STATS_X_INDENT,
-    y,
-    w,
-    align: ALIGN.HCENTER,
-    text: `Floor Level ${currentFloorLevel()}`,
-  });
+  if (currentFloorLevel() <= MAX_LEVEL) {
+    font.draw({
+      style: style_stats,
+      x: x + STATS_X_INDENT,
+      y,
+      w,
+      align: ALIGN.HCENTER,
+      text: `Floor Level ${currentFloorLevel()}`,
+    });
+  }
   y += FONT_HEIGHT;
 
   // enemy count
   let num_enemies = mapViewLastNumEnemies();
   x = FRAME_VERT_SPLIT + 12;
   y = 16;
-  if (num_enemies && num_enemies[1]) {
+  if (num_enemies && num_enemies[1] > 5) { // ignore town with a few NPCs
     let num = num_enemies[0];
     w = (MINIMAP_X - 8) - x;
     autoAtlas(num ? 'map' : 'ui', num ? 'enemy' : 'check').draw({
@@ -4095,7 +4145,7 @@ export function play(dt: number): void {
     battleZoneDebug();
   }
 
-  let overlay_menu_up = Boolean(cur_action?.is_overlay_menu || dialogMoveLocked());
+  let overlay_menu_up = Boolean(cur_action?.is_overlay_menu || dialogMoveLocked() || cur_action?.name === 'FloorList');
 
   tickMusic(game_state.level?.props.music as string || null); // || 'default_music'
   crawlerPlayTopOfFrame(overlay_menu_up);
@@ -4247,7 +4297,7 @@ function playInitEarly(room: ClientChannelWorker): void {
 
   playInitShared(true);
 
-  if (engine.DEBUG && true) {
+  if (engine.DEBUG && false) {
     // cur_action = new InventoryMenuAction('trades');
     cur_action = new FloorListAction(1);
   }

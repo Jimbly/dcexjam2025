@@ -24,7 +24,7 @@ import { JSVec3 } from 'glov/common/vmath';
 
 export type FloorPlayerData = {
   player_level: number;
-  is_active: boolean;
+  is_active?: true;
   last_active: number;
 };
 
@@ -36,6 +36,7 @@ export type FloorRoomData = {
 };
 
 export type FloorData = {
+  clear_count?: number; // TODO
   rooms: Partial<Record<number, FloorRoomData>>; // floor_id -> room data
 };
 
@@ -116,6 +117,7 @@ export type EntityGameDataCommon = {
   // keys?: Partial<Record<string, true>>;
   ready: boolean;
   did_setup?: boolean;
+  town_leave_pos?: JSVec3;
 
   // // AI state
   seq_ai_update?: string;

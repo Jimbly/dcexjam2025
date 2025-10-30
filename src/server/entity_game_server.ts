@@ -44,6 +44,7 @@ entityServerRegisterFieldDefs<EntityGameDataServer>({
   last_pos: { encoding: EntityFieldEncoding.IVec3, ephemeral: true },
   ready: { encoding: EntityFieldEncoding.Boolean },
   did_setup: { encoding: EntityFieldEncoding.Boolean },
+  town_leave_pos: { encoding: EntityFieldEncoding.IVec3 },
   state: { ephemeral: true, encoding: EntityFieldEncoding.AnsiString },
   floor: { encoding: EntityFieldEncoding.Int },
   costume: { encoding: EntityFieldEncoding.Int },
@@ -396,10 +397,11 @@ entityServerRegisterActions([{
   },
   handler: handleActionAttack,
 }, {
-  action_id: 'setup',
+  action_id: 'misc',
   self_only: true,
   allowed_data_assignments: {
     did_setup: 'boolean',
+    town_leave_pos: 'array',
     seq_player_move: 'string',
   },
 }, {
