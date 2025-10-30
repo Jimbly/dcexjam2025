@@ -14,9 +14,9 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* show enemy HP for more interesting combat choices?
 
 TODO
+* music
 * add scrollbar to inventory, remove limit? add sort button
 * reward for floor mechanic? - boss with level + 1 and/or hp x2 that drops regular level + 1
 * death animation should always switch to a blood particle within a few hundred ms (in sprite animation)

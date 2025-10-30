@@ -2545,14 +2545,31 @@ export function drawHealthBar(
   x: number, y: number, z: number,
   w: number, h: number,
   hp: number, hp_max: number,
-  show_text: boolean
+  text: string,
+  barsprite?: BarSprite,
 ): void {
-  drawBar(bar_sprites.healthbar, x, y, z, w, h, hp / hp_max);
-  if (show_text) {
-    font.drawSizedAligned(style_text, x, y + (settings.pixely > 1 ? 0.5 : 0), z+2,
-      8, ALIGN.HVCENTERFIT,
-      w, h, `${hp}`);
+  let hp_param = {
+    size: TINY_FONT_H,
+    x, y, z: z + 1,
+    w, h,
+    align: ALIGN.HVCENTER,
+    text,
+  };
+  if (text) {
+    tiny_font.draw({
+      ...hp_param,
+      color: palette_font[PAL_BLACK],
+    });
   }
+  let full_w = drawBar(barsprite || bar_sprites.healthbar, x, y, z, w, h, hp / hp_max);
+  spriteClipPush(z + 2, x + full_w - 2, y, w, h);
+  if (text) {
+    tiny_font.draw({
+      ...hp_param,
+      color: palette_font[PAL_WHITE + 2],
+    });
+  }
+  spriteClipPop();
 }
 
 const HP_BAR_H = 12;
@@ -2665,46 +2682,10 @@ function drawStats(): void {
   let hp_max = me.getData('stats.hp_max', 1);
   let mp = me.getData('stats.mp', 0);
   let mp_max = me.maxMP();
-  let hp_param = {
-    size: TINY_FONT_H,
-    x, y, z: z + 1,
-    w: HP_BAR_W,
-    h: HP_BAR_H,
-    align: ALIGN.HVCENTER,
-    text: `HP ${hp}/${hp_max}`,
-  };
-  tiny_font.draw({
-    ...hp_param,
-    color: palette_font[PAL_BLACK],
-  });
-  let full_w = drawBar(bar_sprites.healthbar, x, y, z, HP_BAR_W, HP_BAR_H, hp/hp_max);
-  spriteClipPush(z + 2, x + full_w - 2, y, HP_BAR_W, HP_BAR_H);
-  tiny_font.draw({
-    ...hp_param,
-    color: palette_font[PAL_WHITE + 2],
-  });
-  spriteClipPop();
+  drawHealthBar(x, y, z, HP_BAR_W, HP_BAR_H, hp, hp_max, `HP ${hp}/${hp_max}`);
   x += HP_BAR_W + 12 * 2;
 
-  let mp_param = {
-    size: TINY_FONT_H,
-    x, y, z: z + 1,
-    w: HP_BAR_W,
-    h: HP_BAR_H,
-    align: ALIGN.HVCENTER,
-    text: `MP ${mp}/${mp_max}`,
-  };
-  tiny_font.draw({
-    ...mp_param,
-    color: palette_font[PAL_BLACK],
-  });
-  full_w = drawBar(bar_sprites.mpbar, x, y, z, HP_BAR_W, HP_BAR_H, mp/mp_max);
-  spriteClipPush(z + 2, x + full_w - 2, y, HP_BAR_W, HP_BAR_H);
-  tiny_font.draw({
-    ...mp_param,
-    color: palette_font[PAL_WHITE + 2],
-  });
-  spriteClipPop();
+  drawHealthBar(x, y, z, HP_BAR_W, HP_BAR_H, mp, mp_max, `MP ${mp}/${mp_max}`, bar_sprites.mpbar);
 }
 
 let color_temp = vec4();
@@ -3037,7 +3018,7 @@ function drawEnemyStats(ent: Entity): void {
   let hp = ent.getData('stats.hp', 0);
   let hp_max = ent.getData('stats.hp_max', 0);
   let bar_h = ENEMY_HP_BAR_H;
-  let show_text = false;
+  let show_text = `${hp}`;
   drawHealthBar(ENEMY_HP_BAR_X, ENEMY_HP_BAR_Y, Z.UI, ENEMY_HP_BAR_W, bar_h, hp, hp_max, show_text);
   if (ent.display_name) {
     font.drawSizedAligned(style_text, ENEMY_HP_BAR_X, ENEMY_HP_BAR_Y + bar_h, Z.UI,
