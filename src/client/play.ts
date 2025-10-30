@@ -4176,7 +4176,7 @@ export function play(dt: number): void {
   let overlay_menu_up = Boolean(cur_action?.is_overlay_menu || dialogMoveLocked() || cur_action?.name === 'FloorList');
 
   tickMusic(game_state.level?.props.music as string || null); // || 'default_music'
-  crawlerPlayTopOfFrame(overlay_menu_up);
+  crawlerPlayTopOfFrame(overlay_menu_up, cur_action?.name === 'FloorList');
 
   if (keyDownEdge(KEYS.F3)) {
     settingsSet('show_fps', 1 - settings.show_fps);

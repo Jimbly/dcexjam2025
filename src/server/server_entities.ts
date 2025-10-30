@@ -46,7 +46,13 @@ function entityTraitsServerStartup(ent_factory: TraitFactory<Entity, DataObject>
           floor_level_str = '1';
         }
         let floor_level = Number(floor_level_str);
-        let hp = 17 + (floor_level - 1) + floor(random() * opts.hp);
+        let hp = 17 + (floor_level - 1);
+        if (opts.hp < 0) {
+          hp += floor(random() * 5);
+          hp *= -opts.hp;
+        } else {
+          hp += floor(random() * opts.hp);
+        }
         ent.data.stats = {
           hp,
           hp_max: hp,

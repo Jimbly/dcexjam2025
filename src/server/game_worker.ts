@@ -27,7 +27,7 @@ import {
   CrawlerLevel,
   CrawlerLevelSerialized,
 } from '../common/crawler_state';
-import { FloorData, Item } from '../common/entity_game_common';
+import { ELEMENT_NAME, FloorData, Item } from '../common/entity_game_common';
 import { CrawlerWorker } from './crawler_worker';
 import {
   EntityServer,
@@ -36,6 +36,8 @@ import {
   serverEntitiesStartup,
   serverEntityAlloc,
 } from './server_entities';
+
+const { floor, random } = Math;
 
 const GAME_WORKER_VERSION = 2;
 const ENT_VERSION = 1; // Drops all serialized ents when this changes
@@ -155,6 +157,31 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
     let level_data: CrawlerLevelSerialized = JSON.parse(data);
     level_data.props = level_data.props || {};
     level_data.props.floorlevel = String(floor_level);
+    let elements: number[] = [];
+    let remap: TSMap<string> = {};
+    let done: TSMap<boolean> = {};
+    for (let ii = 0; ii < 3; ++ii) {
+      let new_value;
+      do {
+        new_value = floor(random() * 3);
+      // eslint-disable-next-line no-unmodified-loop-condition
+      } while (ii === 2 && new_value === elements[0] && new_value === elements[1]);
+      elements.push(new_value);
+      let enemy_id;
+      do {
+        enemy_id = `enemy-${ELEMENT_NAME[new_value + 1]}-${floor(random() * 6) + 1}`;
+      } while (done[enemy_id]);
+      done[enemy_id] = true;
+      remap[`enemy${ii}`] = enemy_id;
+    }
+    remap['enemy-boss'] = `enemy-rainbow-${floor(random() * 3) + 1}`;
+
+    level_data.initial_entities?.forEach((ent) => {
+      assert(ent.type && typeof ent.type === 'string');
+      assert(remap[ent.type]);
+      ent.type = remap[ent.type];
+    });
+
     cb(level_data);
   }
 

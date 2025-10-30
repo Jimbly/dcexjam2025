@@ -1,0 +1,41 @@
+---
+properties:
+  display_name: Flame Licks
+traits:
+- id: blocks_player
+- id: enemy
+- id: stats_enemy
+  hp: 8
+  attack: 3
+  element: fire
+- id: hunter
+- id: wander
+- id: drawable
+- id: drawable_sprite
+  anim_data:
+    idle:
+      frames: [enemy-fire-6-1, enemy-fire-6-2]
+      times: 400
+      times_random: 100
+    attack:
+      frames: [enemy-fire-6-3]
+      loop: false
+      transition_to: idle
+      times: 500
+      times_random: 100
+    death:
+      frames: [enemy-fire-6-4]
+      times: 1000
+  sprite_data:
+    atlas: dcex
+    filter_min: LINEAR_MIPMAP_LINEAR
+    filter_mag: LINEAR
+    origin: [0.5, 1]
+  scale: 0.75
+  do_alpha: false
+  simple_anim:
+    - period: 5000
+      scale: [1, 0.95]
+  shadow:
+    atlas: dcex
+    name: shadow
