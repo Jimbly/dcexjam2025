@@ -43,6 +43,7 @@ entityServerRegisterFieldDefs<EntityGameDataServer>({
   pos: { encoding: EntityFieldEncoding.IVec3 },
   last_pos: { encoding: EntityFieldEncoding.IVec3, ephemeral: true },
   ready: { encoding: EntityFieldEncoding.Boolean },
+  did_setup: { encoding: EntityFieldEncoding.Boolean },
   state: { ephemeral: true, encoding: EntityFieldEncoding.AnsiString },
   floor: { encoding: EntityFieldEncoding.Int },
   costume: { encoding: EntityFieldEncoding.Int },
@@ -63,7 +64,7 @@ const default_player_stats: StatsData = {
   hp_max: 50,
   mp: 5,
   xp: 0,
-  level: 2,
+  level: 1,
   attack: 0,
   defense: 0,
 };
@@ -394,6 +395,13 @@ entityServerRegisterActions([{
     seq_ai_update: 'string',
   },
   handler: handleActionAttack,
+}, {
+  action_id: 'setup',
+  self_only: true,
+  allowed_data_assignments: {
+    did_setup: 'boolean',
+    seq_player_move: 'string',
+  },
 }, {
   action_id: 'ready',
   self_only: true,

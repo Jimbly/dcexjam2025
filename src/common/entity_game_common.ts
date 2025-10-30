@@ -100,6 +100,7 @@ export type EntityGameDataCommon = {
   // seq_refinery?: string;
   // keys?: Partial<Record<string, true>>;
   ready: boolean;
+  did_setup?: boolean;
 
   // // AI state
   seq_ai_update?: string;

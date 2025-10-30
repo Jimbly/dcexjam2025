@@ -17,7 +17,6 @@ const {
 } = require('glov/client/social');
 const ui = require('glov/client/ui.js');
 const { uiTextHeight } = require('glov/client/ui');
-const { vec4 } = require('glov/common/vmath.js');
 
 export function formatUserID(user_id, display_name) {
   if (user_id.match(guest_regex)) {
@@ -103,7 +102,9 @@ AccountUI.prototype.playAsGuest = function (use_name) {
 
 AccountUI.prototype.showLogin = function (param) {
   let {
-    x, y, style, button_height, button_width,
+    x, y,
+    y_logged_in,
+    style, button_height, button_width,
     prelogout, prelogin, center,
     url_tos, url_priv, text_w,
     font_height, font_height_small, label_w,
@@ -159,7 +160,7 @@ AccountUI.prototype.showLogin = function (param) {
   } else if (net.subs.logging_out) {
     login_message = 'Logging out...';
   } else if (!net.subs.loggedIn() && net.subs.auto_create_user &&
-    !local_storage.get('did_auto_anon') && !local_storage.get('name')
+    !local_storage.get('did_auto_anon') && !local_storage.get('name') && false // DCJAM
   ) {
     login_message = 'Creating guest account...';
     local_storage.set('did_auto_anon', 'yes');
@@ -317,6 +318,7 @@ AccountUI.prototype.showLogin = function (param) {
       }
     }
   } else {
+    y = y_logged_in;
     let show_logout = true;
     let user_id = net.subs.loggedIn();
     let user_channel = net.subs.getChannel(`user.${user_id}`);
@@ -384,10 +386,10 @@ AccountUI.prototype.showLogin = function (param) {
   }
   if (login_message) {
     // DCJAM
-    let w = ui.font.drawSizedAligned(style, x, y, Z.UI, font_height * 1.5,
+    /*let w = */ui.font.drawSizedAligned(style, x, y, Z.UI, font_height,
       glov_font.ALIGN.HVCENTERFIT,
       button_width, min_h, login_message);
-    ui.drawRect(x - 20, y, x + w + 20, y + min_h, Z.UI - 0.5, vec4(0,0,0,0.25));
+    // ui.drawRect(x - 20, y, x + w + 20, y + min_h, Z.UI - 0.5, vec4(0,0,0,0.25));
     y += min_h;
   }
   return y;

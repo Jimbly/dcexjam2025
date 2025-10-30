@@ -1,6 +1,7 @@
 
 import { autoAtlas } from 'glov/client/autoatlas';
 import * as engine from 'glov/client/engine';
+import { fontStyleColored } from 'glov/client/font';
 import { localStorageGetJSON } from 'glov/client/local_storage';
 import { netSubs } from 'glov/client/net';
 import {
@@ -27,6 +28,7 @@ import {
 import { game_height, game_width } from './globals';
 import * as main from './main';
 import { tickMusic } from './music';
+import { PAL_BLACK, PAL_WHITE, palette, palette_font } from './palette';
 import { drawHatDude } from './play';
 
 
@@ -45,6 +47,7 @@ for (let ii = 0; ii < 7; ++ii) {
 }
 
 function title(dt: number): void {
+  gl.clearColor(palette[PAL_BLACK][0], palette[PAL_BLACK][1], palette[PAL_BLACK][2], 1);
   main.chat_ui.run({
     hide: true,
   });
@@ -60,21 +63,22 @@ function title(dt: number): void {
   });
 
   autoAtlas('title', 'tower').draw({
-    w: 60*scale,
-    h: 108*scale,
-    x: game_width - 12 - 60*scale,
-    y: game_height - 12 - 108*scale,
+    w: 48*scale,
+    h: 174*scale,
+    x: game_width - 12 - 48*scale,
+    y: game_height - 12 - 174*scale,
   });
 
   let y = 120;
   let login_w = 120/2+80;
-  y = account_ui.showLogin({
+  account_ui.showLogin({
     x: (game_width - login_w)/2,
     y,
+    y_logged_in: 300,
     pad: 4,
     text_w: 120,
     label_w: 80,
-    style: null,
+    style: fontStyleColored(null, palette_font[PAL_WHITE + 2]),
     center: false,
     button_width: login_w,
     font_height_small: uiTextHeight(),
@@ -84,7 +88,7 @@ function title(dt: number): void {
 
   let x = 10;
   x += 10;
-  y += 14 + 2;
+  y = 150;
   // @ts-expect-error truthy
   for (let ii = 0; ii < 3 && !'onlinedemo'; ++ii) {
     let slot = ii + 1;
@@ -128,7 +132,7 @@ function title(dt: number): void {
       x: (game_width - login_w)/2,
       y,
       w: login_w,
-      text: 'Play Online',
+      text: 'Approach the Tower...',
     })) {
       urlhash.go('?c=the');
     }
