@@ -21,7 +21,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 * felt like I wasn't getting enough drops at L3, maybe increase the 50% by 10%/level?
 
 TODO
-* aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * "mimic" non-moving chest monster in secret rooms
 * more informative message when trying to go through a door with a monster on the other side
 * music - loop for ~3mins each?
@@ -60,6 +59,7 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
+* aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * show an un-slotted, but available, quickbar slot as a different color, tooltip info, clicking opens inventory
 * click to move - ensure stop when enter (active?) battlezone
 * click to move - stop when threatened (or, always in battlezone?)
