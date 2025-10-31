@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { autoResetSkippedFrames } from 'glov/client/auto_reset';
 import { autoAtlas } from 'glov/client/autoatlas';
 import { cmd_parse } from 'glov/client/cmds';
 import { editBox } from 'glov/client/edit_box';
@@ -250,11 +251,12 @@ const FRAME_HORIZ_SPLIT = 240;
 const FRAME_VERT_SPLIT = 276;
 const FRAME_LR_SPLIT = 288;
 
-const BATTLEZONE_RANGE = 3;
+const BATTLEZONE_RANGE = 1;
 const MAX_TICK_RANGE = 12; // if enemies are more steps than this from a player, use Manhattan dist instead
 const INVENTORY_GRID_W = 9;
 const INVENTORY_GRID_H = 6;
 const INVENTORY_MAX_SIZE = INVENTORY_GRID_W * INVENTORY_GRID_H;
+const MAX_FLOOR_LEVEL = 9;
 
 type Entity = EntityClient;
 
@@ -2577,6 +2579,47 @@ export function drawHealthBar(
   spriteClipPop();
 }
 
+let last_enemy_count = 0;
+let last_floor_id = 0;
+let did_floor_reward: TSMap<boolean> = {};
+function checkFloorCompletion(locked: boolean): void {
+  if (currentFloorLevel() > MAX_LEVEL) {
+    // in town, etc
+    return;
+  }
+  let game_state = crawlerGameState();
+  let floor_id = game_state.floor_id;
+  let num_enemies = mapViewLastNumEnemies();
+  if (autoResetSkippedFrames('floorcompletion')) {
+    last_enemy_count = num_enemies[0];
+    last_floor_id = floor_id;
+  }
+  if (locked || !num_enemies[1]) {
+    return;
+  }
+  if (floor_id !== last_floor_id) {
+    last_enemy_count = num_enemies[0];
+    last_floor_id = floor_id;
+  }
+  if (!num_enemies[0] && last_enemy_count && !did_floor_reward[floor_id]) {
+    // floor is cleared, and we're free
+    did_floor_reward[floor_id] = true;
+    playUISound('floor_clear');
+    chatUI().addChat('The floor has been cleared!  You feel fully restored.');
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    doFullRestore();
+
+    let is_final_floor = currentFloorLevel() === MAX_FLOOR_LEVEL;
+    if (is_final_floor) {
+      let msg = 'You have cleared the highest floor of the tower and saved the world,' +
+        ' consider yourself a hero.';
+      dialog('modal', msg);
+      chatUI().addChat(msg);
+    }
+  }
+  last_enemy_count = num_enemies[0];
+}
+
 const HP_BAR_H = 12;
 
 const HP_BAR_W = 96;
@@ -2658,10 +2701,10 @@ function drawStats(): void {
   y += FONT_HEIGHT;
 
   // enemy count
-  let num_enemies = mapViewLastNumEnemies();
   x = FRAME_VERT_SPLIT + 12;
   y = 16;
-  if (num_enemies && num_enemies[1] > 5) { // ignore town with a few NPCs
+  let num_enemies = mapViewLastNumEnemies();
+  if (num_enemies && num_enemies[1] > 0 && currentFloorLevel() <= MAX_LEVEL) {
     let num = num_enemies[0];
     w = (MINIMAP_X - 8) - x;
     autoAtlas(num ? 'map' : 'ui', num ? 'enemy' : 'check').draw({
@@ -3530,6 +3573,48 @@ function doHeal(): void {
   addFloater(my_ent.id, `+${new_hp - hp}`, 'heal');
 }
 
+function doFullRestore(): void {
+  let my_ent = myEnt();
+
+  let hp = my_ent.getData('stats.hp', 0);
+  let hp_max = my_ent.getData('stats.hp_max', 1);
+  let mp = my_ent.getData('stats.mp', 0);
+  let mp_max = my_ent.maxMP();
+  if (hp >= hp_max && mp >= mp_max) {
+    return;
+  }
+
+  let dstats: Partial<StatsData> = {};
+  let delta_hp = hp_max - hp;
+  if (delta_hp) {
+    dstats.hp = hp_max;
+  }
+  let delta_mp = mp_max - mp;
+  if (delta_mp) {
+    dstats.mp = mp_max;
+  }
+
+  let payload: ActionInventoryPayload = {
+    dstats,
+    ops: [],
+    ready: false,
+  };
+  my_ent.applyBatchUpdate({
+    field: 'seq_inventory',
+    action_id: 'inv',
+    payload,
+    data_assignments: {
+      client_only: true,
+      'stats.hp': hp_max,
+      'stats.mp': mp_max,
+    },
+  }, errorsToChat);
+
+  if (delta_hp) {
+    addFloater(my_ent.id, `+${delta_hp}`, 'heal');
+  }
+}
+
 const QUICKBAR_X = 14;
 const QUICKBAR_Y = 218;
 const color_disable_action = vec4(0,0,0,0.75);
@@ -4277,6 +4362,8 @@ function playCrawl(): void {
       button_disabled: overlay_menu_up || locked_dialog,
     });
   }
+
+  checkFloorCompletion(locked_dialog || controller.hasMoveBlocker()); // after map view
 
   if (!build_mode && !frame_map_view) {
     drawFrames();

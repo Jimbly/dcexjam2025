@@ -14,17 +14,28 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
+* new button click sound, sounds too much like error sound
+* if you go to wrong stairs first, give message
+* start with 2 equip slots?  makes more sense, but, more than 3 isn't useful currently?
+  * relatedly, maybe just the loot drops is a better way to limit # of equipped things? I'm not getting L4s until I'm L4 anyway...
+* more than 3 spell slots not currently useful - need other abilities, or should just cap at level 5 for jam game? just hand-craft 5 repeatable floors?
+  * also, spells that cost more MP but you don't get MP quicker actually feel worse
+* felt like I wasn't getting enough drops at L3, maybe increase the 50% by 10%/level?
 
 TODO
-* music
+* hunter/wander never move onto square outside of stairs_in on stairs_in/out itself
+  * aiWander fixed, aiHunt is not
+  * need nop blocker event placed down
+  * just avoid anything with events and put a dummy event there?
+* aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
+* "mimic" non-moving chest monster in secret rooms
+* more informative message when trying to go through a door with a monster on the other side
+* music - loop for ~3mins each?
 * add scrollbar to inventory, remove limit? add sort button
-* death animation should always switch to a blood particle within a few hundred ms (in sprite animation)
-* hunter/wander never move onto square outside of stairs_in
-* show an un-slotted, but available, quickbar slot as a different color, tooltip info, clicking opens inventory
 * battlezone: option to skip (set other player as ready) if they have not taken an action in 10 seconds; maybe kick to menu if skipped 3 times in a row
 * battlezone: tick even if in background
+* battlezone: don't count through attack-blocking doorways (ignore 1-way doors for now)
 * add critical hits/misses to combat system?
-* aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * animate/grow critters on attack / hit
 * use floaters to show player numbers on floors
@@ -36,28 +47,32 @@ TODO
   * relatedly: moving backwards through a door and I could see the enemy on the other side
   * relatedly: always show monster behind (and diagonals?)
 * Deal with more than 4 players in battlezone list (scrollbar, dither, hide?)
-* click to move - ensure stop when enter (active?) battlezone
-* click to move - stop when threatened (or, always in battlezone?)
 * hide cheating commands like entset, stat
-* W on map screen is selecting Exit button, not moving player
-* Space on map screen after exit button selected is activating Wait, not closing the window
-* change W icon to basic attack icon when engaged
-* show actual item instead of chest graphic when there's a single item
 * dither instead of blur for menuUp()
 * fix battle log messages, especially in OMP
 * player names over heads
 * wider hats/books at least in inventory
 * spellbooks should be better colors
 * hall of fame on main menu (just XP)
-* disable inventory access when within 1 unobstructed tile of an enemy
-* play sound and display message when all monsters have been cleared
+* disable inventory access when within 1 unobstructed tile of an enemy (new in-zone rules
 * on town level show player levels instead of where waiting/checkmarks are (or, do for all nearby players?)
 * golden hat reward for final level (if it shows on players)
-* prompt to advance to the next floor upon leaving? always does and you can backtrack if needed?
 * forward + left quickly when in battle zone doesn't do the turn
+* make dude's books more clear
+* choose player cloak color in customization (just 6 hard-coded?); maybe hat color based on equipped hat?
+* fix 2 players or 1 player + 1 NPC on the same square to push in different directions
 
 Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
+
+Post-jam? fixes:
+* show an un-slotted, but available, quickbar slot as a different color, tooltip info, clicking opens inventory
+* click to move - ensure stop when enter (active?) battlezone
+* click to move - stop when threatened (or, always in battlezone?)
+* W on map screen is selecting Exit button, not moving player
+* Space on map screen after exit button selected is activating Wait, not closing the window
+* change W icon to basic attack icon when engaged
+* show actual item instead of chest graphic when there's a single item
 
 Credits
 =======

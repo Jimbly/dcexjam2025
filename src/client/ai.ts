@@ -149,6 +149,10 @@ export function aiTraitsClientStartup(): void {
           return false;
         }
         let new_pos: JSVec3 = [pos[0] + DX[dir], pos[1] + DY[dir], pos[2]];
+        if (level.getCell(new_pos[0], new_pos[1])?.events?.length) {
+          // avoid going onto events (e.g. stairs in/out
+          return false;
+        }
         if (entitiesAt(this.entity_manager, new_pos, floor_id, true).length) {
           return false;
         }

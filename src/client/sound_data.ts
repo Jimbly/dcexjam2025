@@ -35,4 +35,5 @@ export const SOUND_DATA = {
   death_otherplayer: 'roar_02',
   pickup: 'mine',
   shop: 'acquire',
+  floor_clear: 'acquire',
 } satisfies Partial<Record<string, UISoundID | string | string[] | UISoundID[]>>;

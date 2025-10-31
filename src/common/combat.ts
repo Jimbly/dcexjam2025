@@ -123,7 +123,7 @@ export function rewardLevel(my_level: number, enemy_level: number, highest_ally_
 }
 
 export function maxMP(level: number): number {
-  return 5 + (level - 1) * 2;
+  return 6 + (level - 1) * 2;
 }
 
 export function maxHP(player_level: number): number {

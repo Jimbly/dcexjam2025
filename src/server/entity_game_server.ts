@@ -7,6 +7,7 @@ import {
   DataObject,
   ErrorCallback,
 } from 'glov/common/types';
+import { clone } from 'glov/common/util';
 import { JSVec3, v3copy } from 'glov/common/vmath';
 import {
   ActionHandlerParam,
@@ -158,13 +159,13 @@ export class EntityServer extends entityGameCommonClass(EntityBaseServer) implem
       let key: keyof StatsData;
       for (key in default_player_stats) {
         if (this.data.stats[key] === undefined) {
-          this.data.stats[key] = default_player_stats[key]!;
+          this.data.stats[key] = clone(default_player_stats[key]!);
         }
       }
       let key2: keyof EntityGameDataCommon;
       for (key2 in default_player_fields) {
         if (this.data[key2] === undefined) {
-          (this.data as DataObject)[key2] = default_player_fields[key2];
+          (this.data as DataObject)[key2] = clone(default_player_fields[key2]);
         }
       }
     }
