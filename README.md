@@ -21,7 +21,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 * felt like I wasn't getting enough drops at L3, maybe increase the 50% by 10%/level?
 
 TODO
-* more informative message when trying to go through a door with a monster on the other side
 * music - loop for ~3mins each?
 * add scrollbar to inventory, remove limit? add sort button
 * battlezone: option to skip (set other player as ready) if they have not taken an action in 10 seconds; maybe kick to menu if skipped 3 times in a row

@@ -132,7 +132,9 @@ export function aiTraitsClientStartup(): void {
         let level = game_state.levels[floor_id];
         script_api.setPos(pos);
         let dir = floor(random() * 4) as DirType;
+        let was_from_pref = false;
         if (this.wander_state.prefer_door) {
+          was_from_pref = true;
           this.wander_state.prefer_door = false;
           let opts: DirType[] = [];
           for (let ii = 0 as DirType; ii < 4; ++ii) {
@@ -145,7 +147,9 @@ export function aiTraitsClientStartup(): void {
             dir = opts[floor(random() * opts.length)];
           }
         }
-        if (level.wallsBlock(pos, dir, script_api) & BLOCK_MOVE) {
+        if (level.wallsBlock(pos, dir, script_api) & BLOCK_MOVE ||
+          !was_from_pref && level.isSecretDoor(pos, dir, script_api)
+        ) {
           return false;
         }
         let new_pos: JSVec3 = [pos[0] + DX[dir], pos[1] + DY[dir], pos[2]];
