@@ -49,6 +49,7 @@ const MUSIC_VOLUME = 0.1;
 
 const SILENT_TIME = 30*1000;
 const LOOP_TIME = 2*60*1000;
+const LOOP_TIME_DRUMS = 18*1000;
 let last_key: string | null;
 let cycle_counter = 0;
 let cycle_idx = -1;
@@ -72,7 +73,11 @@ function musicCycle(key: string | null): string | null {
     cycle_idx = -1;
   }
   cycle_counter += getFrameDt();
-  if (cycle_counter > (cycle_idx === -1 ? SILENT_TIME : LOOP_TIME)) {
+  let end_time = (cycle_idx === -1 ? SILENT_TIME : LOOP_TIME);
+  if (cycle_idx && list[cycle_idx] && list[cycle_idx].includes('drum_')) {
+    end_time = LOOP_TIME_DRUMS;
+  }
+  if (cycle_counter > end_time) {
     cycle_counter = 0;
     if (cycle_idx === -1) {
       cycle_idx = floor(random() * list.length);
