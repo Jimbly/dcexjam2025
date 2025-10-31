@@ -24,14 +24,14 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 * hide (but not disable) cheating commands like entset, stat
 
 TODO
+* fix battle log messages, especially in OMP
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * animate/grow critters on attack / hit
 * use floaters to show player numbers on floors
-* fix battle log messages, especially in OMP
 * player names over heads
-* golden hat reward for final level (if it shows on players)
 * make dude's books more clear
 * choose player cloak color in customization (just 6 hard-coded?); maybe hat color based on equipped hat?
+* golden hat reward for final level (if it shows on players)
 * fix 2 players or 1 player + 1 NPC on the same square to push in different directions
 * F11 for fullscreen hint somewhere
 

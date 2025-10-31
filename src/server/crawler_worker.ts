@@ -351,6 +351,7 @@ CrawlerWorker.registerCmds([{
   }
 }, {
   cmd: 'key_global',
+  access_show: ['sysadmin'],
   help: 'Show or toggle per-worker-scoped keys',
   func: function (this: DummyWorker, str: string, resp_func: CmdRespFunc) {
     if (!str) {

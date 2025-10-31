@@ -412,6 +412,7 @@ GameWorker.registerClientHandler('ent_join', function (
 
 GameWorker.registerCmds([{
   cmd: 'give',
+  access_show: ['sysadmin'],
   help: 'Gives oneself item',
   prefix_usage_with_help: true,
   usage: '/give hat|book|potion subtype level [count]',

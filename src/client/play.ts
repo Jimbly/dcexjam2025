@@ -4844,6 +4844,7 @@ export function restartFromLastSave(): void {
 
 settingsRegister({
   ai_pause: {
+    access_show: ['sysadmin'],
     default_value: 0,
     type: cmd_parse.TYPE_INT,
     range: [0, 1],

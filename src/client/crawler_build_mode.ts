@@ -1783,6 +1783,7 @@ export function crawlerBuildModeStartup(params: {
 
 cmd_parse.register({
   cmd: 'vstyle',
+  access_show: ['sysadmin'],
   help: '(Build mode) change vstyle',
   func: function (param: string, resp_func: CmdRespFunc<string>) {
     let game_state = crawlerGameState();
