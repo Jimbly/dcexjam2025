@@ -3527,6 +3527,7 @@ function onBroadcast(update: EntityManagerEvent): void {
     let entity_manager = entityManager();
     let target_ent = entity_manager.getEnt(target);
     let { hp, source, action, type, fatal, pred_id, executor, resist } = data as BroadcastDataDstat;
+    let source_ent = entity_manager.getEnt(source);
     if (executor === myEntID()) {
       // I did this
       if (target_ent && pred_id) {
@@ -3546,23 +3547,24 @@ function onBroadcast(update: EntityManagerEvent): void {
           'death_me' : target_ent.isPlayer() ? 'death_otherplayer' : 'death_enemy');
       }
       if (source === myEntID()) {
-        chat_ui.addChat(`You ${type} it for ${-hp} damage${resist ? ' (resisted)' : ''}` +
+        chat_ui.addChat(`You ${type} it for ${-hp}${resist ? ' (resisted)' : ''}` +
           `${fatal ? ', killing it' : ''}.`);
       } else if (target === myEntID()) {
         if (type === 'opportunity') {
           chat_ui.addChat(`It opportunity attacks you for ${-hp} damage.`);
         } else {
-          chat_ui.addChat(`It hits you with ${type} for ${-hp} damage${resist ? ' (resisted)' : ''}.`);
+          chat_ui.addChat(`It hits you with ${type} for ${-hp}${resist ? ' (resisted)' : ''}.`);
         }
         if (!fatal) {
           // hit me, but didn't kill me
-          let source_ent = entity_manager.getEnt(source);
           if (source_ent) {
             source_ent.hit_by_us = true;
           }
         }
       } else {
-        chat_ui.addChat(`${source} hits ${target} with ${type} for ${-hp} damage` +
+        chat_ui.addChat(`${source_ent?.data.display_name || source_ent?.display_name || source} hits` +
+          ` ${target_ent?.data.display_name || target_ent?.display_name || target}` +
+          `${type === 'hit' ? '' : ` with ${type}`} for ${-hp}` +
           `${resist ? ' (resisted)' : ''}${fatal ? ', killing it' : ''}.`);
       }
       if (fatal && target_ent && target_ent.isEnemy() && target_ent.hit_by_us) {
