@@ -498,6 +498,10 @@ export function currentFloorLevel(): number {
   return Number(floorlevel);
 }
 
+export function isTown(): boolean {
+  return currentFloorLevel() > MAX_LEVEL;
+}
+
 function inventoryIconDraw(param: {
   x: number;
   y: number;
@@ -2755,8 +2759,7 @@ let last_enemy_count = 0;
 let last_floor_id = 0;
 let did_floor_reward: TSMap<boolean> = {};
 function checkFloorCompletion(locked: boolean): void {
-  if (currentFloorLevel() > MAX_LEVEL) {
-    // in town, etc
+  if (isTown()) {
     return;
   }
   let game_state = crawlerGameState();
@@ -2860,7 +2863,7 @@ function drawStats(): void {
   //   text: `${0} GP`,
   // });
   y += floor(FONT_HEIGHT/2);
-  if (currentFloorLevel() <= MAX_LEVEL) {
+  if (!isTown()) {
     font.draw({
       style: style_stats,
       x: x + STATS_X_INDENT,
@@ -2876,7 +2879,7 @@ function drawStats(): void {
   x = FRAME_VERT_SPLIT + 12;
   y = 16;
   let num_enemies = mapViewLastNumEnemies();
-  if (num_enemies && num_enemies[1] > 0 && currentFloorLevel() <= MAX_LEVEL) {
+  if (num_enemies && num_enemies[1] > 0 && !isTown()) {
     let num = num_enemies[0];
     w = (MINIMAP_X - 8) - x;
     autoAtlas(num ? 'map' : 'ui', num ? 'enemy' : 'check').draw({
@@ -3019,6 +3022,8 @@ function drawBattleZone(): void {
   let y = MINIMAP_Y + MINIMAP_H + 8;
   let z = Z.UI;
 
+  let is_town = isTown();
+
   font.draw({
     color: palette_font[PAL_WHITE + 1],
     x: x + 1, y, z,
@@ -3156,6 +3161,17 @@ function drawBattleZone(): void {
         z,
         w: 12,
         h: 12,
+      });
+    } else if (is_town) {
+      font.draw({
+        style: style_item_level,
+        x: icon_x,
+        y,
+        z,
+        w: 12 + 1,
+        h: 22,
+        align: ALIGN.VCENTER | ALIGN.HRIGHT,
+        text: `L${ent.getData('stats.level', 1)}`
       });
     }
     let name_x = x + 32;
@@ -4657,7 +4673,7 @@ export function play(dt: number): void {
   let overlay_menu_up = Boolean(cur_action?.is_overlay_menu || dialogMoveLocked() || cur_action?.name === 'FloorList');
 
   if (!crawlerController().hasMoveBlocker()) {
-    tickMusic(game_state.level?.props.music as string || currentFloorLevel() > MAX_LEVEL ? 'town' : 'tower');
+    tickMusic((game_state.level?.props.music as string) || (isTown() ? 'town' : 'tower'));
   }
   crawlerPlayTopOfFrame(overlay_menu_up, cur_action?.name === 'FloorList');
 
