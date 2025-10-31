@@ -224,9 +224,10 @@ export function crawlerMapViewDraw({
     }
     let { ret, state } = ui.buttonShared(hover_area);
     if (state === 'rollover') {
-      ui.drawRect(hover_area.x - 1, hover_area.y - 1,
-        hover_area.x + hover_area.w + 1,
-        hover_area.y + hover_area.h + 1,
+      const size = 2;
+      ui.drawRect(hover_area.x - size, hover_area.y - size,
+        hover_area.x + hover_area.w + size,
+        hover_area.y + hover_area.h + size,
         Z.MAP - 1, color_rollover);
     }
     if (ret) {
@@ -247,7 +248,8 @@ export function crawlerMapViewDraw({
   last_num_enemies = [num_enemies, total_enemies];
   //last_progress = level.seen_cells/level.total_cells;
   last_progress = total_enemies ? max(0, 1 - (num_enemies / total_enemies)) : 1;
-  let floor_title = level.props.title as string || `Floor ${game_state.floor_id}`;
+  // let floor_title = level.props.title as string || `Floor ${game_state.floor_id}`;
+  let floor_title = level.props.floorlevel ? `Floor ${level.props.floorlevel} #${game_state.floor_id}` : '';
   let floor_subtitle = level.props.subtitle as string || '';
   if (fullscreen) {
     if (style_map_name) {

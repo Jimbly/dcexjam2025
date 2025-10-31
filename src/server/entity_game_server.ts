@@ -415,6 +415,13 @@ entityServerRegisterActions([{
     seq_player_move: 'string',
   },
 }, {
+  action_id: 'ready_skip',
+  self_only: false,
+  allowed_data_assignments: {
+    ready: 'boolean',
+    seq_player_move: 'string',
+  },
+}, {
   action_id: 'unready',
   self_only: false,
   allowed_data_assignments: {

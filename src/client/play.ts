@@ -253,6 +253,7 @@ const FRAME_VERT_SPLIT = 276;
 const FRAME_LR_SPLIT = 288;
 
 const BATTLEZONE_RANGE = 1;
+const BATTLEZONE_SKIP_TIME = engine.DEBUG ? 1000 : 5000;
 const MAX_TICK_RANGE = 12; // if enemies are more steps than this from a player, use Manhattan dist instead
 const INVENTORY_GRID_W = 9;
 const INVENTORY_GRID_H = 6;
@@ -2928,6 +2929,7 @@ function drawBattleZone(): void {
   battlezone_is_waiting_on_me = false;
   let battlezone_is_waiting_for_others = false;
   let wait_others: string[] = [];
+  let wait_others_ents: Entity[] = [];
   for (let ii = 0; ii < players.length; ++ii) {
     let ent = players[ii];
     if (is_bz && !isInBattleZone(ent)) {
@@ -2991,6 +2993,7 @@ function drawBattleZone(): void {
         } else {
           battlezone_is_waiting_for_others = true;
           wait_others.push(ent.data.display_name || '???');
+          wait_others_ents.push(ent);
         }
       }
       autoAtlas('ui', is_ready ? 'check': 'hourglass').draw({
@@ -3127,6 +3130,32 @@ function drawBattleZone(): void {
       w: BATTLEZONE_OTHERS_W,
       h: text_h + pad * 2,
     }, autoAtlas('pixely', 'panel'), 1, [1,1,1,alpha * 0.7]);
+
+    if (battlezone_is_waiting_for_others && battlezone_is_waiting_for_others_time > BATTLEZONE_SKIP_TIME) {
+      let button_w = 100;
+      let button_h = uiButtonHeight() * 2;
+      if (buttonText({
+        x: VIEWPORT_X0 + floor((render_width - button_w)/2),
+        w: button_w,
+        h: button_h,
+        y: y - button_h - pad * 2,
+        z: Z.UI - 1,
+        align: ALIGN.HWRAP | ALIGN.HVCENTER,
+        text: `Skip other ${wait_others.length > 1 ? 'players\' turns' : 'player\'s turn'}`,
+      })) {
+        battlezone_is_waiting_for_others_time = 0;
+        wait_others_ents.forEach((ent) => ent.actionSend({
+          action_id: 'ready_skip',
+          predicate: {
+            field: 'seq_player_move',
+            expected_value: ent.getData('seq_player_move'),
+          },
+          data_assignments: {
+            ready: true,
+          },
+        }, errorsToChat));
+      }
+    }
   }
 }
 
@@ -4798,6 +4827,7 @@ export function playStartup(): void {
     build_mode_entity_icons: {},
     // style_map_name: fontStyle(...)
     compass_border_w: 6,
+    hide_name_on_minimap: true,
   });
 
   markdownSetColorStyle('hotkey', fontStyle(null, {

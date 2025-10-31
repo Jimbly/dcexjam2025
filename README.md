@@ -21,16 +21,14 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 * felt like I wasn't getting enough drops at L3, maybe increase the 50% by 10%/level?
 
 TODO
-* add scrollbar to inventory, remove limit? add sort button
-* battlezone: option to skip (set other player as ready) if they have not taken an action in 10 seconds; maybe kick to menu if skipped 3 times in a row
 * battlezone: tick even if in background
 * battlezone: don't count through attack-blocking doorways (ignore 1-way doors for now)
+* add scrollbar to inventory, remove limit? add sort button
 * add critical hits/misses to combat system?
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * animate/grow critters on attack / hit
 * use floaters to show player numbers on floors
 * test enforcing single entity
-* remove floor names from minimap, only full map?
 * death penalty: lose some inventory too? get kicked out of floor (maybe it gets reset?)
 * fix two hits on the same frame not showing floaters well
 * bug: visibility is different before/after turning camera/moving forward and back if directly facing a wall
@@ -56,6 +54,7 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
+* battlezone: maybe kick to menu if skipped 3 times in a row
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * show an un-slotted, but available, quickbar slot as a different color, tooltip info, clicking opens inventory
 * click to move - ensure stop when enter (active?) battlezone
