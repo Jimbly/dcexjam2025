@@ -73,7 +73,7 @@ const default_player_stats: StatsData = {
   defense: 0,
 };
 
-const default_player_fields: Partial<EntityGameDataCommon> = {
+const default_player_fields: Partial<EntityGameDataServer> = {
   inventory: [{
     type: 'potion',
     subtype: 0,
@@ -154,15 +154,15 @@ export class EntityServer extends entityGameCommonClass(EntityBaseServer) implem
       //   inventory = this.data.inventory = [];
       // }
       if (!this.data.stats) {
-        this.data.stats = {} as StatsData;
+        this.data.stats = {} as typeof default_player_stats;
       }
-      let key: keyof StatsData;
+      let key: keyof typeof default_player_stats;
       for (key in default_player_stats) {
         if (this.data.stats[key] === undefined) {
           this.data.stats[key] = clone(default_player_stats[key]!);
         }
       }
-      let key2: keyof EntityGameDataCommon;
+      let key2: keyof typeof default_player_fields;
       for (key2 in default_player_fields) {
         if (this.data[key2] === undefined) {
           (this.data as DataObject)[key2] = clone(default_player_fields[key2]);

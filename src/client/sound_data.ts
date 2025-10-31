@@ -10,12 +10,13 @@ export const SOUND_DATA = {
   msg_out: 'hit_05_short_fithup', // 'footstep2_single',
 
   // UI sounds
-  button_click: 'press_01',
-  button_click2: { file: 'press_01', volume: 0.125 }, // touch movement controls - just hear footsteps
+  // button_click: 'press_01',
+  button_click: 'button_click',
+  button_click2: { file: 'button_click', volume: 0.125 }, // touch movement controls - just hear footsteps
   // menus/general/etc
   rollover: { file: 'ui_move', volume: 0.25 },
 
-  user_error: 'error',
+  user_error: 'press_01',
   invalid_action: 'error',
 
   // Game sounds

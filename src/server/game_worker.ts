@@ -41,6 +41,7 @@ const { floor, random } = Math;
 
 const GAME_WORKER_VERSION = 2;
 const ENT_VERSION = 1; // Drops all serialized ents when this changes
+const INITIAL_FLOOR = 10;
 
 type Entity = EntityServer;
 
@@ -209,10 +210,10 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
         cb: NetErrorCallback<Entity>,
       ) => {
         let payload = join_payload as CrawlerJoinPayload;
-        this.game_state.getLevelForFloorAsync(0, (level: CrawlerLevel) => {
+        this.game_state.getLevelForFloorAsync(INITIAL_FLOOR, (level: CrawlerLevel) => {
           entityServerDefaultLoadPlayerEntity<Entity>({
             type: 'player',
-            floor: 0,
+            floor: INITIAL_FLOOR,
             pos: level.special_pos.stairs_in,
           }, sem, src, join_payload, player_uid, function (err: null | string, ent?: Entity) {
             if (ent) {
