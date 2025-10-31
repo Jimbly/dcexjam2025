@@ -172,6 +172,7 @@ import {
   crawlerTurnBasedMovePreStart,
   crawlerTurnBasedQueued,
   crawlerTurnBasedScheduleStep,
+  crawlerTurnBasedTick,
   getScaledFrameDt,
 } from './crawler_play';
 import {
@@ -4127,6 +4128,18 @@ function onDisabledAction(): void {
   statusSet('onDisabledAction', 'Please wait for other players to take their turn').counter = 2500;
 }
 
+function doBackgroundTick(): void {
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  if (!engine.stateActive(play) || !controller.canRun()) {
+    return;
+  }
+
+  battleZonePrep();
+  // tick AI if we're in a battlezone and ready
+  crawlerTurnBasedTick();
+  crawlerEntityManager().actionListFlush();
+}
+
 function playCrawl(): void {
   profilerStartFunc();
 
@@ -4453,7 +4466,7 @@ export function play(dt: number): void {
   }
 
   battleZonePrep(); // before crawlerPlayTopOfFrame
-  if (engine.DEBUG && false) {
+  if (engine.DEBUG && true) {
     battleZoneDebug();
   }
 
@@ -4865,4 +4878,22 @@ export function playStartup(): void {
     color: palette_font[PAL_WHITE],
     outline_color: palette_font[PAL_BLACK],
   }));
+
+  let bg_tick_timer: ReturnType<typeof setTimeout> | null = null;
+  function tickInBG(): void {
+    doBackgroundTick();
+    bg_tick_timer = setTimeout(tickInBG, 100);
+  }
+  engine.onEnterBackground(() => {
+    if (!bg_tick_timer) {
+      bg_tick_timer = setTimeout(tickInBG, 100);
+    }
+  });
+  engine.onExitBackground(() => {
+    if (bg_tick_timer) {
+      clearTimeout(bg_tick_timer);
+      bg_tick_timer = null;
+    }
+  });
+
 }

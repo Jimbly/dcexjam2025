@@ -21,7 +21,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 * felt like I wasn't getting enough drops at L3, maybe increase the 50% by 10%/level?
 
 TODO
-* battlezone: tick even if in background
 * battlezone: don't count through attack-blocking doorways (ignore 1-way doors for now)
 * add scrollbar to inventory, remove limit? add sort button
 * add critical hits/misses to combat system?

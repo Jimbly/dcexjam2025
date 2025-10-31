@@ -714,7 +714,7 @@ export function crawlerTurnBasedClearQueue(): void {
   need_turn_based_step = false;
 }
 
-function crawlerTurnBasedTick(): void {
+export function crawlerTurnBasedTick(): void {
   if (need_turn_based_step) {
     if (turn_based_allowed?.() === false) {
       return;
