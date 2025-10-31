@@ -2452,8 +2452,21 @@ function battleZonePrep(): void {
     battle_zones[player.id] = player.id;
     battle_zone_is_multiplayer[player.id] = false;
   }
+  function effZone(id: EntityID): EntityID {
+    while (battle_zones[id] !== id) {
+      id = battle_zones[id];
+    }
+    return id;
+  }
   function joinZones(lower: EntityID, higher: EntityID): void {
-    battle_zones[higher] = battle_zones[lower];
+    lower = effZone(lower);
+    higher = effZone(higher);
+    if (higher < lower) {
+      let t = higher;
+      higher = lower;
+      lower = t;
+    }
+    battle_zones[higher] = lower;
     battle_zone_is_multiplayer[lower] = true;
   }
   for (let key in enemy_pos_map) {
@@ -2475,6 +2488,9 @@ function battleZonePrep(): void {
         }
       }
     }
+  }
+  for (let key in battle_zones) {
+    battle_zones[key] = effZone(battle_zones[key]);
   }
   // paint battle zones on map, proceeding out from enemes
   battlezone_map.length = 0;
@@ -2564,6 +2580,15 @@ function battleZoneDebug(): void {
   const text_height = uiTextHeight();
   print(style_text, x, y, z, `BattleZone: ${my_ent.battle_zone} (me=${my_ent.id})`);
   y += text_height;
+  let ent_in_front = crawlerEntInFront();
+  if (ent_in_front) {
+    let engaged_enemy = entityManager().entities[ent_in_front];
+    if (engaged_enemy) {
+      print(style_text, x, y, z, `Enemy in front: ${engaged_enemy.id} (closet=${engaged_enemy.closest_ent}, ` +
+        `in_zone_ents=${engaged_enemy.in_zone_ents}, bz=${engaged_enemy.battle_zone})`);
+      y += text_height;
+    }
+  }
   print(style_text, x, y, z, `Tick queued: ${crawlerTurnBasedQueued()}`);
   y += text_height;
   // print(style_text, x, y, z, `CanIssueAction: ${canIssueAction()}`);
@@ -3020,7 +3045,7 @@ function drawBattleZone(): void {
       return 1;
     }
     let bza = isInBattleZone(a);
-    let bzb = isInBattleZone(a);
+    let bzb = isInBattleZone(b);
     if (bza && !bzb) {
       return -1;
     }
@@ -4575,7 +4600,7 @@ export function play(dt: number): void {
   }
 
   battleZonePrep(); // before crawlerPlayTopOfFrame
-  if (engine.DEBUG && false) {
+  if (engine.DEBUG && true) {
     battleZoneDebug();
   }
 

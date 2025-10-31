@@ -24,9 +24,6 @@ TODO
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * animate/grow critters on attack / hit
 * use floaters to show player numbers on floors
-* bug: visibility is different before/after turning camera/moving forward and back if directly facing a wall
-  * relatedly: moving backwards through a door and I could see the enemy on the other side
-  * relatedly: always show monster behind (and diagonals?)
 * Deal with more than 4 players in battlezone list (scrollbar, dither, hide?)
 * hide cheating commands like entset, stat
 * dither instead of blur for menuUp()
@@ -44,6 +41,9 @@ TODO
 * fix 2 players or 1 player + 1 NPC on the same square to push in different directions
 
 Bugs:
+* visibility is different before/after turning camera/moving forward and back if directly facing a wall
+  * relatedly: moving backwards through a door and I could see the enemy on the other side
+  * relatedly: always show monster behind (and diagonals? and when bumping a blocked door?)
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
