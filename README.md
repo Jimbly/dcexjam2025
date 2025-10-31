@@ -29,7 +29,6 @@ TODO
 * use floaters to show player numbers on floors
 * fix battle log messages, especially in OMP
 * player names over heads
-* disable inventory access when within 1 unobstructed tile of an enemy (new in-zone rules
 * on town level show player levels instead of where waiting/checkmarks are (or, do for all nearby players?)
 * golden hat reward for final level (if it shows on players)
 * forward + left quickly when in battle zone doesn't do the turn

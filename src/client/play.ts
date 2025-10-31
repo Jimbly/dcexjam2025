@@ -97,7 +97,9 @@ import {
 import { entManhattanDistance } from '../common/crawler_entity_common';
 import {
   BLOCK_MOVE,
+  BLOCK_VIS,
   crawlerLoadData,
+  dirFromDelta,
   DirType,
   DX,
   DY,
@@ -4276,6 +4278,32 @@ function drawFrames(): void {
   }
 }
 
+function canOpenInventory(): boolean {
+  let my_ent = myEnt();
+  let game_state = crawlerGameState();
+  let { floor_id } = game_state;
+  let level = game_state.levels[floor_id];
+  if (!level) {
+    return false;
+  }
+  let pos = my_ent.getData<JSVec3>('pos')!;
+  let entity_manager = entityManager();
+  let ents = entity_manager.entitiesFind((ent) => {
+    if (ent.data.floor === floor_id && entManhattanDistance(ent, pos) <= 1 && ent.isEnemy() && ent.isAlive()) {
+      // close enough
+      let ent_pos = ent.getData<JSVec3>('pos')!;
+      let dir = dirFromDelta([ent_pos[0] - pos[0], ent_pos[1] - pos[1]]);
+      if (level.wallsBlock(pos, dir, crawlerScriptAPI()) & BLOCK_VIS) {
+        // can't see
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }, true);
+  return !ents.length;
+}
+
 function onDisabledAction(): void {
   playUISound('invalid_action');
   statusSet('onDisabledAction', 'Please wait for other players to take their turn').counter = 2500;
@@ -4544,6 +4572,9 @@ function playCrawl(): void {
   } else if (up_edge.inv) {
     if (menu_up) {
       uiAction(null);
+    } else if (!canOpenInventory()) {
+      playUISound('invalid_action');
+      statusSet('onDisabledAction', 'Cannot open inventory while in combat').counter = 2500;
     } else {
       uiAction(new InventoryMenuAction('inventory'));
     }
