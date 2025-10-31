@@ -16,6 +16,7 @@ import {
   NetErrorCallback,
 } from 'glov/common/types';
 import { empty } from 'glov/common/util';
+import { ROVec3 } from 'glov/common/vmath';
 import {
   ClientEntityManagerInterface,
 } from './entity_manager_client';
@@ -56,6 +57,10 @@ export class EntityBaseClient extends EntityBaseCommon {
   data_overrides: DataOverride[];
   fade: number | null;
   last_update_timestamp: number;
+
+  declare draw_cb?: (param: {
+    pos: ROVec3;
+  }) => void;
 
   constructor(data: EntityBaseDataCommon) {
     super(data);

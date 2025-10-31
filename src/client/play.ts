@@ -4,6 +4,7 @@ import assert from 'assert';
 import { autoResetSkippedFrames } from 'glov/client/auto_reset';
 import { autoAtlas } from 'glov/client/autoatlas';
 import { cmd_parse } from 'glov/client/cmds';
+import { dynGeomForward } from 'glov/client/dyn_geom';
 import { editBox } from 'glov/client/edit_box';
 import * as engine from 'glov/client/engine';
 import { EntityPredictionID } from 'glov/client/entity_base_client';
@@ -75,8 +76,11 @@ import {
   JSVec2,
   JSVec3,
   ROVec2,
+  ROVec3,
+  v3addScale,
   v3copy,
   Vec2,
+  vec3,
   vec4,
 } from 'glov/common/vmath';
 import {
@@ -181,6 +185,7 @@ import {
 } from './crawler_play';
 import {
   crawlerRenderViewportSet,
+  DIM,
   renderViewportShear,
 } from './crawler_render';
 import {
@@ -3352,10 +3357,79 @@ function drawEnemyStats(ent: Entity): void {
   }
 }
 
+const BAR_WORLD_PX = DIM * 0.5/ENEMY_HP_BAR_W;
+let temp_pos = vec3();
+function drawInWorldHealthbar(
+  this: Entity,
+  param: {
+    pos: ROVec3;
+  },
+): void {
+  let ent = this;
+  if (ent.draw_cb_frame !== engine.getFrameIndex()) {
+    return;
+  }
+  let hp = ent.getData('stats.hp', 0);
+  let hp_max = ent.getData('stats.hp_max', 1);
+  if (!hp_max || hp >= hp_max) {
+    return;
+  }
+  let { pos } = param;
+  let z = pos[2] + DIM * 0.9;
+  v3addScale(temp_pos, pos, dynGeomForward(), -0.01);
+
+  autoAtlas('ui', 'bar-frame-3d').draw3D({
+    pos: [temp_pos[0], temp_pos[1], z],
+    offs: [-ENEMY_HP_BAR_W/2 * BAR_WORLD_PX, 0],
+    size: [ENEMY_HP_BAR_W * BAR_WORLD_PX, ENEMY_HP_BAR_H * BAR_WORLD_PX],
+  });
+
+  if (hp) {
+    v3addScale(temp_pos, pos, dynGeomForward(), -0.02);
+    let w = max(hp / hp_max, 2/ENEMY_HP_BAR_W);
+    autoAtlas('ui', 'bar-frame-3d-fill').draw3D({
+      pos: [temp_pos[0], temp_pos[1], z],
+      offs: [(-ENEMY_HP_BAR_W/2 + 2) * BAR_WORLD_PX, BAR_WORLD_PX * 2],
+      size: [(ENEMY_HP_BAR_W - 4) * w * BAR_WORLD_PX, (ENEMY_HP_BAR_H - 4) * BAR_WORLD_PX],
+    });
+  }
+}
+
+const INFRONT_ANIMATING_THRESHOLD = 0.5;
+
+function doHealthbars(): void {
+  let game_state = crawlerGameState();
+  let level = game_state.level;
+  if (!level || isTown()) {
+    return;
+  }
+  let my_ent = myEnt();
+  let { floor_id } = game_state;
+  let my_pos = my_ent.getData<JSVec3>('pos')!;
+  let entity_manager = entityManager();
+  let ent_in_front = crawlerController().controllerIsAnimating(INFRONT_ANIMATING_THRESHOLD) ? -1 : crawlerEntInFront();
+  let ents = entity_manager.entitiesFind((ent) => {
+    if (ent.data.floor !== floor_id || !(ent.isEnemy() || ent.isPlayer()) ||
+      !ent.isAlive() || ent.id === ent_in_front
+    ) {
+      return false;
+    }
+    if (entManhattanDistance(ent, my_pos) <= 5) {
+      return true;
+    }
+    return false;
+  }, true);
+  for (let ii = 0; ii < ents.length; ++ii) {
+    let ent = ents[ii];
+    ent.draw_cb = drawInWorldHealthbar;
+    ent.draw_cb_frame = engine.getFrameIndex();
+  }
+}
+
 function doEngagedEnemy(): void {
   let game_state = crawlerGameState();
   let level = game_state.level;
-  if (!level || crawlerController().controllerIsAnimating(0.75)) {
+  if (!level || crawlerController().controllerIsAnimating(INFRONT_ANIMATING_THRESHOLD)) {
     return;
   }
   let entities = entityManager().entities;
@@ -4501,6 +4575,7 @@ function playCrawl(): void {
       doQuickbar();
 
       doEngagedEnemy();
+      doHealthbars();
     }
     // Do modal UIs here
   } else {
@@ -4668,7 +4743,7 @@ export function play(dt: number): void {
   }
 
   battleZonePrep(); // before crawlerPlayTopOfFrame
-  if (engine.DEBUG && true) {
+  if (engine.DEBUG && false) {
     battleZoneDebug();
   }
 
