@@ -600,7 +600,7 @@ function inventoryButton(param: InventoryButtonParam): boolean {
 
 function inventoryIndexForItemPickup(item: Item): number {
   let my_ent = myEnt();
-  let inventory = my_ent.data.inventory;
+  let inventory = my_ent.getData<(Item|null)[]>('inventory', []);
   let idx = -1;
   if (!inventory) {
     my_ent.data.inventory = inventory = [];
@@ -2888,8 +2888,17 @@ function drawStatsOverViewport(): void {
   let { floaters } = my_ent;
   let blink = 1;
   let blink_good = false;
-  for (let ii = floaters.length - 1; ii >= 0; --ii) {
+  let eff_yoffs = 0;
+  let last_start = 0;
+  for (let ii = 0; ii < floaters.length; ++ii) {
     let floater = floaters[ii];
+    if (floater.start - last_start > 100) {
+      eff_yoffs = 0;
+    }
+    last_start = floater.start;
+    // if two floaters queued on the same frame, offset them
+    floater.yoffs = max(floater.yoffs || 0, eff_yoffs);
+    eff_yoffs++;
     let elapsed = engine.frame_timestamp - floater.start;
     const FLOATER_TIME = 750; // not including fade
     const FLOATER_FADE = 250;
@@ -2899,7 +2908,7 @@ function drawStatsOverViewport(): void {
     if (elapsed > FLOATER_TIME) {
       alpha = 1 - (elapsed - FLOATER_TIME) / FLOATER_FADE;
       if (alpha <= 0) {
-        ridx(floaters, ii);
+        floaters.splice(ii, 1);
         continue;
       }
     }
@@ -2914,7 +2923,7 @@ function drawStatsOverViewport(): void {
     let text_height = uiTextHeight() * 2;
     font.drawSizedAligned(fontStyleAlpha(style_text, alpha),
       VIEWPORT_X0 + render_width/2,
-      round(VIEWPORT_Y0 + render_height * 0.9 + float), Z.FLOATERS,
+      round(VIEWPORT_Y0 + render_height * 0.9 + float) - floater.yoffs * (text_height + 1), Z.FLOATERS + ii * 0.01,
       text_height, ALIGN.HCENTER|ALIGN.VBOTTOM,
       0, 0, floater.msg);
   }
@@ -3683,7 +3692,7 @@ function numHealingPotions(): number {
 
 function doHeal(): void {
   let my_ent = myEnt();
-  let inventory = my_ent.getData<(Item|null)[]>('inventory') || [];
+  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory') || []);
   let inv_idx = -1;
   for (let ii = 0; ii < inventory.length; ++ii) {
     let item = inventory[ii];
@@ -3717,12 +3726,11 @@ function doHeal(): void {
     delta: -1,
   });
 
-  let new_inventory = clone(inventory);
-  let item = new_inventory[inv_idx];
+  let item = inventory[inv_idx];
   assert(item);
   item.count--;
   if (!item.count) {
-    new_inventory[inv_idx] = null;
+    inventory[inv_idx] = null;
   }
 
   let payload: ActionInventoryPayload = {
@@ -4629,7 +4637,7 @@ function onPlayerMove(old_pos: Vec2, new_pos: Vec2): void {
 function pickupOnClient(item: Item): boolean {
   let my_ent = myEnt();
   let idx = inventoryIndexForItemPickup(item);
-  let inventory = my_ent.data.inventory;
+  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory'));
   assert(inventory);
 
   if (idx === -1) {

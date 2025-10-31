@@ -317,7 +317,7 @@ export function aiTraitsClientStartup(): void {
           if (level.wallsBlock(pos, xdir, script_api) & BLOCK_MOVE) {
             dx = 0;
           }
-          let new_pos = [pos[0] + dx, pos[1]];
+          let new_pos = [pos[0] + sign(dx), pos[1]];
           if (level.getCell(new_pos[0], new_pos[1])?.props?.noai ||
             level.getCell(new_pos[0], new_pos[1])?.events?.length
           ) {
@@ -331,7 +331,7 @@ export function aiTraitsClientStartup(): void {
           if (level.wallsBlock(pos, ydir, script_api) & BLOCK_MOVE) {
             dy = 0;
           }
-          let new_pos = [pos[0], pos[1] + dy];
+          let new_pos = [pos[0], pos[1] + sign(dy)];
           if (level.getCell(new_pos[0], new_pos[1])?.props?.noai ||
             level.getCell(new_pos[0], new_pos[1])?.events?.length
           ) {

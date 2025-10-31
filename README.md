@@ -24,9 +24,6 @@ TODO
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * animate/grow critters on attack / hit
 * use floaters to show player numbers on floors
-* test enforcing single entity
-* death penalty: lose some inventory too? get kicked out of floor (maybe it gets reset?)
-* fix two hits on the same frame not showing floaters well
 * bug: visibility is different before/after turning camera/moving forward and back if directly facing a wall
   * relatedly: moving backwards through a door and I could see the enemy on the other side
   * relatedly: always show monster behind (and diagonals?)
@@ -50,6 +47,7 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
+* fix single entity force_kick pingponging
 * battlezone: maybe kick to menu if skipped 3 times in a row
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * show an un-slotted, but available, quickbar slot as a different color, tooltip info, clicking opens inventory
