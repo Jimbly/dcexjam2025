@@ -21,10 +21,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 * felt like I wasn't getting enough drops at L3, maybe increase the 50% by 10%/level?
 
 TODO
-* hunter/wander never move onto square outside of stairs_in on stairs_in/out itself
-  * aiWander fixed, aiHunt is not
-  * need nop blocker event placed down
-  * just avoid anything with events and put a dummy event there?
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
 * "mimic" non-moving chest monster in secret rooms
 * more informative message when trying to go through a door with a monster on the other side

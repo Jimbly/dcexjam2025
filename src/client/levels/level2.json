@@ -1512,7 +1512,10 @@
         "solid",
         "stairs_in",
         "solid"
-      ]
+      ],
+      "props": {
+        "noai": "1"
+      }
     },
     {
       "id": "open",
@@ -2313,7 +2316,10 @@
         "solid",
         "open",
         "door"
-      ]
+      ],
+      "props": {
+        "noai": "1"
+      }
     },
     {
       "id": "stairs_out",

@@ -149,7 +149,9 @@ export function aiTraitsClientStartup(): void {
           return false;
         }
         let new_pos: JSVec3 = [pos[0] + DX[dir], pos[1] + DY[dir], pos[2]];
-        if (level.getCell(new_pos[0], new_pos[1])?.events?.length) {
+        if (level.getCell(new_pos[0], new_pos[1])?.props?.noai ||
+          level.getCell(new_pos[0], new_pos[1])?.events?.length
+        ) {
           // avoid going onto events (e.g. stairs in/out
           return false;
         }
@@ -311,11 +313,25 @@ export function aiTraitsClientStartup(): void {
           if (level.wallsBlock(pos, xdir, script_api) & BLOCK_MOVE) {
             dx = 0;
           }
+          let new_pos = [pos[0] + dx, pos[1]];
+          if (level.getCell(new_pos[0], new_pos[1])?.props?.noai ||
+            level.getCell(new_pos[0], new_pos[1])?.events?.length
+          ) {
+            // avoid going onto events (e.g. stairs in/out
+            dx = 0;
+          }
         }
         let ydir: DirType;
         if (dy) {
           ydir = dirFromDelta([0, sign(dy)]);
           if (level.wallsBlock(pos, ydir, script_api) & BLOCK_MOVE) {
+            dy = 0;
+          }
+          let new_pos = [pos[0], pos[1] + dy];
+          if (level.getCell(new_pos[0], new_pos[1])?.props?.noai ||
+            level.getCell(new_pos[0], new_pos[1])?.events?.length
+          ) {
+            // avoid going onto events (e.g. stairs in/out
             dy = 0;
           }
         }

@@ -1095,6 +1095,7 @@ let cell_prop_key_items: MenuItem[] = [
   'key_south',
   'key_east',
   'key_west',
+  'noai',
   'new',
 ].map((name) => ({ name, tag: name }));
 let level_prop_key_items: MenuItem[] = [
