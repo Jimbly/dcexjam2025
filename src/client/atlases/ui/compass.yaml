@@ -1,0 +1,12 @@
+---
+tile_res: 12
+tiles:
+  compass-1: [0, 0]
+  compass-0: [1, 0]
+  compass-3: [2, 0]
+  compass-2: [3, 0]
+
+  compass-0.5: [0, 1]
+  compass-3.5: [1, 1]
+  compass-2.5: [2, 1]
+  compass-1.5: [3, 1]

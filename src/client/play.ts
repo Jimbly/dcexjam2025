@@ -2741,6 +2741,42 @@ function drawStatsOverViewport(): void {
   }
 }
 
+function drawCompass(): void {
+  let game_state = crawlerGameState();
+  let angle = (round((game_state.angle / (2 * PI) * 8) + 8) % 8) / 2;
+  let x = FRAME_VERT_SPLIT + 12 + 11;
+  let y = 303;
+  let pos = crawlerController().getEffPos();
+
+  font.draw({
+    style: style_stats,
+    x, y,
+    w: 12,
+    align: ALIGN.HCENTER,
+    text: `${pos[0]},${pos[1]}`,
+  });
+
+  y += 14;
+  autoAtlas('ui', `compass-${angle}`).draw({
+    x,
+    y,
+    w: 12,
+    h: 12,
+  });
+  y += 14;
+  let rot = crawlerController().getEffRot();
+  if (rot >= 0 && rot <= 4) {
+    title_font.draw({
+      style: style_stats,
+      size: TITLE_FONT_H,
+      x, y,
+      w: 12,
+      align: ALIGN.HCENTER,
+      text: ['E', 'N', 'W', 'S'][rot],
+    });
+  }
+}
+
 const BATTLEZONE_HPAD = 2;
 const BATTLEZONE_X = FRAME_VERT_SPLIT + 12 + BATTLEZONE_HPAD;
 const BATTLEZONE_W = game_width - 12 - BATTLEZONE_X - BATTLEZONE_HPAD;
@@ -3631,9 +3667,7 @@ function doQuickbar(): void {
         ...button_param,
         text: ' ',
         disabled: true,
-        disabled_focusable: true,
       });
-      focused = buttonLastSpotRet().focused;
     } else {
       activate = Boolean(button({
         ...button_param,
@@ -3643,6 +3677,7 @@ function doQuickbar(): void {
         disabled: disable_button,
         disabled_focusable: true,
         sound_button: null,
+        sound_rollover: disable_button ? null : undefined,
       }));
       focused = buttonLastSpotRet().focused;
       if (!canIssueAction()) {
@@ -4092,6 +4127,7 @@ function playCrawl(): void {
     if (!build_mode) {
       // Do game UI/stats here
       drawStats();
+      drawCompass();
       drawStatsOverViewport();
       drawBattleZone();
 

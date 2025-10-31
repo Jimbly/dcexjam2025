@@ -21,7 +21,6 @@ TODO
 * reward for floor mechanic? - boss with level + 1 and/or hp x2 that drops regular level + 1
 * death animation should always switch to a blood particle within a few hundred ms (in sprite animation)
 * hunter/wander never move onto square outside of stairs_in
-* add compass/coords to UI
 * show an un-slotted, but available, quickbar slot as a different color
 * battlezone: option to skip (set other player as ready) if they have not taken an action in 10 seconds; maybe kick to menu if skipped 3 times in a row
 * battlezone: tick even if in background
