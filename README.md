@@ -18,10 +18,9 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 TODO
 * music
 * add scrollbar to inventory, remove limit? add sort button
-* reward for floor mechanic? - boss with level + 1 and/or hp x2 that drops regular level + 1
 * death animation should always switch to a blood particle within a few hundred ms (in sprite animation)
 * hunter/wander never move onto square outside of stairs_in
-* show an un-slotted, but available, quickbar slot as a different color
+* show an un-slotted, but available, quickbar slot as a different color, tooltip info, clicking opens inventory
 * battlezone: option to skip (set other player as ready) if they have not taken an action in 10 seconds; maybe kick to menu if skipped 3 times in a row
 * battlezone: tick even if in background
 * add critical hits/misses to combat system?

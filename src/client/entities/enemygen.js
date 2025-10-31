@@ -1,3 +1,5 @@
+/* eslint @stylistic/max-len:off */
+
 const assert = require('assert');
 const fs = require('fs');
 
@@ -181,8 +183,9 @@ traits:
       times: 500
       times_random: 100
     death:
-      frames: [${name}-4]
-      times: 1000
+      frames: [${name}-4, ${name}-4, ${name}-4, deathanim1, deathanim2, deathanim3, deathanim4, deathanim5, deathanim6, deathanim7, deathanim8, deathanim7, deathanim8, deathanim7, deathanim8]
+      loop: false
+      times: 100
   sprite_data:
     atlas: dcex
     filter_min: LINEAR_MIPMAP_LINEAR

@@ -24,8 +24,9 @@ traits:
       times: 500
       times_random: 100
     death:
-      frames: [fireskull-4]
-      times: 1000
+      frames: [fireskull-4, fireskull-4, fireskull-4, deathanim1, deathanim2, deathanim3, deathanim4, deathanim5, deathanim6, deathanim7, deathanim8]
+      times: 100
+      loop: false
   sprite_data:
     atlas: dcex
     filter_min: LINEAR_MIPMAP_LINEAR

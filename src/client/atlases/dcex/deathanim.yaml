@@ -1,0 +1,12 @@
+---
+tile_res: 12
+tiles:
+  deathanim1: [0, 0]
+  deathanim2: [1, 0]
+  deathanim3: [2, 0]
+  deathanim4: [3, 0]
+
+  deathanim5: [0, 1]
+  deathanim6: [1, 1]
+  deathanim7: [2, 1]
+  deathanim8: [3, 1]
