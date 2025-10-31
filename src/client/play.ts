@@ -46,6 +46,7 @@ import {
   drawRect2,
   menuUp,
   modalDialog,
+  panel,
   playUISound,
   print,
   uiButtonHeight,
@@ -951,6 +952,26 @@ export function drawHatDude(x0: number, y0: number, z: number, scale: number, ha
   }
 }
 
+function itemInfo(item: Item, line: (text: string) => void): void {
+  if (item.type === 'potion') {
+    line(`Heals for ${POTION_HEAL_PORTION*100}% Max HP` +
+      ` (${round(POTION_HEAL_PORTION * myEnt().getData('stats.hp_max',1))} HP)` +
+      '\nUse with [c=hotkey]H[/c] from the main screen.');
+  } else if (item.type === 'book') {
+    let skill_details = skillDetails(item);
+    let basic_damage = basicAttackDamage(myEnt().data.stats, { defense: 0 } as StatsData);
+    let elem_name = ELEMENT_NAME[skill_details.element];
+    line(`Cost: [c=mp]${skill_details.mp_cost} MP[/c]\n` +
+        `Deals [c=dam${elem_name}]${skill_details.dam + basic_damage.dam} ${elem_name} damage[/c]`);
+  } else if (item.type === 'hat') {
+    let hat_details = hatDetails(item);
+    let elem_name = ELEMENT_NAME[hat_details.element];
+    line(`[c=dam${elem_name}]+${hat_details.resist}% ${elem_name}[/c] resistance`);
+  } else {
+    unreachable(item.type);
+  }
+}
+
 
 type ShopType = 'inventory' | 'upgrades' | 'trades';
 
@@ -1178,23 +1199,7 @@ class InventoryMenuAction extends UIAction {
           text,
         }).h + 2;
       }
-      if (item.type === 'potion') {
-        line(`Heals for ${POTION_HEAL_PORTION*100}% Max HP` +
-          ` (${round(POTION_HEAL_PORTION * my_ent.getData('stats.hp_max',1))} HP)` +
-          '\nUse with [c=hotkey]H[/c] from the main screen.');
-      } else if (item.type === 'book') {
-        let skill_details = skillDetails(item);
-        let basic_damage = basicAttackDamage(my_ent.data.stats, { defense: 0 } as StatsData);
-        let elem_name = ELEMENT_NAME[skill_details.element];
-        line(`Cost: [c=mp]${skill_details.mp_cost} MP[/c]\n` +
-            `Deals [c=dam${elem_name}]${skill_details.dam + basic_damage.dam} ${elem_name} damage[/c]`);
-      } else if (item.type === 'hat') {
-        let hat_details = hatDetails(item);
-        let elem_name = ELEMENT_NAME[hat_details.element];
-        line(`[c=dam${elem_name}]+${hat_details.resist}% ${elem_name}[/c] resistance`);
-      } else {
-        unreachable(item.type);
-      }
+      itemInfo(item, line);
 
       y += 2;
 
@@ -3493,6 +3498,71 @@ const QUICKBAR_X = 14;
 const QUICKBAR_Y = 218;
 const color_disable_action = vec4(0,0,0,0.75);
 
+function drawQuickbarTooltip(action: Item | 'basic'): void {
+  let tooltip_x = VIEWPORT_X0 + 16;
+  let tooltip_h = 40;
+  let tooltip_y0 = QUICKBAR_FRAME_Y - tooltip_h + 10;
+  let tooltip_y = tooltip_y0;
+  let tooltip_w = render_width - 16 * 2;
+
+  function line(text: string): void {
+    tooltip_y += markdownAuto({
+      font_style: style_inventory,
+      x: tooltip_x, y: tooltip_y, z: Z.QUICKBARTOOLTIP,
+      w: tooltip_w,
+      align: ALIGN.HWRAP,
+      text,
+    }).h + 2;
+  }
+  if (action === 'basic') {
+    title_font.draw({
+      style: style_inventory,
+      size: TITLE_FONT_H,
+      x: tooltip_x,
+      y: tooltip_y,
+      z: Z.QUICKBARTOOLTIP,
+      text: 'Basic Attack',
+    });
+    markdownAuto({
+      x: tooltip_x,
+      w: tooltip_w,
+      y: tooltip_y + 2,
+      z: Z.QUICKBARTOOLTIP,
+      h: TITLE_FONT_H,
+      align: ALIGN.VCENTER | ALIGN.HRIGHT,
+      text: '(press [c=hotkey]W[/c] into enemies)',
+    });
+    tooltip_y += TITLE_FONT_H + 2;
+    let basic_damage = basicAttackDamage(myEnt().data.stats, { defense: 0 } as StatsData);
+    line(`Deals [c=basicdam]${basic_damage.dam} damage[/c]`);
+    line('Generates [c=mp]1 MP[/c]');
+  } else {
+    inventoryIconDraw({
+      x: tooltip_x, y: tooltip_y - 2, z: Z.QUICKBARTOOLTIP,
+      item: action,
+    });
+    title_font.draw({
+      style: style_inventory,
+      size: TITLE_FONT_H,
+      x: tooltip_x + BUTTON_W + 2,
+      y: tooltip_y,
+      z: Z.QUICKBARTOOLTIP,
+      text: itemName(action),
+    });
+    tooltip_y += TITLE_FONT_H + 2;
+    itemInfo(action, line);
+  }
+  const pad = 4;
+  panel({
+    x: tooltip_x - pad,
+    y: tooltip_y0 - pad,
+    z: Z.QUICKBARTOOLTIP - 1,
+    w: tooltip_w + pad * 2,
+    h: tooltip_h + pad * 2,
+  });
+}
+
+
 function doQuickbar(): void {
   let me = myEnt();
   let books = me.data.books || [];
@@ -3555,12 +3625,15 @@ function doQuickbar(): void {
     };
     let hotkey = `${ii === 10 ? 0 : ii}` as '1' | '2';
     let activate = false;
+    let focused = false;
     if (!icon) {
       button({
         ...button_param,
         text: ' ',
         disabled: true,
+        disabled_focusable: true,
       });
+      focused = buttonLastSpotRet().focused;
     } else {
       activate = Boolean(button({
         ...button_param,
@@ -3568,8 +3641,10 @@ function doQuickbar(): void {
         hotkey: KEYS[hotkey],
         // base_name: canIssueAction() ? undefined : 'button_disabled',
         disabled: disable_button,
+        disabled_focusable: true,
         sound_button: null,
       }));
+      focused = buttonLastSpotRet().focused;
       if (!canIssueAction()) {
         drawRect2({
           ...button_param,
@@ -3597,6 +3672,11 @@ function doQuickbar(): void {
         text: `${skill_details.mp_cost}`,
       });
     }
+
+    if (focused && icon) {
+      drawQuickbarTooltip(action);
+    }
+
     if (activate) {
       if (!disabled) {
         if (is_attack) {
@@ -3645,6 +3725,14 @@ function doQuickbar(): void {
     } else {
       doHeal();
     }
+  }
+  if (buttonLastSpotRet().focused) {
+    drawQuickbarTooltip({
+      type: 'potion',
+      subtype: 0,
+      level: 1,
+      count: 1,
+    });
   }
   if (!canIssueAction()) {
     drawRect2({
@@ -4577,4 +4665,8 @@ export function playStartup(): void {
     outline_color: palette_font[PAL_BLUE],
   }));
   markdownSetColorStyle('level', style_item_level);
+  markdownSetColorStyle('basicdam', fontStyle(style_mp_cost, {
+    color: palette_font[PAL_WHITE],
+    outline_color: palette_font[PAL_BLACK],
+  }));
 }

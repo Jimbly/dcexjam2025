@@ -14,7 +14,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* tooltips on skills showing damage
 
 TODO
 * music
