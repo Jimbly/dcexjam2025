@@ -75,7 +75,7 @@ function title(dt: number): void {
     hide: true,
   });
 
-  tickMusic(null);
+  tickMusic('title');
 
   const scale = 2;
   autoAtlas('title', 'text').draw({
@@ -156,10 +156,6 @@ function title(dt: number): void {
     x += uiButtonWidth() + 2;
   }
   x = 10;
-  // @ts-expect-error truthy
-  if (!'onlinedemo') {
-    y += uiButtonHeight() * 3 + 6;
-  }
   if (netSubs().loggedIn()) {
     if (buttonText({
       x: (game_width - login_w)/2,
@@ -169,8 +165,11 @@ function title(dt: number): void {
     })) {
       urlhash.go('?c=the');
     }
-    y += uiButtonHeight() + 2;
+  } else {
+    y += 24;
   }
+
+  y += uiButtonHeight() + 2;
   if (crawlerCommWant()) {
     crawlerCommStart();
   }
@@ -203,7 +202,7 @@ function title(dt: number): void {
     color: palette_font[PAL_WHITE + 3],
     x: game_width * 0.27,
     w: game_width * (1 - 0.27 * 2),
-    y: 240,
+    y: netSubs().loggedIn() ? 240 : 260,
     align: ALIGN.HCENTER | ALIGN.HWRAP,
     text: 'By Jimb Esser for the Dungeon Crawler Limited Asset Jam 2025\nAssets by the DungeonCrawlers.org Discord',
   });

@@ -202,7 +202,7 @@ import {
 } from './globals';
 import { levelGenTest } from './level_gen_test';
 import { chatUI, tinyFont } from './main';
-import { tickMusic } from './music';
+import { musicCurTrack, tickMusic } from './music';
 import {
   PAL_BLACK,
   PAL_BLUE,
@@ -460,6 +460,17 @@ class PauseMenuAction extends UIAction {
 
     settingsSet('volume_sound', pause_menu.getItem(1).value as number);
     settingsSet('volume_music', pause_menu.getItem(2).value as number);
+
+    let track = musicCurTrack();
+    if (track) {
+      font.draw({
+        x: 0, w: game_width,
+        y: 200,
+        z: Z.MODAL + 1,
+        align: ALIGN.HCENTER,
+        text: `Current BGM: ${track.split('/')[1]}`,
+      });
+    }
 
     menuUp();
   }
@@ -4419,7 +4430,9 @@ export function play(dt: number): void {
 
   let overlay_menu_up = Boolean(cur_action?.is_overlay_menu || dialogMoveLocked() || cur_action?.name === 'FloorList');
 
-  tickMusic(game_state.level?.props.music as string || null); // || 'default_music'
+  if (!crawlerController().hasMoveBlocker()) {
+    tickMusic(game_state.level?.props.music as string || currentFloorLevel() > MAX_LEVEL ? 'town' : 'tower');
+  }
   crawlerPlayTopOfFrame(overlay_menu_up, cur_action?.name === 'FloorList');
 
   if (keyDownEdge(KEYS.F3)) {
