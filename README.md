@@ -21,9 +21,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 * felt like I wasn't getting enough drops at L3, maybe increase the 50% by 10%/level?
 
 TODO
-* battlezone: don't count through attack-blocking doorways (ignore 1-way doors for now)
-* add scrollbar to inventory, remove limit? add sort button
-* add critical hits/misses to combat system?
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * animate/grow critters on attack / hit
 * use floaters to show player numbers on floors
@@ -62,6 +59,7 @@ Post-jam? fixes:
 * Space on map screen after exit button selected is activating Wait, not closing the window
 * change W icon to basic attack icon when engaged
 * show actual item instead of chest graphic when there's a single item
+* Nope: battlezone: don't count through attack-blocking doorways - makes "nearest player" weird (someone on the other side of the door and far away) and ticking rules weird
 
 Credits
 =======

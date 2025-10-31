@@ -256,9 +256,9 @@ const FRAME_LR_SPLIT = 288;
 const BATTLEZONE_RANGE = 1;
 const BATTLEZONE_SKIP_TIME = engine.DEBUG ? 1000 : 5000;
 const MAX_TICK_RANGE = 12; // if enemies are more steps than this from a player, use Manhattan dist instead
-const INVENTORY_GRID_W = 9;
+const INVENTORY_GRID_W = 8;
 const INVENTORY_GRID_H = 6;
-const INVENTORY_MAX_SIZE = INVENTORY_GRID_W * INVENTORY_GRID_H;
+const INVENTORY_MAX_SIZE = Infinity; // INVENTORY_GRID_W * INVENTORY_GRID_H;
 const MAX_FLOOR_LEVEL = 9;
 
 type Entity = EntityClient;
@@ -567,7 +567,7 @@ function inventoryButton(param: InventoryButtonParam): boolean {
       text: `L${item.level}`,
     });
   }
-  if (item.type === 'book') {
+  if (item.type === 'book' && !show_count) {
     // show mp cost
     let skill_details = skillDetails(item);
     tiny_font.draw({
@@ -988,6 +988,76 @@ function itemInfo(item: Item, line: (text: string) => void): void {
   }
 }
 
+const TYPE_SORT = {
+  potion: 0,
+  hat: 1,
+  book: 2,
+};
+
+function cmpItem(a: Item | null, b: Item | null): number {
+  if (!a) {
+    if (!b) {
+      return 0;
+    }
+    return 1;
+  } else if (!b) {
+    return -1;
+  }
+  if (a.type !== b.type) {
+    return TYPE_SORT[a.type] - TYPE_SORT[b.type];
+  }
+  let d = a.level - b.level;
+  if (d) {
+    return d;
+  }
+  return a.subtype - b.subtype;
+}
+
+function sortInventory(): void {
+  let inventory_old = myEnt().getData<(Item|null)[]>('inventory', []);
+  let inventory_new = clone(inventory_old);
+  inventory_new.sort(cmpItem);
+  while (inventory_new.length && !inventory_new[inventory_new.length - 1]) {
+    inventory_new.pop();
+  }
+
+  let ops: ActionInventoryOp[] = [];
+
+  for (let ii = 0; ii < inventory_old.length; ++ii) {
+    let new_elem = inventory_new[ii];
+    let old_elem = inventory_old[ii];
+    if (cmpItem(new_elem, old_elem) === 0) {
+      continue;
+    }
+    if (old_elem) {
+      ops.push({
+        idx: ii,
+        delta: -old_elem.count,
+      });
+    }
+    if (new_elem) {
+      ops.push({
+        idx: ii,
+        item: new_elem,
+      });
+    }
+  }
+
+  let payload: ActionInventoryPayload = {
+    ops,
+    ready: false,
+  };
+  myEnt().applyBatchUpdate({
+    field: 'seq_inventory',
+    action_id: 'inv',
+    payload,
+    data_assignments: {
+      client_only: true,
+      inventory: inventory_new,
+    },
+  }, errorsToChat);
+}
+
 
 type ShopType = 'inventory' | 'upgrades' | 'trades';
 
@@ -1000,9 +1070,11 @@ const INVENTORY_BOOKS_XOFFS = INVENTORY_HATS_XOFFS + BUTTON_W + INVENTORY_BETWEE
 const INVENTORY_GRID_XOFFS = INVENTORY_BOOKS_XOFFS + BUTTON_W +
   INVENTORY_BETWEEN_ITEM_COLUMNS + INVENTORY_PAD6;
 const INVENTORY_GRID_W_PX = INVENTORY_GRID_W * (BUTTON_W + INVENTORY_PAD) - INVENTORY_PAD;
+const INVENTORY_GRID_WITHSCROLL_W = INVENTORY_GRID_W_PX +
+  INVENTORY_PAD + BUTTON_W;
 const INVENTORY_GRID_H_PX = INVENTORY_GRID_H * (BUTTON_W + INVENTORY_PAD) - INVENTORY_PAD;
 const INVENTORY_W = INVENTORY_GRID_XOFFS +
-  INVENTORY_GRID_W_PX +
+  INVENTORY_GRID_WITHSCROLL_W +
   INVENTORY_PAD6 + INVENTORY_PAD6;
 const INVENTORY_GRID_YOFFS = INVENTORY_PAD6 * 2;
 const INVENTORY_INFO_YOFFS = INVENTORY_GRID_YOFFS +
@@ -1016,9 +1088,14 @@ const INVENTORY_ACTION_W = 52;
 const TRADE_ACTION_W = 60;
 const style_inventory = fontStyleColored(null, palette_font[PAL_BLACK - 1]);
 class InventoryMenuAction extends UIAction {
+  scroll_area: ScrollArea;
   constructor(public shop_type: ShopType) {
     super();
     myEntOptional()?.calcPlayerResist(currentFloorLevel());
+    this.scroll_area = scrollAreaCreate({
+      background_color: null,
+      auto_hide: true,
+    });
   }
   selected_idx: [string, number] = ['null', 0];
   tick(): void {
@@ -1143,8 +1220,19 @@ class InventoryMenuAction extends UIAction {
     let idx = 0;
     x0 = INVENTORY_X + INVENTORY_GRID_XOFFS;
     y0 = INVENTORY_Y + INVENTORY_GRID_YOFFS;
-    for (let yy = 0; yy < INVENTORY_GRID_H; ++yy) {
+
+    this.scroll_area.begin({
+      x: x0, y: y0 - 4, z,
+      h: INVENTORY_GRID_H_PX + 8,
+      w: INVENTORY_GRID_W_PX + 16,
+    });
+    x0 = 0;
+    y0 = 4;
+
+    let ymax = 0;
+    for (let yy = 0; yy < (INVENTORY_GRID_H - 1) || idx < inventory.length; ++yy) {
       let y = y0 + yy * (BUTTON_W + INVENTORY_PAD);
+      ymax = y + BUTTON_W + INVENTORY_PAD;
       for (let xx = 0; xx < INVENTORY_GRID_W; ++xx, ++idx) {
         let x = x0 + xx * (BUTTON_W + INVENTORY_PAD);
         let item = inventory[idx];
@@ -1168,6 +1256,19 @@ class InventoryMenuAction extends UIAction {
         }
       }
     }
+    let sort_button_w = BUTTON_W * 4;
+    if (buttonText({
+      x: floor((INVENTORY_GRID_W_PX - sort_button_w) / 2),
+      y: ymax, z,
+      w: sort_button_w, h: BUTTON_W,
+      text: 'Sort',
+    })) {
+      sortInventory();
+    }
+    ymax += BUTTON_W;
+    this.scroll_area.end(ymax);
+    x0 = INVENTORY_X + INVENTORY_GRID_XOFFS;
+    y0 = INVENTORY_Y + INVENTORY_GRID_YOFFS;
 
     drawBox({
       x: x0 - INVENTORY_PAD6,
@@ -1210,7 +1311,7 @@ class InventoryMenuAction extends UIAction {
         y += markdownAuto({
           font_style: style_inventory,
           x, y, z,
-          w: INVENTORY_GRID_W_PX,
+          w: INVENTORY_GRID_WITHSCROLL_W,
           align: ALIGN.HWRAP,
           text,
         }).h + 2;
@@ -1219,7 +1320,7 @@ class InventoryMenuAction extends UIAction {
 
       y += 2;
 
-      let x1 = x0 + INVENTORY_GRID_W_PX;
+      let x1 = x0 + INVENTORY_GRID_WITHSCROLL_W;
       function action(text: string): boolean {
         return Boolean(button({
           x: x1 - INVENTORY_ACTION_W, y: y0, z,
@@ -1538,7 +1639,7 @@ class InventoryMenuAction extends UIAction {
       markdownAuto({
         font_style: style_inventory,
         x: x0, y, z,
-        w: INVENTORY_GRID_W_PX,
+        w: INVENTORY_GRID_WITHSCROLL_W,
         align: ALIGN.HWRAP,
         text: shop_type === 'upgrades' ?
           '[c=level]UPGRADE[/c]: Combine 2 items into a [c=level]higher level[/c] item.' :
@@ -4466,7 +4567,7 @@ export function play(dt: number): void {
   }
 
   battleZonePrep(); // before crawlerPlayTopOfFrame
-  if (engine.DEBUG && true) {
+  if (engine.DEBUG && false) {
     battleZoneDebug();
   }
 
@@ -4627,8 +4728,8 @@ function playInitEarly(room: ClientChannelWorker): void {
   playInitShared(true);
 
   if (engine.DEBUG && false) {
-    // cur_action = new InventoryMenuAction('trades');
-    cur_action = new FloorListAction(1);
+    cur_action = new InventoryMenuAction('trades');
+    // cur_action = new FloorListAction(1);
   }
 }
 

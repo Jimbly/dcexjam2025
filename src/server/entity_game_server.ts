@@ -507,6 +507,15 @@ entityServerRegisterActions([{
         this.dirtySub('inventory', idx);
       }
     }
+    let length_changed = false;
+    while (inventory.length && !inventory[inventory.length - 1]) {
+      length_changed = true;
+      inventory.pop();
+    }
+    if (length_changed) {
+      this.dirtySub('inventory', 'length');
+    }
+
     if (param.ready) {
       this.data.ready = true;
       this.dirty('ready');
