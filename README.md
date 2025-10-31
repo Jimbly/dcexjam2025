@@ -29,8 +29,6 @@ TODO
 * use floaters to show player numbers on floors
 * fix battle log messages, especially in OMP
 * player names over heads
-* wider hats/books at least in inventory
-* hall of fame on main menu (just XP)
 * disable inventory access when within 1 unobstructed tile of an enemy (new in-zone rules
 * on town level show player levels instead of where waiting/checkmarks are (or, do for all nearby players?)
 * golden hat reward for final level (if it shows on players)
@@ -38,6 +36,7 @@ TODO
 * make dude's books more clear
 * choose player cloak color in customization (just 6 hard-coded?); maybe hat color based on equipped hat?
 * fix 2 players or 1 player + 1 NPC on the same square to push in different directions
+* F11 for fullscreen hint somewhere
 
 Bugs:
 * visibility is different before/after turning camera/moving forward and back if directly facing a wall
@@ -46,6 +45,7 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
+* wider hats/books at least in inventory
 * dither instead of blur for menuUp()
 * fix single entity force_kick pingponging
 * battlezone: maybe kick to menu if skipped 3 times in a row

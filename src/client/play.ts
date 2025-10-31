@@ -1,3 +1,5 @@
+export const TITLE_FONT_H = 14;
+
 import assert from 'assert';
 import { autoResetSkippedFrames } from 'glov/client/auto_reset';
 import { autoAtlas } from 'glov/client/autoatlas';
@@ -222,6 +224,7 @@ import {
   statusSet,
   statusTick,
 } from './status';
+import { setScore } from './title';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { abs, ceil, cos, floor, max, min, PI, random, round, sin } = Math;
@@ -247,7 +250,6 @@ const COMPASS_Y = MINIMAP_Y + MINIMAP_H;
 const BUTTON_W = 20;
 const FONT_HEIGHT = 11;
 const TINY_FONT_H = 8;
-const TITLE_FONT_H = 14;
 const QUICKBAR_FRAME_Y = VIEWPORT_Y0 + render_height - 3;
 const FRAME_HORIZ_SPLIT = 240;
 const FRAME_VERT_SPLIT = 276;
@@ -3405,6 +3407,7 @@ function giveXP(xp_reward: number): void {
     action_id: 'give_xp',
     data_assignments,
   }, errorsToChat);
+  setScore();
 }
 
 function playSoundFromEnt(ent: Entity, sound_id: keyof typeof SOUND_DATA): void {

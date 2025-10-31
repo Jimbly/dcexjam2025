@@ -272,17 +272,18 @@ export function scoresDraw<ScoreType>({
     font.drawSizedAligned(style_score, x, y, z, size, ALIGN.HVCENTERFIT, width, ymax - y,
       'Loading...');
 
-    // However, if we have a locally saved score, still show that at the bottom!
-    let my_score = score_system.getScore(level_index);
-    if (my_score) {
-      let y_save2 = y;
-      y = ymax - line_height;
-      z += 20;
-      ui.drawRect(x, y, x + width - 2, y + line_height - 1, z - 1, color_me_background);
-      drawScoreEntry(null, { names_str: my_name, names: [my_name], score: my_score, rank: -1, count: 1 }, style_me);
-      z -= 20;
-      y = y_save2;
-    }
+    // DCJAM: this is showing up way low?
+    // // However, if we have a locally saved score, still show that at the bottom!
+    // let my_score = score_system.getScore(level_index);
+    // if (my_score) {
+    //   let y_save2 = y;
+    //   y = ymax - line_height;
+    //   z += 20;
+    //   ui.drawRect(x, y, x + width - 2, y + line_height - 1, z - 1, color_me_background);
+    //   drawScoreEntry(null, { names_str: my_name, names: [my_name], score: my_score, rank: -1, count: 1 }, style_me);
+    //   z -= 20;
+    //   y = y_save2;
+    // }
     return ymax;
   }
   const scores_scroll_h = scroll_max_y - y;
