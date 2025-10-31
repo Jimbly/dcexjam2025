@@ -20,16 +20,16 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * also, spells that cost more MP but you don't get MP quicker actually feel worse
 * felt like I wasn't getting enough drops at L3, maybe increase the 50% by 10%/level?
 
+**Final Cleanup**
+* hide (but not disable) cheating commands like entset, stat
+
 TODO
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * animate/grow critters on attack / hit
 * use floaters to show player numbers on floors
-* hide cheating commands like entset, stat
-* dither instead of blur for menuUp()
 * fix battle log messages, especially in OMP
 * player names over heads
 * wider hats/books at least in inventory
-* spellbooks should be better colors
 * hall of fame on main menu (just XP)
 * disable inventory access when within 1 unobstructed tile of an enemy (new in-zone rules
 * on town level show player levels instead of where waiting/checkmarks are (or, do for all nearby players?)
@@ -46,6 +46,7 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
+* dither instead of blur for menuUp()
 * fix single entity force_kick pingponging
 * battlezone: maybe kick to menu if skipped 3 times in a row
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
