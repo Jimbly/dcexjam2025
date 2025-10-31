@@ -49,8 +49,6 @@ const MUSIC_VOLUME = 0.1;
 
 const SILENT_TIME = 30*1000;
 const LOOP_TIME = 2*60*1000;
-// const SILENT_TIME = 2*1000;
-// const LOOP_TIME = 5*1000;
 let last_key: string | null;
 let cycle_counter = 0;
 let cycle_idx = -1;
@@ -92,9 +90,9 @@ let last_music_fading_out = false;
 let playing_music_name: string | null = null;
 let loading_music: TSMap<true> = {};
 let loaded_music: TSMap<true> = {};
-const FADE_OUT_CHANGE = 500;
-const FADE_OUT_SILENCE = 5000;
-const FADE_UP = 2500;
+const FADE_OUT_CHANGE = 500/MUSIC_VOLUME;
+const FADE_OUT_SILENCE = 5000/MUSIC_VOLUME;
+const FADE_UP = 2500/MUSIC_VOLUME;
 export function tickMusic(music_name: string | null): void {
   // if (!music_name && optionsMenuVisible()) {
   //   music_name = 'music_menu';
