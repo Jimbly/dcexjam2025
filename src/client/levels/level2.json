@@ -1008,7 +1008,7 @@
       "id": "open",
       "walls": [
         "solid",
-        "solid",
+        "open",
         "secret_door",
         "solid"
       ]
@@ -1149,12 +1149,12 @@
       ]
     },
     {
-      "id": "solid",
+      "id": "open",
       "walls": [
-        "open",
+        "solid",
         "open",
         "solid",
-        "solid"
+        "open"
       ]
     },
     {
@@ -1162,7 +1162,7 @@
       "walls": [
         "open",
         "open",
-        "open",
+        "solid",
         "open"
       ]
     },
@@ -1286,18 +1286,18 @@
     {
       "id": "solid",
       "walls": [
-        "open",
+        "solid",
         "solid",
         "solid",
         "solid"
       ]
     },
     {
-      "id": "solid",
+      "id": "open",
       "walls": [
-        "open",
         "solid",
-        "open",
+        "solid",
+        "solid",
         "open"
       ]
     },
@@ -1306,7 +1306,7 @@
       "walls": [
         "open",
         "open",
-        "open",
+        "solid",
         "open"
       ]
     },
@@ -1449,7 +1449,7 @@
       "id": "solid",
       "walls": [
         "open",
-        "open",
+        "solid",
         "solid",
         "open"
       ]
@@ -1599,12 +1599,12 @@
       ]
     },
     {
-      "id": "solid",
+      "id": "open",
       "walls": [
-        "open",
+        "solid",
         "open",
         "solid",
-        "open"
+        "solid"
       ]
     },
     {
@@ -1736,18 +1736,18 @@
     {
       "id": "open",
       "walls": [
-        "solid",
+        "open",
         "secret_door",
         "solid",
         "solid"
       ]
     },
     {
-      "id": "solid",
+      "id": "open",
       "walls": [
+        "solid",
+        "solid",
         "open",
-        "solid",
-        "solid",
         "open"
       ]
     },
@@ -2347,11 +2347,11 @@
       ]
     },
     {
-      "type": "enemy0",
+      "type": "enemy-mimic",
       "pos": [
         14,
-        6,
-        0
+        8,
+        3
       ]
     },
     {
@@ -2512,6 +2512,14 @@
         14,
         14,
         3
+      ]
+    },
+    {
+      "type": "enemy-mimic",
+      "pos": [
+        15,
+        10,
+        1
       ]
     }
   ],

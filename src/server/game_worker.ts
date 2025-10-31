@@ -176,6 +176,7 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
       remap[`enemy${ii}`] = enemy_id;
     }
     remap['enemy-boss'] = `enemy-rainbow-${floor(random() * 3) + 1}`;
+    remap['enemy-mimic'] = 'enemy-mimic';
 
     level_data.initial_entities?.forEach((ent) => {
       assert(ent.type && typeof ent.type === 'string');

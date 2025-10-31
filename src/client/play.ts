@@ -3233,7 +3233,8 @@ function giveRewards(target_ent: Entity): void {
   let reward_level = rewardLevel(my_level, enemy_level, highest_hitter);
   let entity_manager = entityManager();
   let pos = target_ent.getData<JSVec3>('pos')!;
-  let give_reward = target_ent.is_boss ? true : random() < (0.5 + reward_luck * 0.1);
+  let give_reward = (target_ent.is_boss || target_ent.always_drop_reward) ? true :
+    random() < (0.5 + reward_luck * 0.1);
   if (!give_reward) {
     reward_luck++;
   } else {

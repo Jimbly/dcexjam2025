@@ -91,3 +91,8 @@ tiles:
   enemy-rainbow-3-2: [9, 6]
   enemy-rainbow-3-3: [10, 6]
   enemy-rainbow-3-4: [11, 6]
+
+  enemy-mimic-1: [0, 7]
+  enemy-mimic-2: [1, 7]
+  enemy-mimic-3: [2, 7]
+  enemy-mimic-4: [3, 7]

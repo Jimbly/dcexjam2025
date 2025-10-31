@@ -49,7 +49,7 @@ function entityTraitsServerStartup(ent_factory: TraitFactory<Entity, DataObject>
         let hp = 17 + (floor_level - 1);
         if (opts.hp < 0) {
           hp += floor(random() * 5);
-          hp *= -opts.hp;
+          hp = floor(hp * -opts.hp);
         } else {
           hp += floor(random() * opts.hp);
         }

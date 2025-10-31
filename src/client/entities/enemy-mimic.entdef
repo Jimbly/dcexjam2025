@@ -1,0 +1,40 @@
+---
+properties:
+  display_name: Definitely Just a Chest
+  always_drop_reward: true
+traits:
+- id: blocks_player
+- id: enemy
+- id: stats_enemy
+  hp: 5
+  attack: 5
+  defense: 0
+- id: drawable
+- id: drawable_sprite
+  anim_data:
+    idle:
+      frames: [enemy-mimic-1]
+      times: 1000
+    attack:
+      frames: [enemy-mimic-3, enemy-mimic-2, enemy-mimic-3, enemy-mimic-2, enemy-mimic-3]
+      loop: false
+      transition_to: idle
+      times: 100
+      times_random: 30
+    death:
+      frames: [enemy-mimic-4, enemy-mimic-4, enemy-mimic-4, deathanim1, deathanim2, deathanim3, deathanim4, deathanim5, deathanim6, deathanim7, deathanim8, deathanim7, deathanim8, deathanim7, deathanim8]
+      loop: false
+      times: 100
+  sprite_data:
+    atlas: dcex
+    filter_min: LINEAR_MIPMAP_LINEAR
+    filter_mag: LINEAR
+    origin: [0.5, 1]
+  scale: 0.75
+  do_alpha: false
+  simple_anim:
+    - period: 5000
+      scale: [1, 0.95]
+  shadow:
+    atlas: dcex
+    name: shadow
