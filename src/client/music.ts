@@ -23,7 +23,7 @@ let tracks: TSMap<string[]> = {
     'tower/Bach - Moog and a Jupiter - OPL - Strings',
     'tower/Bach - Moog and a Jupiter -OPL - Woodwinds',
     'tower/Bach Prelude and Fugue in C minor - OPL - LOOP',
-    'tower/Battle Music #2 - LOOP',
+    'tower/Battle Music 2 - LOOP',
     'tower/battle2',
     'tower/Boss Battle 10 - OPL - LOOP',
     'tower/Brahms Val3 OPL - LOOP',
