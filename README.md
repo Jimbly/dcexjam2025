@@ -29,9 +29,7 @@ TODO
 * use floaters to show player numbers on floors
 * fix battle log messages, especially in OMP
 * player names over heads
-* on town level show player levels instead of where waiting/checkmarks are (or, do for all nearby players?)
 * golden hat reward for final level (if it shows on players)
-* forward + left quickly when in battle zone doesn't do the turn
 * make dude's books more clear
 * choose player cloak color in customization (just 6 hard-coded?); maybe hat color based on equipped hat?
 * fix 2 players or 1 player + 1 NPC on the same square to push in different directions

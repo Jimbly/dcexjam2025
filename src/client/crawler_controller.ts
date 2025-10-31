@@ -154,8 +154,8 @@ interface PlayerController {
   startMove(dir: DirType, double_time?: number): void;
   initPosSub(): void;
   autoStartMove(rot: DirType, offs: number): void;
-  cancelAllMoves?(): void;
-  cancelQueuedMoves?(): void;
+  cancelAllMoves?(except_rotate: boolean): void;
+  cancelQueuedMoves?(except_rotate: boolean): void;
   clearDoubleTime?(): void;
 }
 
@@ -445,7 +445,7 @@ class CrawlerControllerQueued implements PlayerController {
     this.move_offs = offs;
   }
 
-  cancelAllMoves(): void {
+  cancelAllMoves(except_rotate: boolean/*TODO*/): void {
     while (this.interp_queue.length > 1) {
       this.interp_queue.pop();
     }
@@ -868,12 +868,13 @@ class CrawlerControllerQueued2 extends CrawlerControllerInstantStep {
     }
     return true;
   }
-  cancelAllMoves(): void {
-    this.blends = this.blends.filter((blend) => blend.started || blend.uncancelable);
+  cancelAllMoves(except_rotate: boolean): void {
+    this.blends = this.blends.filter((blend) => blend.started || blend.uncancelable ||
+      except_rotate && blend.action_type === ACTION_ROT);
     // also need to cancel un-finished blends?
   }
-  cancelQueuedMoves(): void {
-    this.cancelAllMoves();
+  cancelQueuedMoves(except_rotate: boolean): void {
+    this.cancelAllMoves(except_rotate);
   }
 
   time_boost = 0;
@@ -933,7 +934,7 @@ class CrawlerControllerQueued2 extends CrawlerControllerInstantStep {
             break;
           }
           if (!this.startQueuedMove(blend)) {
-            this.cancelAllMoves();
+            this.cancelAllMoves(false);
             break;
           }
           did_start_finish = true;
@@ -1598,12 +1599,12 @@ export class CrawlerController {
     this.goToFloor(floor_id, undefined, undefined, [x, y, rot]);
   }
 
-  cancelQueuedMoves(): void {
-    this.player_controller.cancelQueuedMoves?.();
+  cancelQueuedMoves(except_rotate: boolean): void {
+    this.player_controller.cancelQueuedMoves?.(except_rotate);
   }
 
   forceMove(dir: DirType): void {
-    this.player_controller.cancelAllMoves?.();
+    this.player_controller.cancelAllMoves?.(false);
     this.player_controller.startMove(dir);
   }
 
@@ -2131,7 +2132,7 @@ export class CrawlerController {
     let level = game_state.level!;
 
     if (no_move || no_rotate) {
-      this.player_controller.cancelQueuedMoves?.();
+      this.player_controller.cancelQueuedMoves?.(but_allow_rotate && !no_rotate);
     }
     if (this.loading_level) {
       this.fade_alpha = this.fade_override;
@@ -2301,7 +2302,7 @@ export class CrawlerController {
     if (!v2same(positions.finished_pos, last_finished_pos)) {
       this.playerMoveFinish(level, positions.finished_pos);
       if (no_move) { // was: disable_player_impulse
-        this.player_controller.cancelAllMoves?.();
+        this.player_controller.cancelAllMoves?.(but_allow_rotate && !no_rotate);
       }
     }
     if (positions.finished_rot !== this.last_finished_rot) {

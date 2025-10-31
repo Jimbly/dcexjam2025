@@ -1164,7 +1164,7 @@ export function crawlerPlayTopOfFrame(overlay_menu_up: boolean, but_show_chat: b
 
   let map_view = mapViewActive();
   if (overlay_menu_up || isMenuUp()) {
-    controller.cancelQueuedMoves();
+    controller.cancelQueuedMoves(false);
   }
   if (!(map_view || isMenuUp() || overlay_menu_up)) {
     spotSuppressPad();
