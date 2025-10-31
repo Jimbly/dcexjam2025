@@ -3006,6 +3006,10 @@ const BATTLEZONE_OTHERS_FADE_TIME = 100;
 const BATTLEZONE_OTHERS_W = render_width / 2;
 let battlezone_is_waiting_for_others_time = 0;
 let battlezone_is_waiting_for_others_last_msg = '';
+let battle_zone_scroll_area = scrollAreaCreate({
+  background_color: null,
+  auto_hide: true,
+});
 function drawBattleZone(): void {
   let x = BATTLEZONE_X;
   let y = MINIMAP_Y + MINIMAP_H + 8;
@@ -3017,6 +3021,16 @@ function drawBattleZone(): void {
     text: 'BattleZone',
   });
   y += FONT_HEIGHT + 1;
+
+  let y0 = 0;
+  battle_zone_scroll_area.begin({
+    x, y,
+    z: Z.FRAMES + 1,
+    w: BATTLEZONE_W + 13,
+    h: FRAME_HORIZ_SPLIT - y + 1,
+  });
+  y = 0;
+  x = 0;
 
   let entity_manager = entityManager();
   let game_state = crawlerGameState();
@@ -3216,6 +3230,8 @@ function drawBattleZone(): void {
       });
     }
   }
+
+  battle_zone_scroll_area.end(y - y0);
 
   if (me.getData('ready')) {
     if (battlezone_is_waiting_on_me) {

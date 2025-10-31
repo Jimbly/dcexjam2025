@@ -24,7 +24,6 @@ TODO
 * damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
 * animate/grow critters on attack / hit
 * use floaters to show player numbers on floors
-* Deal with more than 4 players in battlezone list (scrollbar, dither, hide?)
 * hide cheating commands like entset, stat
 * dither instead of blur for menuUp()
 * fix battle log messages, especially in OMP
