@@ -150,6 +150,7 @@ import {
   crawlerMyApplyBatchUpdate,
   crawlerMyEnt,
   crawlerMyEntOptional,
+  Floater,
   isLocal,
   isOnline,
   myEntID,
@@ -191,6 +192,7 @@ import {
 import {
   crawlerEntInFront,
   crawlerRenderEntitiesStartup,
+  EntityDrawableSprite,
 } from './crawler_render_entities';
 import { crawlerScriptAPIDummyServer } from './crawler_script_api_client';
 import { crawlerOnScreenButton } from './crawler_ui';
@@ -2916,7 +2918,32 @@ function drawStats(): void {
   drawHealthBar(x, y, z, HP_BAR_W, HP_BAR_H, mp, mp_max, `MP ${mp}/${mp_max}`, bar_sprites.mpbar);
 }
 
+let damage_floaters: (Floater & {
+  relx: number;
+  rely: number;
+})[] = [];
+const REL_POS: Record<number, Record<number, JSVec2>> = {
+  [-1]: {
+    0: [1-0.95, 0.6],
+    1: [1-0.87, 0.5],
+    2: [1-0.72, 0.5],
+  },
+  0: {
+    0: [0.7, 0.80],
+    1: [0.5, 0.6],
+    2: [0.48, 0.5],
+  },
+  1: {
+    0: [0.95, 0.6],
+    1: [0.87, 0.55],
+    2: [0.72, 0.5],
+  },
+};
+
 let color_temp = vec4();
+const FLOATER_TIME = 750; // not including fade
+const FLOATER_FADE = 250;
+const BLINK_TIME = 250;
 function drawStatsOverViewport(): void {
   let my_ent = myEnt();
   assert(my_ent.isMe());
@@ -2937,9 +2964,6 @@ function drawStatsOverViewport(): void {
     floater.yoffs = max(floater.yoffs || 0, eff_yoffs);
     eff_yoffs++;
     let elapsed = engine.frame_timestamp - floater.start;
-    const FLOATER_TIME = 750; // not including fade
-    const FLOATER_FADE = 250;
-    const BLINK_TIME = 250;
     let good = floater.msg[0] === '+';
     let alpha = 1;
     if (elapsed > FLOATER_TIME) {
@@ -2970,6 +2994,51 @@ function drawStatsOverViewport(): void {
     color_temp[3] = 0.5 * (1 - blink);
     drawRect(VIEWPORT_X0, VIEWPORT_Y0, VIEWPORT_X0+render_width, VIEWPORT_Y0+render_height,
       Z.UI - 5, color_temp);
+  }
+
+  // draw damage floaters on nearby cells
+  let last_relxy = Infinity;
+  eff_yoffs = 0;
+  last_start = 0;
+  let text_height = uiTextHeight();
+  for (let ii = 0; ii < damage_floaters.length; ++ii) {
+    let floater = damage_floaters[ii];
+    let rp = REL_POS[floater.relx]?.[floater.rely];
+    if (!rp) {
+      damage_floaters.splice(ii, 1);
+      continue;
+    }
+    if (floater.start - last_start > 100 || floater.relx + floater.rely * 10 !== last_relxy) {
+      eff_yoffs = 0;
+    }
+    last_start = floater.start;
+    last_relxy = floater.relx + floater.rely * 10;
+    // if two floaters queued on the same frame, offset them
+    floater.yoffs = max(floater.yoffs || 0, eff_yoffs);
+    eff_yoffs++;
+    let elapsed = engine.frame_timestamp - floater.start;
+    // let good = floater.msg[0] === '+';
+    let alpha = 1;
+    if (elapsed > FLOATER_TIME) {
+      alpha = 1 - (elapsed - FLOATER_TIME) / FLOATER_FADE;
+      if (alpha <= 0) {
+        damage_floaters.splice(ii, 1);
+        continue;
+      }
+    }
+    let rp0 = rp[0];
+    if (!floater.relx && !floater.rely) {
+      // same square as us, alternate sides
+      if (crawlerController().getEffRot() % 2) {
+        rp0 = 1 - rp0;
+      }
+    }
+    let float = easeOut(elapsed / (FLOATER_TIME + FLOATER_FADE), 2) * 20;
+    font.drawSizedAligned(fontStyleAlpha(style_text, alpha),
+      round(VIEWPORT_X0 + render_width * rp0),
+      round(VIEWPORT_Y0 + render_height * rp[1] - float) - floater.yoffs * text_height, Z.FLOATERS + ii * 0.01,
+      text_height, ALIGN.HCENTER|ALIGN.VBOTTOM,
+      0, 0, floater.msg);
   }
 }
 
@@ -3446,13 +3515,38 @@ function moveBlocked(): boolean {
   return false;
 }
 
+function relPosForDamage(ent: Entity): JSVec2 | null {
+  let target_pos = ent.getData<JSVec3>('pos')!;
+  let eff_rot = crawlerController().getEffRot();
+  let eff_pos = myEnt().getData<JSVec3>('pos')!;
+  let delta: JSVec2 = [eff_pos[1] - target_pos[1], target_pos[0] - eff_pos[0]];
+  while (eff_rot) {
+    let d0 = delta[0];
+    delta[0] = delta[1];
+    delta[1] = -d0;
+    --eff_rot;
+  }
+  if (REL_POS[delta[0]]?.[delta[1]]) {
+    return delta;
+  }
+  return null;
+}
+
 // old-to-do: move into crawler_play?
 export function addFloater(ent_id: EntityID, message: string | null, anim?: string): void {
-  let ent = crawlerEntityManager().getEnt(ent_id);
+  let ent = entityManager().getEnt(ent_id);
   if (ent) {
     if (message) {
       if (!ent.floaters) {
         ent.floaters = [];
+      }
+      if (ent !== myEnt()) {
+        let rel_pos = relPosForDamage(ent);
+        if (rel_pos) {
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          addDamageFloater(rel_pos[0], rel_pos[1], message);
+          message = '';
+        }
       }
       ent.floaters.push({
         start: engine.frame_timestamp,
@@ -3461,6 +3555,11 @@ export function addFloater(ent_id: EntityID, message: string | null, anim?: stri
     }
     if (ent.triggerAnimation && anim) {
       ent.triggerAnimation(anim);
+    }
+    if (anim === 'attack') {
+      let dss = (ent as unknown as EntityDrawableSprite).drawable_sprite_state;
+      dss.grow_at = engine.getFrameTimestamp();
+      dss.grow_time = 500;
     }
   }
 }
@@ -4401,6 +4500,32 @@ function onDisabledAction(): void {
   statusSet('onDisabledAction', 'Please wait for other players to take their turn').counter = 2500;
 }
 
+function addDamageFloater(relx: number, rely: number, msg: string): void {
+  damage_floaters.push({
+    start: engine.frame_timestamp,
+    msg,
+    relx,
+    rely,
+  });
+  damage_floaters.sort((a, b) => {
+    if (a.relx !== b.relx) {
+      return a.relx - b.relx;
+    }
+    return a.rely - b.rely;
+  });
+}
+
+function doWait(): void {
+  crawlerMyApplyBatchUpdate({
+    action_id: 'ready',
+    data_assignments: {
+      ready: true,
+    },
+    field: CrawlerController.PLAYER_MOVE_FIELD,
+  }, errorsToChat);
+  crawlerTurnBasedScheduleStep(1);
+}
+
 function doBackgroundTick(): void {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (!engine.stateActive(play) || !controller.canRun()) {
@@ -4594,15 +4719,20 @@ function playCrawl(): void {
     if (disabled_action) {
       onDisabledAction();
     } else {
-      crawlerMyApplyBatchUpdate({
-        action_id: 'ready',
-        data_assignments: {
-          ready: true,
-        },
-        field: CrawlerController.PLAYER_MOVE_FIELD,
-      }, errorsToChat);
-      crawlerTurnBasedScheduleStep(1);
+      doWait();
     }
+  }
+
+  if (engine.DEBUG && keyUpEdge(KEYS.F)) {
+    addDamageFloater(1, 2, '1,2');
+    addDamageFloater(1, 1, '1,1');
+    addDamageFloater(1, 0, '1,0');
+    addDamageFloater(0, 2, '0,2');
+    addDamageFloater(0, 1, '0,1');
+    addDamageFloater(0, 0, '0,0');
+    addDamageFloater(-1, 2, '-1,2');
+    addDamageFloater(-1, 1, '-1,1');
+    addDamageFloater(-1, 0, '-1,0');
   }
 
   controller.doPlayerMotion({

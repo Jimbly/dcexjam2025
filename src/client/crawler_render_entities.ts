@@ -237,7 +237,7 @@ export function drawableSpriteDrawSub(this: EntityDrawableSprite, param: EntityD
     let t = getFrameTimestamp() - grow_at;
     if (t < grow_time) {
       t /= grow_time;
-      scale *= 1 + easeIn(1 - t, 2) * 0.5;
+      scale *= 1 + easeIn(1 - t, 2) * 0.25;
     }
   }
   let force_alpha = false;
@@ -597,16 +597,6 @@ export function crawlerRenderEntities(ent_set: SplitSet): void {
     draw_pos_temp[1] = pos[1];
     draw_pos_temp[2] = level.getInterpolatedHeight(pos[0], pos[1]);
 
-    ent.draw({
-      dt,
-      game_state,
-      pos: draw_pos_temp,
-      zoffs,
-      angle: pos[2],
-      color: color_temp,
-      use_near: ent_set === SPLIT_NEAR,
-    });
-
     if (ent.floaters && !crawlerRenderViewportGet().rot) {
       // TODO: do floaters in 3D for all entities
       let is_in_front = ent.id === ent_in_front;
@@ -628,7 +618,7 @@ export function crawlerRenderEntities(ent_set: SplitSet): void {
         if (elapsed < BLINK_TIME) {
           blink = min(blink, elapsed / BLINK_TIME);
         }
-        if (is_in_front && !crawlerController().controllerIsAnimating()) {
+        if (is_in_front && !crawlerController().controllerIsAnimating() && floater.msg) {
           let { x, y, w, h } = crawlerRenderViewportGet();
           let float = easeOut(elapsed / (FLOATER_TIME + FLOATER_FADE), 2) * 20;
           font.drawSizedAlignedWrapped(fontStyleAlpha(style_text, alpha),
@@ -643,6 +633,17 @@ export function crawlerRenderEntities(ent_set: SplitSet): void {
         v3set(color_temp, blink, blink, blink);
       }
     }
+
+    ent.draw({
+      dt,
+      game_state,
+      pos: draw_pos_temp,
+      zoffs,
+      angle: pos[2],
+      color: color_temp,
+      use_near: ent_set === SPLIT_NEAR,
+    });
+
   }
 
   opaqueDraw();

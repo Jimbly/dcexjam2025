@@ -23,11 +23,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 TODO
 * balance and level design
 * F11 for fullscreen hint somewhere
-
-* damage floaters in 3D at a distance and/or giant particle effects whenever anyone gets hit
-* animate/grow critters on attack / hit
-* use floaters to show player numbers on floors
-* player names over heads
 * make dude's books more clear
 * choose player cloak color in customization (just 6 hard-coded?); maybe hat color based on equipped hat?
 * golden hat reward for final level (if it shows on players)
@@ -40,6 +35,8 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
+* player names over heads
+* use floaters to show player numbers on floors
 * wider hats/books at least in inventory
 * dither instead of blur for menuUp()
 * fix single entity force_kick pingponging
