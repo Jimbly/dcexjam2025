@@ -14,7 +14,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if I am the only player, execute a tick before allowing the action
 
 **TODO**
-* if you go to wrong stairs first, give message
 * start with 2 equip slots?  makes more sense, but, more than 3 isn't useful currently?
   * relatedly, maybe just the loot drops is a better way to limit # of equipped things? I'm not getting L4s until I'm L4 anyway...
 * more than 3 spell slots not currently useful - need other abilities, or should just cap at level 5 for jam game? just hand-craft 5 repeatable floors?

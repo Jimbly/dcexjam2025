@@ -8,6 +8,7 @@ import { EntityPredictionID } from 'glov/client/entity_base_client';
 import {
   ALIGN,
   Font,
+  FontStyle,
   fontStyle,
   fontStyleAlpha,
   fontStyleColored,
@@ -1833,9 +1834,9 @@ class FloorListAction extends UIAction {
     y = 0;
 
     y += 4;
-    function titleLine(text: string): void {
+    function titleLine(text: string, style?: FontStyle): void {
       title_font.draw({
-        style: style_inventory,
+        style: style || style_inventory,
         size: TITLE_FONT_H,
         x: 0, y, z, w: FLOORLIST_W,
         align: ALIGN.HCENTER,
@@ -2045,25 +2046,53 @@ class FloorListAction extends UIAction {
       }
     }
 
-    titleLine('Start Fresh');
-    x = floor((FLOORLIST_W - button_w * 3 - FLOORLIST_PAD * 2)/2);
-    for (let ii = this.base_floor; ii < this.base_floor + 3; ++ii) {
-      if (buttonText({
-        x, y, z,
-        w: button_w,
-        h: FLOORLIST_BUTTON_H2,
+    let skip_all = false;
+    if (this.base_floor > my_level + 1) {
+      titleLine('Please Use a Different Entrance', style_mp_cost_over);
+
+      y += font.draw({
+        style: style_inventory,
+        x: 0, y, z, w: FLOORLIST_W,
         align: ALIGN.HWRAP | ALIGN.HCENTER,
-        markdown: true,
-        text: `NEW Floor\nLevel [c=${ii > my_level ? 'red' : 'level'}]${ii}[/c]`,
-        disabled: disabled_floors[ii],
-        disabled_focusable: true,
-        tooltip: disabled_floors[ii] ? 'Please join an active level below instead.' : undefined,
-      })) {
-        allocateNewFloor(ii);
+        text: `Warning: Your player level (${my_level}) is too low for the floor` +
+          ` levels accessible from this door (${this.base_floor}+).`,
+      });
+      y += FONT_HEIGHT;
+      titleLine('Start Fresh');
+      y += font.draw({
+        style: style_inventory,
+        x: 0, y, z, w: FLOORLIST_W,
+        align: ALIGN.HWRAP | ALIGN.HCENTER,
+        text: 'Please use a different entrance to start a fresh floor.',
+      });
+      y += FONT_HEIGHT;
+
+      if (my_level === 1) {
+        skip_all = true;
       }
-      x += button_w + FLOORLIST_PAD;
     }
-    y += FLOORLIST_BUTTON_H2 + FLOORLIST_PAD;
+
+    if (!skip_all) {
+      titleLine('Start Fresh');
+      x = floor((FLOORLIST_W - button_w * 3 - FLOORLIST_PAD * 2)/2);
+      for (let ii = this.base_floor; ii < this.base_floor + 3; ++ii) {
+        if (buttonText({
+          x, y, z,
+          w: button_w,
+          h: FLOORLIST_BUTTON_H2,
+          align: ALIGN.HWRAP | ALIGN.HCENTER,
+          markdown: true,
+          text: `NEW Floor\nLevel [c=${ii > my_level ? 'red' : 'level'}]${ii}[/c]`,
+          disabled: disabled_floors[ii],
+          disabled_focusable: true,
+          tooltip: disabled_floors[ii] ? 'Please join an active level below instead.' : undefined,
+        })) {
+          allocateNewFloor(ii);
+        }
+        x += button_w + FLOORLIST_PAD;
+      }
+      y += FLOORLIST_BUTTON_H2 + FLOORLIST_PAD;
+    }
 
     titleLine('Join Others');
     if (options.length) {
