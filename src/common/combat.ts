@@ -123,7 +123,7 @@ export function rewardLevel(my_level: number, enemy_level: number, highest_ally_
 }
 
 export function maxMP(level: number): number {
-  return 6 + (level - 1) * 2;
+  return 5 + (level - 1) * 2;
 }
 
 export function maxHP(player_level: number): number {
@@ -179,36 +179,37 @@ const BOOKS: BookDef[] = [{
 export function skillDetails(item: Item): SkillDetails {
   assert(item.type === 'book');
   let { subtype, level } = item;
+  --level;
   let mp_cost;
-  let dam;
+  let dam = 1;
+  let damage_per_turn = level === 9 ? 10 : (20 + level)/3; // 6.667+0.333*level
   switch (subtype) {
     case 0:
-      mp_cost = 2 + level;
-      dam = 5 + 3 * level;
+      mp_cost = 2;
       break;
     case 1:
-      mp_cost = 3 + level;
-      dam = 7 + floor(3.34 * level); // not sure about this
+      mp_cost = 3;
       break;
     case 2:
-      mp_cost = 5 + level;
-      dam = 10 + 4 * level;
+      mp_cost = 5;
       break;
-    case 3:
-      mp_cost = 3 + level;
-      dam = 5 + 3 * level;
+    case 3: // fire blast
+      mp_cost = 3;
+      dam = 0.8;
       break;
     case 4: // earth diag - hard to use
-      mp_cost = 3 + level;
-      dam = 7 + 3 * level;
+      mp_cost = 3;
+      dam = 0.9;
       break;
     case 5:
-      mp_cost = 3 + level;
-      dam = 5 + 3 * level;
+      mp_cost = 3;
+      dam = 0.666;
       break;
     default:
       assert(false);
   }
+  mp_cost = floor(mp_cost + level/3);
+  dam = round((damage_per_turn * (mp_cost + 1) - (mp_cost + 1) * BASIC_DAMAGE) * dam);
   return {
     mp_cost,
     element: ELEMENT[BOOKS[subtype].element],
@@ -272,3 +273,17 @@ export function skillAttackDamage(skill_details: SkillDetails, player: StatsData
     element: skill_details.element,
   }, monster);
 }
+
+// for (let ii = 0; ii < 6; ++ii) {
+//   let list = [BOOKS[ii].name];
+//   for (let jj = 1; jj <= 9; ++jj) {
+//     let sd = skillDetails({
+//       type: 'book',
+//       subtype: ii,
+//       level: jj,
+//       count: 1,
+//     });
+//     list.push(`L${jj} ${sd.mp_cost} for ${sd.dam + BASIC_DAMAGE}`);
+//   }
+//   console.log(list.join('\n'));
+// }

@@ -2,15 +2,17 @@ Combat/skills - Fire / Earth(Leaf) / Ice(Water)
 Basic = 5dam, +1MP
 MP = 5 + 2/L
 Books
-L1 S0 2MP Basic+5dam = 6.67/T Earth
-L1 S1 3MP Basic+7dam = 6.75/T Ice
-L1 S2 5MP Basic+10dam = 6.67/T Fire
-L2 S0 3MP Basic+8dam = 7/T Earth
-L2 S1 4MP Basic+10dam = 7/T Ice
-L2 S2 6MP Basic+14dam = 7/T Fire
-L3 S0 4MP Basic+11dam = 7.2/T Earth
-L3 S1 5MP Basic+13dam = 7.16/T Ice
-L3 S2 7MP Basic+18dam = 7.25/T Fire
+L1 S0 2MP Basic+5dam = 6.67/T Fire
+L2a   2MP Basic+6dam = 7/T
+L3a   3MP Basic+9dam = 7.25/T Fire or 10d = 7.5/T
+L2 S0 3MP Basic+8dam = 7/T Fire
+L3 S0 4MP Basic+11dam = 7.2/T Fire
+L1 S1 3MP Basic+7dam = 6.75/T Earth
+L2 S1 4MP Basic+10dam = 7/T Earth
+L3 S1 5MP Basic+13dam = 7.16/T Earth
+L1 S2 5MP Basic+10dam = 6.67/T Ice
+L2 S2 6MP Basic+14dam = 7/T Ice
+L3 S2 7MP Basic+18dam = 7.25/T Ice
 Also want range=2 attacks? need particles and to change hunt/door behavior
 
 Healing from potions, which cost money (OMP -> fewer potions used)
