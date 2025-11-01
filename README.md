@@ -16,7 +16,8 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 **Balance TODO**
 
 TODO
-* balance and level design
+* level design
+  * visual pass on town and tower with 3 entrances
 * F11 for fullscreen hint somewhere
 * make dude's books more clear
 * choose player cloak color in customization (just 6 hard-coded?); maybe hat color based on equipped hat?
