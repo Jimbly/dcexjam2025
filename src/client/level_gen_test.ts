@@ -75,15 +75,17 @@ export function levelGenTest(game_state: CrawlerState): boolean {
   param('w', 'w', 11, 100, round);
   param('h', 'h', 11, 100, round);
   param('rooms', 'max_rooms', 1, 500, round);
+  param('var_rooms', 'var_rooms', 0, 20, round);
+  // param('secrets', 'secrets', 0, 10, round);
   for (let key in default_gen_params_brogue.odds) {
     param(key, `odds.${key}`, 0, 10, round);
   }
   param('hallway', 'hallway_chance', 0, 1, hundreds);
-  param('closets', 'closets', 0, 100, round);
+  // param('closets', 'closets', 0, 100, round);
   param('passage', 'passageway_chance', 0, 1, hundreds);
-  param('shops', 'shops', 0, 3, round);
-  param('min pits', 'pits_min', 0, 20, round);
-  param('+ pits rnd', 'pits_random', 0, 20, round);
+  param('mimics', 'shops', 0, 6, round);
+  // param('min pits', 'pits_min', 0, 20, round);
+  // param('+ pits rnd', 'pits_random', 0, 20, round);
   param('min enemies', 'enemies_min', 0, 20, round);
   param('+ enemies rnd', 'enemies_random', 0, 20, round);
 

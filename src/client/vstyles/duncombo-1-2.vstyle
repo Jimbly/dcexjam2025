@@ -30,7 +30,9 @@ wall_swaps:
   stairs_out: dun1_stairs_in
   # floorswitch: dun1_floorswitch
   var_door: dun2_door
-  var_solid1: dun2_solid1
+  var_solid: dun2_solid1
   var_solid2: dun2_solid2
-  var_window: dun2_window #unused
-  var_arch: dun2_arch #unused
+  var_stairs_in: dun2_stairs_in
+  var_stairs_out: dun2_stairs_in
+  var_window: dun2_window # probably unused?
+  var_arch: dun2_arch # probably unused?

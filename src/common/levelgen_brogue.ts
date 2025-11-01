@@ -3,12 +3,15 @@
 enum WallType {
   OPEN='open',
   DOOR='door',
-  SOLID='solid',
+  SOLID1='solid',
+  SOLID2='solid2',
   SECRET_DOOR='secret_door',
+  ARCH='arch',
 }
 
 enum CellType {
   OPEN='open',
+  VAROPEN='var_open',
   SOLID='solid',
   PIT='pit',
   STAIRS_IN='stairs_in',
@@ -24,6 +27,7 @@ export type GenParamsBrogue = {
   w: number;
   h: number;
   max_rooms: number;
+  var_rooms: number;
   shops: number;
   shop_cell_ids: string[];
   wall_ids: Record<WallType, string>;
@@ -44,29 +48,33 @@ export type GenParamsWrapBrogue = {
 
 export const default_gen_params_brogue: GenParamsBrogue = {
   odds: {
-    small_rect: 1,
-    organic_small: 1,
-    organic_large: 0,
-    tetronimo: 1,
+    small_rect: 0,
+    organic_small: 2,
+    organic_large: 1,
+    tetronimo: 2,
     rect2: 1,
-    circle: 1,
+    circle: 2,
   },
   hallway_chance: 0.95,
   closets: 0,
-  secrets: 4,
+  secrets: 0,
   w: 16,
   h: 16,
   max_rooms: 25,
-  shops: 0,
+  var_rooms: 4,
+  shops: 2,
   shop_cell_ids: ['shop_1', 'shop_2', 'shop_3'],
   wall_ids: {
     [WallType.OPEN]: 'open',
     [WallType.DOOR]: 'door',
-    [WallType.SOLID]: 'solid',
+    [WallType.SOLID1]: 'solid',
+    [WallType.SOLID2]: 'solid2',
     [WallType.SECRET_DOOR]: 'secret_door',
+    [WallType.ARCH]: 'arch',
   },
   cell_ids: {
     [CellType.OPEN]: 'open',
+    [CellType.VAROPEN]: 'var_open',
     [CellType.SOLID]: 'solid',
     [CellType.PIT]: 'pit',
     [CellType.STAIRS_IN]: 'stairs_in',
@@ -87,6 +95,7 @@ import {
   shuffleArray,
 } from 'glov/common/rand_alea';
 import { ridx } from 'glov/common/util';
+import { JSVec2 } from 'glov/common/vmath';
 import {
   CellDesc,
   crawlerGetCellDesc,
@@ -129,6 +138,7 @@ type Room = number[] & {
   has_exit?: boolean;
   secret?: boolean;
   adj_secret?: number;
+  variant_disallowed?: boolean;
 };
 
 // 0 is not part of room (solid), >=1 is part of room (open)
@@ -581,6 +591,7 @@ function generateRoom(rand: Rand, gen_params: GenParamsBrogue, general_progress:
 type PrivateGenData = {
   work: Room;
   farthest_room: RoomID;
+  rooms: Room[];
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -604,7 +615,7 @@ function descsFromParams(params: GenParamsBrogue) {
 }
 
 function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBrogue): CrawlerLevel {
-  let { w, h, max_rooms, passageway_chance, shops, closets, secrets } = params;
+  let { w, h, max_rooms, var_rooms, passageway_chance, shops, closets, secrets } = params;
   let rand = randCreate(mashString(seed));
   let last_room_id = 0;
   let work = roomTempBuffered(w, h);
@@ -792,6 +803,10 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
   }
   console.log(`Placed ${num_closets} closets`);
 
+  function solid(): WallType {
+    return rand.range(3) ? WallType.SOLID1 : WallType.SOLID2;
+  }
+
   // Generate walls between all rooms
   let wall_segments = [];
   for (let yy = 0; yy <= h; ++yy) {
@@ -799,7 +814,7 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
       let above = work[xx + 1 + yy * work.w];
       let below = work[xx + 1 + (yy + 1) * work.w];
       if (above !== below && hwalls[yy*w + xx].open_vis) {
-        hwalls[yy*w + xx] = wall_descs[WallType.SOLID];
+        hwalls[yy*w + xx] = wall_descs[solid()];
         wall_segments.push([xx,yy,SOUTH]);
       }
     }
@@ -809,7 +824,7 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
       let left = work[xx + (yy + 1) * work.w];
       let right = work[xx + 1 + (yy + 1) * work.w];
       if (left !== right && vwalls[xx*h + yy].open_vis) {
-        vwalls[xx*h + yy] = wall_descs[WallType.SOLID];
+        vwalls[xx*h + yy] = wall_descs[solid()];
         wall_segments.push([xx,yy,WEST]);
       }
     }
@@ -925,7 +940,7 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
   }
   rooms[farthest_room].has_exit = true;
 
-  // Convert all but a couple secret rooms into closets
+  // Convert some closets into secret rooms
   closet_rooms = closet_rooms.filter((a) => {
     // Only potentially keep those that are still leaves
     let room = rooms[a];
@@ -956,6 +971,7 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
     console.log(`Kept ${Object.keys(keep).length} secret rooms`);
   }
 
+  // DCJAM: shops as mimic loot rooms
   // Add shops (and other interesting things?)
   //   Should these be generalized as engines?  In practice, we want shops to move
   //   in after clearing out enemies and engines?
@@ -968,10 +984,8 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
       continue;
     }
     let priority = 0;
-    if (room.size > 4) {
+    if (room.size < 4) {
       priority -= 100;
-    } else if (room.size > 1) {
-      priority += 100;
     }
     priority += max(100 - room_dist[1][ii], 0);
     priority += rand.random();
@@ -981,15 +995,19 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
   let room_tiles: Partial<Record<RoomID, CellDesc>> = {};
   let shop_opts = params.shop_cell_ids.slice(0);
   shuffleArray(rand, shop_opts);
-  for (let ii = 0; ii < shops; ++ii) {
-    for (let jj = 0; jj < shop_opts.length && leafs.length; ++jj) {
-      let tile = shop_opts[jj];
-      let room_id = leafs.pop()![1];
-      rooms[room_id].need_doors = true;
-      room_tiles[room_id] = crawlerGetCellDesc(tile);
-    }
+  for (let ii = 0; ii < shops && leafs.length; ++ii) {
+    let room_id = leafs.pop()![1];
+    let room = rooms[room_id];
+    room.need_doors = true;
+    room.secret = true;
+    let door = room.doors![0];
+    door[2] = WallType.SECRET_DOOR;
+    room.variant_disallowed = true;
+    let adjacent_room = rooms[work[door[0] + door[1] * work.w]];
+    assert(adjacent_room);
+    assert(adjacent_room !== room);
+    adjacent_room.variant_disallowed = true;
   }
-
 
   function numWallsAtCorner(cx: number, cy: number): number {
     cx--;
@@ -1015,7 +1033,8 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
     let room = rooms[ii];
     if (room.doors) {
       for (let kk = 0; kk < room.doors.length; ++kk) {
-        let [doorx, doory, tile] = room.doors[kk];
+        let door = room.doors[kk];
+        let [doorx, doory, tile] = door;
         tile = tile || WallType.DOOR;
         //let cell = cells[doorx + doory * w];
         let adjacent_room = rooms[work[doorx + doory * work.w]];
@@ -1055,8 +1074,11 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
           }
           if (ok) {
             new_wall = WallType.OPEN;
+            room.variant_disallowed = true;
+            adjacent_room.variant_disallowed = true;
           }
         }
+        door[2] = new_wall;
         let new_wall_desc = wall_descs[new_wall];
         if (dir === EAST) {
           vwalls[(nx-1)*h + ny-1] = new_wall_desc;
@@ -1086,6 +1108,7 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
       }
     }
   }
+
   for (let ii = 1; ii < rooms.length; ++ii) {
     // let room = rooms[ii];
     // DEBUG: Visualize door options
@@ -1110,10 +1133,62 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
     //   }
     // }
   }
+  // DEBUG: Visualize leaf rooms
+  // for (let yy = 0; yy < h; ++yy) {
+  //   for (let xx = 0; xx < w; ++xx) {
+  //     let cell = cells[xx + yy * w];
+  //     let room_id = work[xx + 1 + (yy + 1) * work.w];
+  //     if (room_id) {
+  //       let room = rooms[room_id];
+  //       if (room.adj.length === 1) {
+  //         cell.events = [{ id: 'test', param: '' }];
+  //       }
+  //     }
+  //   }
+  // }
 
   level.fillFromHVWalls(hwalls, vwalls);
 
+  // Convert some rooms to variant-styled
+  let var_open_cell = crawlerGetCellDesc('var_open');
+  let variant_rooms = [];
+  for (let ii = 1; ii < rooms.length; ++ii) {
+    let room = rooms[ii];
+    if (room.variant_disallowed) {
+      continue;
+    }
+    variant_rooms.push(room);
+  }
+  shuffleArray(variant_rooms, rand);
+  const desired_size = 6;
+  variant_rooms.sort((a, b) => {
+    return abs(a.size! - desired_size) - abs(b.size! - desired_size);
+  });
+  let room_is_variant: Partial<Record<number, true>> = {};
+  for (let ii = 0; ii < min(variant_rooms.length, var_rooms); ++ii) {
+    let room = variant_rooms[ii];
+    room_is_variant[room.id] = true;
+    room_tiles[room.id] = var_open_cell;
+  }
+  for (let yy = 0; yy < h; ++yy) {
+    for (let xx = 0; xx < w; ++xx) {
+      let cell = cells[xx + yy * w];
+      let room_id = work[xx + 1 + (yy + 1) * work.w];
+      if (!room_id || !room_is_variant[room_id]) {
+        continue;
+      }
+      if (cell.desc === cell_descs[CellType.OPEN]) {
+        cell.desc = var_open_cell;
+      }
+      for (let ii = 0; ii < cell.walls.length; ++ii) {
+        let wall_desc = cell.walls[ii];
+        cell.walls[ii] = crawlerGetWallDesc(`var_${wall_desc.id}`);
+      }
+    }
+  }
+
   let gen_data: PrivateGenData = {
+    rooms,
     work,
     farthest_room,
   };
@@ -1125,11 +1200,15 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
 function connectLevelBrogue(generator: LevelGenerator, floor_id: number, seed: string, params: GenParamsBrogue): void {
   let level = generator.getLevelGenerated(floor_id);
   let { w, h, cells } = level;
-  let { work, farthest_room } = level.gen_data as PrivateGenData;
+  let { work, farthest_room, rooms } = level.gen_data as PrivateGenData;
   let rand = randCreate(mashString(seed));
   let { enemies_min, enemies_random, pits_min, pits_random } = params;
 
   let { wall_descs, cell_descs } = descsFromParams(params);
+
+  function getRoomID(xx: number, yy: number): number {
+    return work[xx+1 + (yy+1) * work.w];
+  }
 
   // Place an entrance in room 1
   function getStairPos(room_id: RoomID): [number, number] {
@@ -1140,7 +1219,9 @@ function connectLevelBrogue(generator: LevelGenerator, floor_id: number, seed: s
       outer:
       for (let xx = 0; xx < w; ++xx) {
         let cell = cells[xx + yy * w];
-        if (cell.desc !== cell_descs[CellType.OPEN] || work[xx+1 + (yy+1) * work.w] !== room_id) {
+        if (cell.desc !== cell_descs[CellType.OPEN] && cell.desc !== cell_descs[CellType.VAROPEN] ||
+          getRoomID(xx, yy) !== room_id
+        ) {
           // something special, or solid, or not the right room
           continue;
         }
@@ -1192,6 +1273,9 @@ function connectLevelBrogue(generator: LevelGenerator, floor_id: number, seed: s
     }
   }
 
+  let initial_entities = [];
+  let no_monsters: Partial<Record<number, true>> = {};
+
   function placeStair(
     pair: readonly [number, number],
     cell_tile: CellType,
@@ -1206,16 +1290,16 @@ function connectLevelBrogue(generator: LevelGenerator, floor_id: number, seed: s
     }
     assert(opens.length);
     let door = rand.range(opens.length);
-    let ret = opens[door];
+    let rot = opens[door];
     if (try_push_back) {
-      let back_dir = (ret + 2) % 4;
+      let back_dir = (rot + 2) % 4;
       // Can we push it back into the wall instead?
       let back_pos = [pair[0] + DX[back_dir], pair[1] + DY[back_dir]] as const;
       let back = level.getCell(back_pos[0], back_pos[1]);
       if (back && !back.desc.open_vis) {
         // Open it up, then spawn it back one
         level.setCell(back_pos[0], back_pos[1], cell_descs[CellType.OPEN]);
-        level.setWall(back_pos[0], back_pos[1], ret, wall_descs[WallType.OPEN]);
+        level.setWall(back_pos[0], back_pos[1], rot, wall_descs[WallType.OPEN]);
         return placeStair(back_pos, cell_tile, false);
       }
     }
@@ -1224,13 +1308,29 @@ function connectLevelBrogue(generator: LevelGenerator, floor_id: number, seed: s
     assert(cell_desc.advertised_wall_desc);
     level.setCell(pair[0], pair[1], cell_desc);
     addDefaultEvents(pair[0], pair[1], cell_desc);
-    level.setWall(pair[0], pair[1], ret, cell_desc.advertised_wall_desc);
+    level.setWall(pair[0], pair[1], rot, cell_desc.advertised_wall_desc);
     ridx(opens, door);
     for (let ii = 0; ii < opens.length; ++ii) {
       let dir = opens[ii];
-      level.setWall(pair[0], pair[1], dir, wall_descs[WallType.SOLID]);
+      level.setWall(pair[0], pair[1], dir, wall_descs[WallType.SOLID1]);
     }
-    return [pair[0], pair[1], ret];
+    {
+      let xx = pair[0] + DX[rot];
+      let yy = pair[1] + DY[rot];
+      let next_cell = level.getCell(xx, yy);
+      assert(next_cell);
+      no_monsters[xx + yy * w] = true;
+      if (cell_tile === CellType.STAIRS_OUT) {
+        initial_entities.push({
+          type: 'enemy-boss',
+          pos: [xx, yy, 0],
+        });
+      } else {
+        next_cell.events = next_cell.events || [];
+        next_cell.events.push({ id: 'noai', param: '' });
+      }
+    }
+    return [pair[0], pair[1], rot];
   }
   // TODO: use cell_desc.special_pos to populate level.special_pos
   level.special_pos.stairs_in = placeStair(getStairPos(1),
@@ -1243,8 +1343,12 @@ function connectLevelBrogue(generator: LevelGenerator, floor_id: number, seed: s
   let open_cells = [];
   for (let ii = 0; ii < cells.length; ++ii) {
     let cell = cells[ii];
-    if (cell.desc === cell_descs[CellType.OPEN]) {
-      open_cells.push(ii);
+    if (cell.desc === cell_descs[CellType.OPEN] && !cell.events && !no_monsters[ii]) {
+      let room_id = getRoomID(ii % w, (ii - (ii % w)) / w);
+      let room = rooms[room_id];
+      if (room && !room.secret) {
+        open_cells.push(ii);
+      }
     }
   }
 
@@ -1263,7 +1367,6 @@ function connectLevelBrogue(generator: LevelGenerator, floor_id: number, seed: s
 
   // Place monsters
   let num_enemies = enemies_min + rand.range(enemies_random);
-  let initial_entities = [];
   for (let ii = 0; ii < num_enemies && open_cells.length; ++ii) {
     let idx = rand.range(open_cells.length);
     let pos = open_cells[idx];
@@ -1276,6 +1379,49 @@ function connectLevelBrogue(generator: LevelGenerator, floor_id: number, seed: s
       pos: [xx,yy,0],
     });
   }
+
+  // Place mimics
+  for (let ii = 1; ii < rooms.length; ++ii) {
+    let room = rooms[ii];
+    if (!room.secret) {
+      continue;
+    }
+    let room_id = room.id;
+    assert(room.doors && room.doors.length === 1);
+    let door = room.doors[0];
+    // find location farthest from the door
+    let todo: JSVec2[] = [];
+    let done: Record<number, true> = {};
+    function push(x: number, y: number): void {
+      for (let kk = 0; kk < 4; ++kk) {
+        let x2 = x + DX[kk];
+        let y2 = y + DY[kk];
+        let idx = x2 + y2 * w;
+        if (!done[idx]) {
+          done[idx] = true;
+          if (getRoomID(x2, y2) === room_id) {
+            todo.push([x2, y2]);
+          }
+        }
+      }
+    }
+    let [doorx, doory] = door;
+    push(doorx - 1, doory - 1);
+    let last: JSVec2 | undefined;
+    while (todo.length) {
+      last = todo.shift()!;
+      push(last[0], last[1]);
+    }
+    assert(last);
+    let [xx, yy] = last;
+    // let cell = cells[xx + yy * w];
+    // cell.events = [{ id: 'test', param: '' }];
+    initial_entities.push({
+      type: 'enemy-mimic',
+      pos: [xx,yy,0],
+    });
+  }
+
   level.initial_entities = initial_entities;
 }
 
