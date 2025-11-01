@@ -14,7 +14,21 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if I am the only player, execute a tick before allowing the action
 
 Levels!
-
+* template a dungeon vstyle (first one is swap-from-able)
+  * 2 combos: 2 solid, 1 secret, 1 floor, 1 ceiling, 0-2 passable details
+  * archways (1 style)
+  * doors (2 styles)
+  * stairs (1 style)
+* iterate on procgen
+  * larger secret rooms with mimics, no other monsters in them
+  * noai flag outside of stairs in
+  * boss monster
+  * fewer 2x2 rooms
+  * some doors are archways
+  * walls get random variations
+  * flag some rooms as style #2
+  * windows?
+* then: roll 10 of them and pick from them, or do full dynamic?
 
 TODO
 * choose player cloak color in customization (just 6 hard-coded?); maybe hat color based on equipped hat?

@@ -1871,7 +1871,7 @@
     {
       "id": "open",
       "walls": [
-        "door",
+        "arch",
         "open",
         "open",
         "open"
@@ -1882,7 +1882,7 @@
       "walls": [
         "open",
         "open",
-        "door",
+        "arch",
         "secret_door"
       ]
     },
@@ -2016,7 +2016,7 @@
       "id": "open",
       "walls": [
         "solid",
-        "solid",
+        "window",
         "open",
         "open"
       ]
@@ -2157,12 +2157,12 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail2",
       "walls": [
         "solid",
         "open",
         "solid",
-        "solid"
+        "window"
       ]
     },
     {
@@ -2301,11 +2301,11 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "open",
         "solid",
-        "solid",
+        "solid2",
         "open"
       ]
     },
@@ -2332,7 +2332,7 @@
       "events": [
         {
           "id": "town",
-          "param": "8"
+          "param": "0"
         }
       ]
     }
@@ -2524,7 +2524,7 @@
     }
   ],
   "state": {},
-  "vstyle": "dcex",
+  "vstyle": "dun1",
   "seed": "40472245",
   "props": {
     "floorlevel": "9"

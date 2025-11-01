@@ -1,0 +1,12 @@
+---
+open_move: false
+open_vis: true
+map_view_wall_frame_north: wall_horiz
+map_view_wall_frame_east: wall_vert
+map_view_wall_frame_priority: -1
+advertise_other_side: true
+visuals:
+  type: simple_wall
+  opts:
+    atlas: whitebox
+    tile: window
