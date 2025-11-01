@@ -103,7 +103,7 @@ import {
   shuffleArray,
 } from 'glov/common/rand_alea';
 import { ridx } from 'glov/common/util';
-import { JSVec2 } from 'glov/common/vmath';
+import { JSVec2, JSVec3 } from 'glov/common/vmath';
 import {
   CellDesc,
   crawlerGetCellDesc,
@@ -1386,13 +1386,19 @@ function connectLevelBrogue(generator: LevelGenerator, floor_id: number, seed: s
   level.special_pos.stairs_out = placeStair(getStairPos(farthest_room),
     CellType.STAIRS_OUT, true);
 
+  function dist(x: number, y: number, pos: JSVec3): number {
+    return abs(x - pos[0]) + abs(y - pos[1]);
+  }
+
   let open_cells = [];
   for (let ii = 0; ii < cells.length; ++ii) {
     let cell = cells[ii];
     if (cell.desc.procgen_replaceable && !cell.events && !cell.props && !no_monsters[ii]) {
-      let room_id = getRoomID(ii % w, (ii - (ii % w)) / w);
+      let xx = ii % w;
+      let yy = (ii - xx) / w;
+      let room_id = getRoomID(xx, yy);
       let room = rooms[room_id];
-      if (room && !room.secret) {
+      if (room && !room.secret && (!room.has_entrance || dist(xx, yy, level.special_pos.stairs_in) > 3)) {
         open_cells.push(ii);
       }
     }

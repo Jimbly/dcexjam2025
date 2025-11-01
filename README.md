@@ -15,7 +15,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 
 Levels!
 * procgen tweaks:
-  * no ememies within 2 squares of the entrance, please!
   * windows? especially to outer sky?
   * some doors are archways?  don't interp well through them currently...
 * set up combos:
