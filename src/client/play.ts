@@ -70,7 +70,7 @@ import {
   EntityID,
   TSMap,
 } from 'glov/common/types';
-import { capitalize, clamp, clone, easeOut, ridx, secondsToFriendlyString } from 'glov/common/util';
+import { capitalize, clamp, clone, easeOut, ridx, secondsToFriendlyString, sign } from 'glov/common/util';
 import { unreachable } from 'glov/common/verify';
 import {
   JSVec2,
@@ -95,6 +95,7 @@ import {
   skillAttackDamage,
   SkillDetails,
   skillDetails,
+  SkillTarget,
   xpForDeath,
   xpToLevelUp,
 } from '../common/combat';
@@ -106,6 +107,7 @@ import {
   dirFromDelta,
   DirType,
   DX,
+  DXY,
   DY,
   SOUTH,
   WEST,
@@ -264,11 +266,11 @@ const FRAME_HORIZ_SPLIT = 240;
 const FRAME_VERT_SPLIT = 276;
 const FRAME_LR_SPLIT = 288;
 
-const BATTLEZONE_RANGE = 1;
+const BATTLEZONE_RANGE = 2;
 const BATTLEZONE_SKIP_TIME = engine.DEBUG ? 1000 : 5000;
 const MAX_TICK_RANGE = 12; // if enemies are more steps than this from a player, use Manhattan dist instead
 const INVENTORY_GRID_W = 8;
-const INVENTORY_GRID_H = 6;
+const INVENTORY_GRID_H = 5;
 const INVENTORY_MAX_SIZE = Infinity; // INVENTORY_GRID_W * INVENTORY_GRID_H;
 const MAX_FLOOR_LEVEL = 9;
 
@@ -527,7 +529,7 @@ function inventoryIconDraw(param: {
   switch (item.type) {
     case 'book': {
       let skill_details = skillDetails(item);
-      let icon = `spell-${ELEMENT_NAME[skill_details.element]}`;
+      let icon = skill_details.icon;
       autoAtlas('ui', icon).draw(icon_param);
     } break;
     case 'hat': {
@@ -983,6 +985,13 @@ export function drawHatDude(x0: number, y0: number, z: number, scale: number, ha
   }
 }
 
+const TARGET_DESC: Record<SkillTarget, string> = {
+  front: 'an enemy [c=target]directly in front[/c] of you',
+  adjacent: '[c=target]1-4 enemies adjacent[/c] to you',
+  diagonal: '[c=target]1-4 enemies diagonal[/c] from you',
+  spear: 'the enemies in the [c=target]2 cells in front[/c] of you',
+};
+
 function itemInfo(item: Item, line: (text: string) => void): void {
   if (item.type === 'potion') {
     line(`Heals for ${POTION_HEAL_PORTION*100}% Max HP` +
@@ -993,7 +1002,8 @@ function itemInfo(item: Item, line: (text: string) => void): void {
     let basic_damage = basicAttackDamage(myEnt().data.stats, { defense: 0 } as StatsData);
     let elem_name = ELEMENT_NAME[skill_details.element];
     line(`Cost: [c=mp]${skill_details.mp_cost} MP[/c]\n` +
-        `Deals [c=dam${elem_name}]${skill_details.dam + basic_damage.dam} ${elem_name} damage[/c]`);
+        `Deals [c=dam${elem_name}]${skill_details.dam + basic_damage.dam} ${elem_name} damage[/c]\n` +
+        `To ${TARGET_DESC[skill_details.target]}`);
   } else if (item.type === 'hat') {
     let hat_details = hatDetails(item);
     let elem_name = ELEMENT_NAME[hat_details.element];
@@ -1533,11 +1543,19 @@ class InventoryMenuAction extends UIAction {
             });
             x += 24;
 
-            for (let dsubtype = 1; dsubtype <= 2; ++dsubtype) {
+            for (let dsub = 0; dsub < 2; ++dsub) {
+              let subtype;
+              if (dsub) {
+                // next element, same style
+                subtype = ((item.subtype + 1) % 3) + (item.subtype >= 3 ? 3 : 0);
+              } else {
+                // same element, different style
+                subtype = (item.subtype + 3) % 6;
+              }
               let target_item: Item = {
                 ...item,
                 level: item.level - 1,
-                subtype: (item.subtype + dsubtype) % 3,
+                subtype,
                 count: 0,
               };
               let target_idx = inventoryIndexForItemPickup(target_item);
@@ -3034,11 +3052,11 @@ function drawStatsOverViewport(): void {
       }
     }
     let float = easeOut(elapsed / (FLOATER_TIME + FLOATER_FADE), 2) * 20;
-    font.drawSizedAligned(fontStyleAlpha(style_text, alpha),
-      round(VIEWPORT_X0 + render_width * rp0),
+    font.drawSizedAlignedWrapped(fontStyleAlpha(style_text, alpha),
+      round(VIEWPORT_X0 + render_width * rp0) - 200,
       round(VIEWPORT_Y0 + render_height * rp[1] - float) - floater.yoffs * text_height, Z.FLOATERS + ii * 0.01,
-      text_height, ALIGN.HCENTER|ALIGN.VBOTTOM,
-      0, 0, floater.msg);
+      0, text_height, ALIGN.HCENTER|ALIGN.VBOTTOM,
+      400, 0, floater.msg);
   }
 }
 
@@ -3644,9 +3662,10 @@ function giveRewards(target_ent: Entity): void {
           loot_level++;
         }
       }
+      const type = random() < 0.5 ? 'book' : 'hat';
       loot.push({
-        type: random() < 0.5 ? 'book' : 'hat',
-        subtype: floor(random() * 3),
+        type,
+        subtype: floor(random() * (type === 'hat' ? 3 : 6)),
         level: loot_level,
         count: 1,
       });
@@ -3840,64 +3859,77 @@ function markActiveInCombat(): void {
   }
 }
 
-function doAttack(target_ent: Entity, action: Item | 'basic'): void {
-  let dam: number;
-  let style: string;
-  let target_stats = target_ent.data.stats;
+function doAttack(target_ents: Entity[], action: Item | 'basic'): void {
   let mp_cost = 0;
   let my_ent = myEnt();
-  let resist;
   let attacker_stats = my_ent.data.stats;
   if (action === 'basic') {
-    ({ dam, style, resist } = basicAttackDamage(attacker_stats, target_stats));
     mp_cost = -1;
     playUISound('basicattack');
   } else {
     let details = skillDetails(action);
-    ({ dam, style, resist } = skillAttackDamage(details, attacker_stats, target_stats));
     ({ mp_cost } = details);
     playUISound(`spell${ELEMENT_NAME[details.element]}`);
   }
+  let new_mp = clamp(my_ent.getData('stats.mp', 0) - mp_cost, 0, my_ent.maxMP());
 
-  if (dam > 0) {
-    target_ent.hit_by_us = true;
+  let any_damage = false;
+  for (let ii = 0; ii < target_ents.length; ++ii) {
+    let target_ent = target_ents[ii];
+    let target_stats = target_ent.data.stats;
+    let dam: number;
+    let style: string;
+    let resist;
+    if (action === 'basic') {
+      ({ dam, style, resist } = basicAttackDamage(attacker_stats, target_stats));
+    } else {
+      let details = skillDetails(action);
+      ({ dam, style, resist } = skillAttackDamage(details, attacker_stats, target_stats));
+    }
+
+    if (dam > 0) {
+      any_damage = true;
+      target_ent.hit_by_us = true;
+    }
+    let target_hp = target_ent.getData('stats.hp', 0);
+    let new_hp = max(0, target_hp - dam);
+    addFloater(target_ent.id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}` +
+      `${resist ? '\nRESIST!' : ''}`, new_hp ? '' : 'death');
+    let pred_ids: EntityPredictionID[] = [];
+    target_ent.predictedSet(pred_ids, 'stats.hp', new_hp);
+    assert.equal(pred_ids.length, 1);
+    let pred_id = pred_ids[0][1];
+    let payload: ActionAttackPayload = {
+      target_ent_id: target_ent.id,
+      type: style,
+      resist,
+      dam,
+      pred_id,
+      executor: myEntID(),
+    };
+    let is_last = ii === target_ents.length - 1;
+    crawlerMyApplyBatchUpdate({
+      action_id: 'attack',
+      payload,
+      data_assignments: is_last ? {
+        ready: true,
+        'stats.mp': new_mp,
+      } : {},
+      field: CrawlerController.PLAYER_MOVE_FIELD,
+    }, function (err, resp) {
+      if (err) {
+        target_ent.predictedClear(pred_id);
+        if (err === 'ERR_INVALID_ENT_ID') {
+          // already dead, silently ignore
+        } else {
+          getChatUI().addChat(`Error attacking: ${err}`, 'error');
+        }
+      }
+    });
+  }
+  if (any_damage) {
     markActiveInCombat();
   }
-  let target_hp = target_ent.getData('stats.hp', 0);
-  let new_hp = max(0, target_hp - dam);
-  addFloater(target_ent.id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}` +
-    `${resist ? '\nRESIST!' : ''}`, new_hp ? '' : 'death');
-  let pred_ids: EntityPredictionID[] = [];
-  target_ent.predictedSet(pred_ids, 'stats.hp', new_hp);
-  assert.equal(pred_ids.length, 1);
-  let pred_id = pred_ids[0][1];
-  let payload: ActionAttackPayload = {
-    target_ent_id: target_ent.id,
-    type: style,
-    resist,
-    dam,
-    pred_id,
-    executor: myEntID(),
-  };
-  let new_mp = clamp(my_ent.getData('stats.mp', 0) - mp_cost, 0, my_ent.maxMP());
-  crawlerMyApplyBatchUpdate({
-    action_id: 'attack',
-    payload,
-    data_assignments: {
-      ready: true,
-      'stats.mp': new_mp,
-    },
-    field: CrawlerController.PLAYER_MOVE_FIELD,
-  }, function (err, resp) {
-    if (err) {
-      target_ent.predictedClear(pred_id);
-      if (err === 'ERR_INVALID_ENT_ID') {
-        // already dead, silently ignore
-      } else {
-        getChatUI().addChat(`Error attacking: ${err}`, 'error');
-      }
-    }
-  });
   crawlerTurnBasedScheduleStep(250);
 }
 
@@ -3912,7 +3944,7 @@ function bumpEntityCallback(target_ent_id: EntityID): void {
   if (!target_ent || !target_ent.isAlive() || !me.isAlive()) {
     return;
   }
-  doAttack(target_ent, 'basic');
+  doAttack([target_ent], 'basic');
 }
 
 function numHealingPotions(): number {
@@ -4037,11 +4069,11 @@ const QUICKBAR_Y = 218;
 const color_disable_action = vec4(0,0,0,0.75);
 
 function drawQuickbarTooltip(action: Item | 'basic'): void {
-  let tooltip_x = VIEWPORT_X0 + 16;
-  let tooltip_h = 40;
+  let tooltip_x = VIEWPORT_X0 + 14;
+  let tooltip_h = 40 + FONT_HEIGHT;
   let tooltip_y0 = QUICKBAR_FRAME_Y - tooltip_h + 10;
   let tooltip_y = tooltip_y0;
-  let tooltip_w = render_width - 16 * 2;
+  let tooltip_w = render_width - 14 * 2;
 
   function line(text: string): void {
     tooltip_y += markdownAuto({
@@ -4100,6 +4132,63 @@ function drawQuickbarTooltip(action: Item | 'basic'): void {
   });
 }
 
+function targetsForAttack(target: SkillTarget): Entity[] {
+  let entity_manager = entityManager();
+  let my_pos = myEnt().getData<JSVec3>('pos')!;
+  let game_state = crawlerGameState();
+  let level = game_state.level!;
+  let script_api = crawlerScriptAPI();
+  if (!level) {
+    return [];
+  }
+  function visible(pos: JSVec3): boolean {
+    return level.simpleVisCheck(my_pos, pos, script_api);
+  }
+  function checker(sub: (dx: number, dy: number) => boolean, ent: Entity): boolean {
+    if (!ent.isEnemy() || !ent.isAlive()) {
+      return false;
+    }
+    let ent_pos = ent.getData<JSVec3>('pos')!;
+    let dx = ent_pos[0] - my_pos[0];
+    let dy = ent_pos[1] - my_pos[1];
+    if (!sub(dx, dy)) {
+      return false;
+    }
+    return visible(ent_pos);
+  }
+  switch (target) {
+    case 'front': {
+      let ent_in_front = crawlerEntInFront();
+      if (ent_in_front) {
+        let entities = entity_manager.entities;
+        let target_ent = entities[ent_in_front] || null;
+        if (target_ent && target_ent.isAlive()) {
+          return [target_ent];
+        }
+      }
+      return [];
+    }
+    case 'diagonal':
+      return entity_manager.entitiesFind(checker.bind(null, (dx: number, dy: number) => {
+        return abs(dx) === 1 && abs(dy) === 1;
+      }), true);
+    case 'adjacent':
+      return entity_manager.entitiesFind(checker.bind(null, (dx: number, dy: number) => {
+        return abs(dx) + abs(dy) === 1;
+      }), true);
+    case 'spear': {
+      let delta = DXY[my_pos[2]];
+      return entity_manager.entitiesFind(checker.bind(null, (dx: number, dy: number) => {
+        let dist = abs(dx) + abs(dy);
+        return sign(dx) === delta[0] && sign(dy) === delta[1] &&
+          dist > 0 && dist <= 2;
+      }), true);
+    }
+    default:
+      unreachable(target);
+  }
+  return [];
+}
 
 function doQuickbar(): void {
   let me = myEnt();
@@ -4112,16 +4201,7 @@ function doQuickbar(): void {
   if (!level || crawlerController().controllerIsAnimating(0.75)) {
     all_disabled = true;
   }
-  let can_attack = false;
-  let ent_in_front = crawlerEntInFront();
-  let target_ent: Entity | null = null;
-  if (ent_in_front && me.isAlive()) {
-    let entities = entityManager().entities;
-    target_ent = entities[ent_in_front] || null;
-    if (target_ent && target_ent.isAlive()) {
-      can_attack = true;
-    }
-  }
+  let can_attack_anything = me.isAlive();
 
   if (!canIssueAction()) {
     all_disabled = true;
@@ -4143,7 +4223,7 @@ function doQuickbar(): void {
       } else {
         action = books[item_slot];
         skill_details = skillDetails(action);
-        icon = `spell-${ELEMENT_NAME[skill_details.element]}`;
+        icon = skill_details.icon;
         if (item_slot >= floor_level) {
           disabled = true;
           disable_button = true;
@@ -4151,9 +4231,7 @@ function doQuickbar(): void {
       }
     }
     let is_attack = true;
-    if (is_attack && !can_attack) {
-      disabled = true;
-    }
+
     let button_param = {
       x: QUICKBAR_X + (BUTTON_W + 4) * (ii - 1),
       y: QUICKBAR_Y,
@@ -4215,6 +4293,15 @@ function doQuickbar(): void {
     }
 
     if (activate) {
+      let targets = targetsForAttack(skill_details?.target || 'front');
+      let can_attack = false;
+      if (can_attack_anything && targets.length) {
+        can_attack = true;
+      }
+      if (is_attack && !can_attack) {
+        disabled = true;
+      }
+
       if (!disabled) {
         if (is_attack) {
           if (action !== 'basic') {
@@ -4225,8 +4312,8 @@ function doQuickbar(): void {
               continue;
             }
           }
-          assert(target_ent);
-          doAttack(target_ent, action);
+          assert(targets.length);
+          doAttack(targets, action);
         }
       } else if (!canIssueAction()) {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -5034,7 +5121,7 @@ function playInitEarly(room: ClientChannelWorker): void {
   playInitShared(true);
 
   if (engine.DEBUG && false) {
-    cur_action = new InventoryMenuAction('trades');
+    cur_action = new InventoryMenuAction('upgrades');
     // cur_action = new FloorListAction(1);
   }
 }
@@ -5285,6 +5372,12 @@ export function playStartup(): void {
   markdownSetColorStyle('basicdam', fontStyle(style_mp_cost, {
     color: palette_font[PAL_WHITE],
     outline_color: palette_font[PAL_BLACK],
+  }));
+
+  markdownSetColorStyle('target', fontStyle(null, {
+    color: palette_font[PAL_WHITE],
+    outline_width,
+    outline_color: palette_font[PAL_BLACK - 1],
   }));
 
   let bg_tick_timer: ReturnType<typeof setTimeout> | null = null;

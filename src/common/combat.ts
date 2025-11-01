@@ -130,40 +130,91 @@ export function maxHP(player_level: number): number {
   return 50 + (player_level - 1) * 10;
 }
 
+export type SkillTarget = 'front' | 'adjacent' | 'spear' | 'diagonal';
 export type SkillDetails = {
   mp_cost: number;
   element: Element;
   dam: number;
+  target: SkillTarget;
+  icon: string;
 };
+type BookDef = {
+  element: ElementName;
+  name: string;
+  target: SkillTarget;
+  icon: string;
+};
+const BOOKS: BookDef[] = [{
+  name: 'Book of Fire',
+  element: 'fire',
+  target: 'front',
+  icon: 'spell-fire',
+}, {
+  name: 'Book of Earth',
+  element: 'earth',
+  target: 'front',
+  icon: 'spell-earth',
+}, {
+  name: 'Book of Ice',
+  element: 'ice',
+  target: 'front',
+  icon: 'spell-ice',
+}, {
+  name: 'Firefly',
+  element: 'fire',
+  target: 'adjacent',
+  icon: 'spell-fire2',
+}, {
+  name: 'Earthbound',
+  element: 'earth',
+  target: 'diagonal',
+  icon: 'spell-earth2',
+}, {
+  name: 'Snowpiercer',
+  element: 'ice',
+  target: 'spear',
+  icon: 'spell-ice2',
+}];
+
 export function skillDetails(item: Item): SkillDetails {
   assert(item.type === 'book');
   let { subtype, level } = item;
   let mp_cost;
-  let element: ElementName;
   let dam;
   switch (subtype) {
     case 0:
       mp_cost = 2 + level;
-      element = 'fire';
       dam = 5 + 3 * level;
       break;
     case 1:
       mp_cost = 3 + level;
-      element = 'earth';
       dam = 7 + floor(3.34 * level); // not sure about this
       break;
     case 2:
       mp_cost = 5 + level;
-      element = 'ice';
       dam = 10 + 4 * level;
+      break;
+    case 3:
+      mp_cost = 3 + level;
+      dam = 5 + 3 * level;
+      break;
+    case 4: // earth diag - hard to use
+      mp_cost = 3 + level;
+      dam = 7 + 3 * level;
+      break;
+    case 5:
+      mp_cost = 3 + level;
+      dam = 5 + 3 * level;
       break;
     default:
       assert(false);
   }
   return {
     mp_cost,
-    element: ELEMENT[element],
+    element: ELEMENT[BOOKS[subtype].element],
     dam,
+    target: BOOKS[subtype].target,
+    icon: BOOKS[subtype].icon,
   };
 }
 
@@ -201,8 +252,7 @@ export function itemName(item: Item): string {
     return 'Potion';
   }
   if (item.type === 'book') {
-    let skill_details = skillDetails(item);
-    return `L${item.level} Book of ${capitalize(ELEMENT_NAME[skill_details.element])}`;
+    return `L${item.level} ${BOOKS[item.subtype].name}`;
   }
   if (item.type === 'hat') {
     let hat_details = hatDetails(item);

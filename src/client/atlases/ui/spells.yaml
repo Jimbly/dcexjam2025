@@ -4,3 +4,6 @@ tiles:
   spell-fire: [1,0]
   spell-ice: [2,0]
   spell-earth: [0,1]
+  spell-fire2: [1,1]
+  spell-ice2: [2,1]
+  spell-earth2: [3,1]
