@@ -21,12 +21,14 @@ Levels!
   X fewer 2x1 rooms
   X walls get random variations
   X flag some rooms as style #2 (self-contained rooms with doors, (probably not window/archs), no secrets, stairs are fine
-  * add detail cells
+  X add detail cells
   * windows? especially to outer sky?
   * some doors are archways?  don't interp well through them currently...
+  * disallow rounded corner areas of map
 * then: roll 10 of them and pick from them, or do full dynamic?
 
 TODO
+* deploy to staging and itch
 * choose player cloak color in customization (just 6 hard-coded?); maybe hat color based on equipped hat?
 * golden hat reward for final level (if it shows on players)
 * fix 2 players or 1 player + 1 NPC on the same square to push in different directions

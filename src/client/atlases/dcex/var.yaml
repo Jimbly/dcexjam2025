@@ -8,7 +8,7 @@ tiles:
 
   var-door: [0, 1]
   # var-unused: [1, 1]
-  # var-stairs_in: [2, 1]
+  var-stairs_in: [2, 1]
   var-arch: [3, 1]
 
   var-detail1: [0, 2]

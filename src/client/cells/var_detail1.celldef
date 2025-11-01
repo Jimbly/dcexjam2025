@@ -2,6 +2,8 @@
 open_move: true
 open_vis: true
 default_wall: var_solid1
+procgen_replaceable: true
+# map_view_detail_frame: walkway
 visuals:
 - pass: bg
   type: simple_floor

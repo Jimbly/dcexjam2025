@@ -105,7 +105,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail2",
       "walls": [
         "open",
         "solid",
@@ -114,7 +114,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "solid",
         "open",
@@ -177,7 +177,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "solid",
         "door",
@@ -253,12 +253,9 @@
         "stairs_in",
         "solid2"
       ],
-      "events": [
-        {
-          "id": "noai",
-          "param": ""
-        }
-      ]
+      "props": {
+        "noai": "1"
+      }
     },
     {
       "id": "solid",
@@ -270,7 +267,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail2",
       "walls": [
         "open",
         "door",
@@ -351,7 +348,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "open",
         "solid2",
@@ -423,7 +420,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail2",
       "walls": [
         "solid2",
         "open",
@@ -486,7 +483,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "solid",
         "open",
@@ -657,7 +654,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "open",
         "open",
@@ -684,7 +681,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "open",
         "open",
@@ -783,7 +780,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "open",
         "solid2",
@@ -981,7 +978,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "open",
         "open",
@@ -999,7 +996,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "open",
         "open",
@@ -1035,7 +1032,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "solid2",
         "open",
@@ -1080,7 +1077,7 @@
       ]
     },
     {
-      "id": "var_open",
+      "id": "var_detail1",
       "walls": [
         "var_solid",
         "var_open",
@@ -1305,7 +1302,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "solid",
         "solid",
@@ -1743,7 +1740,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "solid",
         "open",
@@ -1887,7 +1884,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail1",
       "walls": [
         "solid",
         "open",
@@ -1968,7 +1965,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail2",
       "walls": [
         "open",
         "solid",
@@ -2085,7 +2082,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail2",
       "walls": [
         "open",
         "solid2",
@@ -2202,7 +2199,7 @@
       ]
     },
     {
-      "id": "open",
+      "id": "detail2",
       "walls": [
         "open",
         "solid",
@@ -2349,7 +2346,7 @@
     {
       "type": "enemy2",
       "pos": [
-        7,
+        8,
         0,
         0
       ]
@@ -2357,7 +2354,7 @@
     {
       "type": "enemy0",
       "pos": [
-        9,
+        15,
         13,
         0
       ]
@@ -2365,23 +2362,23 @@
     {
       "type": "enemy2",
       "pos": [
-        11,
-        5,
+        6,
+        6,
         0
       ]
     },
     {
       "type": "enemy0",
       "pos": [
-        9,
-        7,
+        4,
+        8,
         0
       ]
     },
     {
       "type": "enemy2",
       "pos": [
-        0,
+        5,
         14,
         0
       ]
@@ -2389,7 +2386,7 @@
     {
       "type": "enemy2",
       "pos": [
-        5,
+        11,
         4,
         0
       ]
@@ -2397,7 +2394,7 @@
     {
       "type": "enemy2",
       "pos": [
-        5,
+        11,
         12,
         0
       ]
@@ -2405,23 +2402,23 @@
     {
       "type": "enemy0",
       "pos": [
-        12,
-        3,
+        1,
+        4,
         0
       ]
     },
     {
       "type": "enemy2",
       "pos": [
-        13,
-        7,
+        11,
+        8,
         0
       ]
     },
     {
       "type": "enemy1",
       "pos": [
-        5,
+        12,
         10,
         0
       ]
@@ -2429,7 +2426,7 @@
     {
       "type": "enemy0",
       "pos": [
-        6,
+        12,
         4,
         0
       ]
@@ -2437,7 +2434,7 @@
     {
       "type": "enemy1",
       "pos": [
-        2,
+        9,
         12,
         0
       ]
@@ -2445,56 +2442,8 @@
     {
       "type": "enemy2",
       "pos": [
-        7,
-        11,
-        0
-      ]
-    },
-    {
-      "type": "enemy1",
-      "pos": [
-        5,
-        9,
-        0
-      ]
-    },
-    {
-      "type": "enemy2",
-      "pos": [
-        13,
-        15,
-        0
-      ]
-    },
-    {
-      "type": "enemy1",
-      "pos": [
-        12,
-        9,
-        0
-      ]
-    },
-    {
-      "type": "enemy1",
-      "pos": [
-        9,
         2,
-        0
-      ]
-    },
-    {
-      "type": "enemy0",
-      "pos": [
-        4,
-        9,
-        0
-      ]
-    },
-    {
-      "type": "enemy2",
-      "pos": [
-        11,
-        9,
+        12,
         0
       ]
     },
@@ -2502,6 +2451,54 @@
       "type": "enemy1",
       "pos": [
         1,
+        10,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        8,
+        6,
+        0
+      ]
+    },
+    {
+      "type": "enemy1",
+      "pos": [
+        7,
+        10,
+        0
+      ]
+    },
+    {
+      "type": "enemy1",
+      "pos": [
+        12,
+        2,
+        0
+      ]
+    },
+    {
+      "type": "enemy0",
+      "pos": [
+        15,
+        14,
+        0
+      ]
+    },
+    {
+      "type": "enemy2",
+      "pos": [
+        6,
+        10,
+        0
+      ]
+    },
+    {
+      "type": "enemy1",
+      "pos": [
+        7,
         3,
         0
       ]
@@ -2526,14 +2523,14 @@
       "type": "enemy-mimic",
       "pos": [
         15,
-        5,
+        4,
         0
       ]
     }
   ],
   "state": {},
   "vstyle": "dcex",
-  "seed": "71075864",
+  "seed": "17193365",
   "props": {},
   "paths": {}
 }

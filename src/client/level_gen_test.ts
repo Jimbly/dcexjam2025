@@ -84,6 +84,8 @@ export function levelGenTest(game_state: CrawlerState): boolean {
   // param('closets', 'closets', 0, 100, round);
   param('passage', 'passageway_chance', 0, 1, hundreds);
   param('mimics', 'shops', 0, 6, round);
+  param('detail1', 'detail1', 0, 0.5, hundreds);
+  param('detail2', 'detail2', 0, 0.5, hundreds);
   // param('min pits', 'pits_min', 0, 20, round);
   // param('+ pits rnd', 'pits_random', 0, 20, round);
   param('min enemies', 'enemies_min', 0, 20, round);

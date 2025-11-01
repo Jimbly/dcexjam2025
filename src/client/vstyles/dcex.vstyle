@@ -18,6 +18,7 @@ wall_swaps:
   secret_door: dcex_secret_door
   secret_door_unvisited: dcex_secret_door
   solid: dcex_solid1
+  # solid2: dcex_solid2
   stairs_in: dcex_stairs_in
   stairs_out: dcex_stairs_in
   # floorswitch: dcex_floorswitch
