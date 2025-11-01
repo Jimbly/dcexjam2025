@@ -14,22 +14,16 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if I am the only player, execute a tick before allowing the action
 
 Levels!
-* iterate on procgen
-  X larger secret rooms with mimics, no other monsters in them
-  X noai flag outside of stairs in
-  X boss monster
-  X fewer 2x1 rooms
-  X walls get random variations
-  X flag some rooms as style #2 (self-contained rooms with doors, (probably not window/archs), no secrets, stairs are fine
-  X add detail cells
+* procgen tweaks:
   * windows? especially to outer sky?
   * some doors are archways?  don't interp well through them currently...
-  * disallow rounded corner areas of map
 * then: roll 10 of them and pick from them, or do full dynamic?
+* sky color/bg tweaks, some without ceilings
 
 TODO
 * deploy to staging and itch
-* choose player cloak color in customization (just 6 hard-coded?); maybe hat color based on equipped hat?
+* set "win the game" floor to 6, hide doors to 7+?
+* choose player cloak color in customization (just 6 hard-coded? simple 2-color tint?); maybe hat color based on equipped hat?
 * golden hat reward for final level (if it shows on players)
 * fix 2 players or 1 player + 1 NPC on the same square to push in different directions
 * using basic attack on the cat should pet it

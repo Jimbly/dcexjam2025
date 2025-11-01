@@ -2829,6 +2829,8 @@ function checkFloorCompletion(locked: boolean): void {
         ' consider yourself a hero.';
       dialog('modal', msg);
       chatUI().addChat(msg);
+    } else {
+      statusPush('The floor has been cleared!  You feel fully restored.');
     }
   }
   last_enemy_count = num_enemies[0];
@@ -3684,9 +3686,16 @@ function giveRewards(target_ent: Entity): void {
         }
       }
       const type = random() < 0.5 ? 'book' : 'hat';
+      let element = target_ent.data.stats.element === undefined ? floor(random() * 3) :
+        target_ent.data.stats.element - 1;
+      if (type === 'book') {
+        if (random() < 0.4) {
+          element += 3;
+        }
+      }
       loot.push({
         type,
-        subtype: floor(random() * (type === 'hat' ? 3 : 6)),
+        subtype: element,
         level: loot_level,
         count: 1,
       });

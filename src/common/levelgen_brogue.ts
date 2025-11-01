@@ -42,6 +42,7 @@ export type GenParamsBrogue = {
   enemies_random: number;
   // auto-computed:
   odds_total?: number;
+  vstyles: string[];
 };
 
 export type GenParamsWrapBrogue = {
@@ -63,7 +64,7 @@ export const default_gen_params_brogue: GenParamsBrogue = {
   secrets: 0,
   w: 16,
   h: 16,
-  max_rooms: 25,
+  max_rooms: 40,
   var_rooms: 4,
   shops: 2,
   shop_cell_ids: ['shop_1', 'shop_2', 'shop_3'],
@@ -92,6 +93,7 @@ export const default_gen_params_brogue: GenParamsBrogue = {
   pits_random: 0,
   enemies_min: 20,
   enemies_random: 2,
+  vstyles: ['duncombo-1-2'],
 };
 
 import assert from 'assert';
@@ -621,7 +623,7 @@ function descsFromParams(params: GenParamsBrogue) {
 }
 
 function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBrogue): CrawlerLevel {
-  let { w, h, max_rooms, var_rooms, passageway_chance, shops, closets, secrets, detail1, detail2 } = params;
+  let { w, h, max_rooms, var_rooms, passageway_chance, shops, closets, secrets, detail1, detail2, vstyles } = params;
   let rand = randCreate(mashString(seed));
   let last_room_id = 0;
   let work = roomTempBuffered(w, h);
@@ -637,6 +639,20 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
   for (let ii = 0; ii < vwalls.length; ++ii) {
     vwalls[ii] = wall_descs[WallType.OPEN];
   }
+
+  // DCJAM: reserve rounded corners
+  let reserved: boolean[] = [];
+  function reservedPos(idx: number): boolean {
+    return reserved[idx];
+  }
+  [4,2,1,1].forEach(function (len, yy) {
+    for (let xx = 0; xx < len; ++xx) {
+      reserved[xx + 1 + (yy + 1) * work.w] = true;
+      reserved[work.w - 1 - (xx + 1) + (yy + 1) * work.w] = true;
+      reserved[xx + 1 + (work.h - 1 - (yy + 1)) * work.w] = true;
+      reserved[work.w - 1 - (xx + 1) + (work.h - 1 - (yy + 1)) * work.w] = true;
+    }
+  });
 
   function placeRoom(room: Room, x: number, y: number): void {
     let id = room.id = ++last_room_id;
@@ -667,12 +683,14 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
   }
   let work_delta = [1,work.w,-1,-work.w];
   function findGoodPlace(room: Room): [number, number] | null {
+    // find empty cells adjacent to a filled cell
     let possible_places = [];
     for (let ii = 0; ii < work.length; ++ii) {
       if (work[ii]) {
         let ok = false;
         for (let jj = 0; jj < 4; ++jj) {
-          if (!work[ii + work_delta[jj]]) {
+          let test_idx = ii + work_delta[jj];
+          if (!work[test_idx]) {
             ok = true;
             break;
           }
@@ -706,7 +724,8 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
           for (let xx = 0; xx < room.w; ++xx) {
             if (room[xx + yy * room.w]) {
               // we're part of the room
-              if (work[room_x + xx + (room_y + yy) * work.w]) {
+              let test_idx = room_x + xx + (room_y + yy) * work.w;
+              if (work[test_idx] || reservedPos(test_idx)) {
                 // overlaps with part of another room
                 continue next_door;
               }
@@ -1208,6 +1227,8 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
       }
     }
   }
+
+  level.setVstyle(vstyles[rand.range(vstyles.length)]);
 
   let gen_data: PrivateGenData = {
     rooms,
