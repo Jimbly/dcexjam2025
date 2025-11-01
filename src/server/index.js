@@ -22,6 +22,13 @@ platformRegister('discord', {
   random_creation_name: true,
   exit: false,
 });
+platformRegister('itch', {
+  devmode: 'off',
+  reload: false,
+  reload_updates: false,
+  random_creation_name: true,
+  exit: false,
+});
 
 const argv = minimist(process.argv.slice(2));
 
@@ -43,7 +50,7 @@ if (argv.requestlog) {
 }
 setupRequestHeaders(app, {
   dev: argv.dev,
-  allow_map: true,
+  allow_map: false,
 });
 
 function isDiscord(headers) {

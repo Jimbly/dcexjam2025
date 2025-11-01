@@ -10,6 +10,8 @@ module.exports = function (config) {
     'client/spine/**.json',
   );
 
+  config.prod_build_version_file = false;
+
   config.client_static.push('client_json:client/levels/*.json');
 
   gb.task({
@@ -56,7 +58,7 @@ module.exports = function (config) {
     name: 'itch',
     defines: {
       ...config.default_defines,
-      PLATFORM: 'web',
+      PLATFORM: 'itch',
     },
     zip: true,
   }];

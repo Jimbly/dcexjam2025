@@ -15,19 +15,24 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 
 Levels!
 * procgen tweaks:
+  * no ememies within 2 squares of the entrance, please!
   * windows? especially to outer sky?
   * some doors are archways?  don't interp well through them currently...
 * sky color/bg tweaks, some without ceilings
 
 TODO
 * deploy to staging and itch
+* enable logging in production
 * set "win the game" floor to 6, hide doors to 7+?
+* reveal monsters on map when there are <3 left
 * choose player cloak color in customization (just 6 hard-coded? simple 2-color tint?); maybe hat color based on equipped hat?
 * golden hat reward for final level (if it shows on players)
 * fix 2 players or 1 player + 1 NPC on the same square to push in different directions
-* using basic attack on the cat should pet it
+* using basic attack/wait while on same tile as the cat should pet it
 * allow "Swap" to swap with lowest level that would be allowed
 * make dude's books more clear
+* disable sourcemap serving
+* preload title and player atlases
 
 Bugs:
 * visibility is different before/after turning camera/moving forward and back if directly facing a wall

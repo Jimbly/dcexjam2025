@@ -30,7 +30,7 @@ import {
 import { ELEMENT_NAME, FloorData, Item } from '../common/entity_game_common';
 import { LevelGenerator, levelGeneratorCreate } from '../common/level_generator';
 import '../common/levelgen_brogue'; // for side effects
-import { CrawlerWorker } from './crawler_worker';
+import { CrawlerWorker, EXPORT_PATH } from './crawler_worker';
 import {
   EntityServer,
 } from './entity_game_server';
@@ -152,7 +152,7 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
     this.generator.provider(floor_id, cb);
   }
   levelCreateFromLevel2(floor_id: number, cb: (level_data: CrawlerLevelSerialized) => void): void {
-    let file = './src/client/levels/level2.json';
+    let file = `${EXPORT_PATH}level2.json`;
     assert(fs.existsSync(file));
     let data = fs.readFileSync(file, 'utf8');
     let level_data: CrawlerLevelSerialized = JSON.parse(data);

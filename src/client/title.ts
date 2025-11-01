@@ -265,6 +265,7 @@ function title(dt: number): void {
       y,
       w: login_w,
       text: 'Approach the Tower...',
+      hotkeys: [KEYS.RETURN],
     })) {
       urlhash.go('?c=the');
     }
@@ -289,14 +290,16 @@ function title(dt: number): void {
   y += 8;
   let stats = getStats();
   let ccu = Math.max(1, stats.ccu);
-  uiGetFont().draw({
-    color: palette_font[PAL_WHITE + 2],
-    x: game_width * 0.27,
-    w: game_width * (1 - 0.27 * 2),
-    y,
-    align: ALIGN.HCENTER | ALIGN.HWRAP,
-    text: `${ccu} ${plural(ccu, 'player')} online`,
-  });
+  if (!netDisconnected()) {
+    uiGetFont().draw({
+      color: palette_font[PAL_WHITE + 2],
+      x: game_width * 0.27,
+      w: game_width * (1 - 0.27 * 2),
+      y,
+      align: ALIGN.HCENTER | ALIGN.HWRAP,
+      text: `${ccu} ${plural(ccu, 'player')} online`,
+    });
+  }
   y += uiTextHeight() + 8;
   if (ccu <= 2 && server_stats_confident) {
     uiGetFont().draw({

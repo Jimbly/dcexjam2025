@@ -12,11 +12,18 @@ platformRegister('discord', {
   exit: false,
 });
 
+platformRegister('itch', {
+  devmode: 'off',
+  reload: false,
+  reload_updates: false,
+  random_creation_name: true,
+  exit: false,
+});
 
 import assert from 'assert';
 import { autoAtlasTextureOpts } from 'glov/client/autoatlas';
 import { ChatUI, chatUICreate } from 'glov/client/chat_ui';
-import { platformGetID } from 'glov/client/client_config';
+import { MODE_DEVELOPMENT, platformGetID } from 'glov/client/client_config';
 import { cmd_parse } from 'glov/client/cmds';
 import * as engine from 'glov/client/engine';
 import { environmentsInit } from 'glov/client/environments';
@@ -92,6 +99,23 @@ export function main(): void {
       name: 'discord',
       api_path: `${getURLBase()}.proxy/api/`,
     }], cmd_parse, 'discord');
+  } else if (platformGetID() === 'itch') {
+    let host = 'http://www.dashingstrike.com/dcex25';
+    if (MODE_DEVELOPMENT ||
+      window.location.host.indexOf('staging') !== -1 ||
+      window.location.host.startsWith('localhost')
+    ) {
+      host = 'http://staging.dashingstrike.com/dcex25';
+      // host = 'http://localhost:4005';
+    }
+    if (window.location.href.startsWith('https://')) {
+      host = host.replace(/^http:/, 'https:');
+    }
+
+    environmentsInit([{
+      name: 'itch',
+      api_path: `${host}/api/`,
+    }], cmd_parse, 'itch');
   }
 
   if (engine.DEBUG || true) {
