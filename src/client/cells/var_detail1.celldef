@@ -1,0 +1,24 @@
+---
+open_move: true
+open_vis: true
+default_wall: var_solid1
+visuals:
+- pass: bg
+  type: simple_floor
+  opts:
+    atlas: dcex
+    tile: var-floor
+- pass: bg
+  type: simple_ceiling
+  opts:
+    atlas: dcex
+    tile: var-ceiling
+- pass: celldetails
+  type: simple_billboard
+  opts:
+    atlas: dcex
+    tile: var-detail1
+    width: 0.5
+    height: 0.5
+    offs: [0, 0, 0]
+    face_camera: false # Otherwise faces frustum

@@ -60,39 +60,39 @@
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
         "open",
-        "door",
-        "solid",
-        "solid"
+        "var_door",
+        "var_solid1",
+        "var_solid2"
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
         "open",
-        "solid",
+        "var_solid1",
         "open",
-        "solid"
+        "var_solid1"
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
         "open",
-        "solid",
+        "var_solid2",
         "open",
-        "solid"
+        "var_solid1"
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
-        "door",
-        "solid",
+        "var_door",
+        "var_solid1",
         "open",
-        "solid"
+        "var_solid1"
       ]
     },
     {
@@ -690,30 +690,30 @@
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
         "open",
         "open",
-        "solid",
-        "solid"
+        "var_solid1",
+        "var_solid1"
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
         "open",
         "open",
         "open",
-        "solid"
+        "var_solid2"
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
-        "door",
+        "var_door",
         "open",
         "open",
-        "solid"
+        "var_solid1"
       ]
     },
     {
@@ -834,28 +834,28 @@
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
         "open",
-        "solid",
-        "door",
+        "var_solid2",
+        "var_door",
         "open"
       ]
     },
     {
-      "id": "open",
+      "id": "var_detail1",
       "walls": [
         "open",
-        "solid",
+        "var_solid1",
         "open",
         "open"
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
-        "solid",
-        "solid",
+        "var_solid1",
+        "var_solid2",
         "open",
         "open"
       ]
@@ -1320,30 +1320,30 @@
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
         "open",
         "open",
-        "solid",
-        "solid"
+        "var_solid1",
+        "var_solid1"
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
         "open",
         "open",
         "open",
-        "solid"
+        "var_solid2"
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
-        "solid",
+        "var_solid1",
         "open",
         "open",
-        "door"
+        "var_door"
       ]
     },
     {
@@ -1464,28 +1464,28 @@
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
         "open",
-        "solid",
-        "solid",
+        "var_solid2",
+        "var_solid1",
         "open"
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
         "open",
-        "solid",
+        "var_solid1",
         "open",
         "open"
       ]
     },
     {
-      "id": "open",
+      "id": "var_open",
       "walls": [
-        "solid",
-        "door",
+        "var_solid1",
+        "var_door",
         "open",
         "open"
       ]
@@ -2524,7 +2524,7 @@
     }
   ],
   "state": {},
-  "vstyle": "dun1",
+  "vstyle": "duncombo-1-2",
   "seed": "40472245",
   "props": {
     "floorlevel": "9"

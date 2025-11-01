@@ -1,0 +1,17 @@
+---
+tile_res: 12
+tiles:
+  dun2-solid1: [0, 0]
+  dun2-solid2: [1, 0]
+  dun2-window: [2, 0]
+  dun2-secret: [3, 0]
+
+  dun2-door: [0, 1]
+  # dun2-unused: [1, 1]
+  dun2-stairs_in: [2, 1]
+  dun2-arch: [3, 1]
+
+  dun2-detail1: [0, 2]
+  dun2-detail2: [1, 2]
+  dun2-ceiling: [2, 2]
+  dun2-floor: [3, 2]

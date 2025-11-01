@@ -1,0 +1,17 @@
+---
+tile_res: 12
+tiles:
+  var-solid1: [0, 0]
+  var-solid2: [1, 0]
+  var-window: [2, 0]
+  # var-secret: [3, 0]
+
+  var-door: [0, 1]
+  # var-unused: [1, 1]
+  # var-stairs_in: [2, 1]
+  var-arch: [3, 1]
+
+  var-detail1: [0, 2]
+  var-detail2: [1, 2]
+  var-ceiling: [2, 2]
+  var-floor: [3, 2]
