@@ -2,7 +2,7 @@
   "special_pos": {
     "stairs_in": [
       0,
-      8,
+      13,
       0
     ],
     "stairs_out": [
@@ -2804,7 +2804,7 @@
       ]
     },
     {
-      "id": "entrance",
+      "id": "stairs_in",
       "walls": [
         "door",
         "solid",
@@ -2825,6 +2825,12 @@
         "open",
         "castle_entrance",
         "open"
+      ],
+      "events": [
+        {
+          "id": "dialog",
+          "param": "kbhint HINT: Press F11 for full screen"
+        }
       ]
     },
     {
