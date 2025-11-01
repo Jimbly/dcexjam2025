@@ -14,11 +14,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if I am the only player, execute a tick before allowing the action
 
 **Balance TODO**
-* start with 2 equip slots?  makes more sense, but, more than 3 isn't useful currently?
-  * relatedly, maybe just the loot drops is a better way to limit # of equipped things? I'm not getting L4s until I'm L4 anyway...
-* more than 3 spell slots not currently useful - need other abilities, or should just cap at level 5 for jam game? just hand-craft 5 repeatable floors?
-  * also, spells that cost more MP but you don't get MP quicker actually feel worse
-* felt like I wasn't getting enough drops at L3, maybe increase the 50% by 10%/level?
 
 TODO
 * training an enemy through a door shouldn't give you a free ice spear hit (hunt fail should trigger immediate wander through door)

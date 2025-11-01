@@ -1200,6 +1200,15 @@ class InventoryMenuAction extends UIAction {
             align: ALIGN.HCENTER | ALIGN.VCENTER,
             text: `L${idx + 1}`
           });
+          font.draw({
+            color: palette_font[4],
+            x: x0 + 3,
+            y: param.y,
+            z,
+            h: param.h,
+            align: ALIGN.HRIGHT | ALIGN.VCENTER,
+            text: 'Unlocks at'
+          });
         }
       } else {
         if (inventoryButton({
@@ -2892,7 +2901,7 @@ function drawStats(): void {
     font.draw({
       style: style_stats,
       x: x + STATS_X_INDENT,
-      y,
+      y: level === MAX_LEVEL ? y + 4 : y,
       w,
       align: ALIGN.HCENTER,
       text: `Floor Level ${currentFloorLevel()}`,
@@ -3637,12 +3646,19 @@ function giveRewards(target_ent: Entity): void {
   let reward_level = rewardLevel(my_level, enemy_level, highest_hitter);
   let entity_manager = entityManager();
   let pos = target_ent.getData<JSVec3>('pos')!;
-  let give_reward = (target_ent.is_boss || target_ent.always_drop_reward) ? true :
-    random() < (0.5 + reward_luck * 0.1);
+  let target = min(1, (target_ent.is_boss || target_ent.always_drop_reward) ? 1 :
+    0.5 + (reward_level * 0.1));
+  let do_luck = target < 1;
+  if (do_luck) {
+    target += reward_luck * 0.1;
+  }
+  let give_reward = random() < target;
   if (!give_reward) {
     reward_luck++;
   } else {
-    reward_luck--;
+    if (do_luck) {
+      reward_luck--;
+    }
     let loot: Item[] = [];
     if (random() < 0.05 && !target_ent.is_boss) {
       loot.push({
