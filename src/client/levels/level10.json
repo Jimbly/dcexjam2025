@@ -134,246 +134,39 @@
     {
       "id": "solid",
       "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
+        "solid",
         "solid",
         "open",
         "open"
       ]
     },
     {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
+      "id": "town-tree",
       "walls": [
         "open",
         "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "solid",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "solid",
-        "solid"
+        "forest",
+        "forest"
       ],
       "h": 0.25
     },
     {
-      "id": "open",
+      "id": "town-tree",
       "walls": [
         "open",
         "open",
         "open",
-        "solid"
+        "forest"
       ],
-      "h": 0.5
+      "h": 0.25
     },
     {
-      "id": "open",
+      "id": "town-tree",
       "walls": [
         "open",
         "open",
         "open",
-        "solid"
+        "town_forceopen"
       ],
       "h": 0.75
     },
@@ -383,293 +176,276 @@
         "open",
         "open",
         "open",
-        "solid"
+        "town_forceopen"
+      ],
+      "h": 0.5833333333333334
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "town_forceopen"
+      ],
+      "h": 0.4166666666666667
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "town_forceopen"
+      ],
+      "h": 0.25
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "town_forceopen"
+      ],
+      "h": 0.08333333333333333
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "town_forceopen"
+      ],
+      "h": 0.08333333333333333
+    },
+    {
+      "id": "open",
+      "walls": [
+        "town_forceopen",
+        "open",
+        "open",
+        "town_forceopen"
+      ],
+      "h": 0.08333333333333333
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "open",
+        "forest",
+        "forest"
+      ],
+      "h": 0.25
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": 0.5
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": 0.5
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "tower-guardrail",
+        "open",
+        "open"
+      ],
+      "h": 0.75
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "tower-guardrail",
+        "open",
+        "open"
+      ],
+      "h": 0.75
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "tower-guardrail",
+        "open",
+        "open"
       ],
       "h": 1
     },
     {
-      "id": "open",
+      "id": "town-tree",
       "walls": [
         "open",
-        "open",
-        "open",
-        "solid"
-      ],
-      "h": 1.25
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
-      ],
-      "h": 1.25
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
-      ],
-      "h": 1.25
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
-      ],
-      "h": 1.25
-    },
-    {
-      "id": "open",
-      "walls": [
-        "solid",
-        "open",
-        "open",
-        "solid"
-      ],
-      "h": 1.25
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "solid",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "solid",
-        "open"
-      ],
-      "h": 0.5
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
+        "tower-guardrail",
         "open",
         "open"
       ],
       "h": 0.75
     },
     {
-      "id": "open",
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "tower-guardrail",
+        "open",
+        "open"
+      ],
+      "h": 0.5
+    },
+    {
+      "id": "town-tree",
       "walls": [
         "open",
         "open",
         "open",
         "open"
       ],
-      "h": 1.75
+      "h": 0.25
     },
     {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
+        "town_forceopen",
         "open",
-        "tower_tall",
         "open",
         "open"
       ],
-      "h": 2
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "tower_overhang",
-        "open",
-        "open"
-      ],
-      "h": 2.25
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "tower_overhang",
-        "open",
-        "open"
-      ],
-      "h": 2.25
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "tower_overhang",
-        "open",
-        "open"
-      ],
-      "h": 2.25
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "tower_tall",
-        "open",
-        "open"
-      ],
-      "h": 1.25
-    },
-    {
-      "id": "open",
-      "walls": [
-        "solid",
-        "tower_tall",
-        "open",
-        "open"
-      ],
-      "h": 1.25
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
+      "h": 0.4166666666666667
     },
     {
       "id": "solid",
@@ -774,17 +550,27 @@
       "id": "solid",
       "walls": [
         "solid",
-        "open",
+        "solid",
         "open",
         "open"
       ]
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "open",
+        "forest",
+        "forest"
+      ],
+      "h": 0.25
     },
     {
       "id": "open",
       "walls": [
         "open",
         "open",
-        "solid",
+        "open",
         "open"
       ],
       "h": 0.25
@@ -800,12 +586,238 @@
       "h": 0.5
     },
     {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
-        "tower_tall",
+        "tower-guardrail",
         "open",
         "open",
         "open"
+      ],
+      "h": 0.75
+    },
+    {
+      "id": "tower_walkway2",
+      "walls": [
+        "tower_open",
+        "open",
+        "tower-guardrail",
+        "tower-guardrail"
+      ],
+      "h": 1.75
+    },
+    {
+      "id": "tower_walkway2",
+      "walls": [
+        "tower_open",
+        "tower_tall",
+        "open",
+        "tower-guardrail"
+      ],
+      "h": 2
+    },
+    {
+      "id": "tower_walkway2",
+      "walls": [
+        "open",
+        "tower_overhang",
+        "open",
+        "tower-guardrail"
+      ],
+      "h": 2.25
+    },
+    {
+      "id": "tower_walkway2",
+      "walls": [
+        "open",
+        "tower_overhang",
+        "open",
+        "tower-guardrail"
+      ],
+      "h": 2.25
+    },
+    {
+      "id": "tower_walkway2",
+      "walls": [
+        "tower-guardrail",
+        "tower_overhang",
+        "open",
+        "tower-guardrail"
+      ],
+      "h": 2.25
+    },
+    {
+      "id": "dirt2",
+      "walls": [
+        "open",
+        "tower_tall",
+        "tower-guardrail",
+        "open"
+      ],
+      "h": 0.5833333333333334
+    },
+    {
+      "id": "dirt3",
+      "walls": [
+        "town_forceopen",
+        "tower_tall",
+        "open",
+        "open"
+      ],
+      "h": 0.5833333333333334
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "open",
+        "forest",
+        "forest"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt2",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": 0.25
+    },
+    {
+      "id": "open",
+      "walls": [
+        "tower-guardrail",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": 0.5
+    },
+    {
+      "id": "tower_walkway2",
+      "walls": [
+        "tower_tall",
+        "open",
+        "tower-guardrail",
+        "tower_open"
       ],
       "h": 1.5
     },
@@ -819,17 +831,17 @@
       ]
     },
     {
-      "id": "open",
+      "id": "tower_open",
       "walls": [
         "open",
-        "solid",
-        "solid",
+        "tower_solid",
+        "tower_solid",
         "open"
       ],
       "h": 2.25
     },
     {
-      "id": "open",
+      "id": "tower_open",
       "walls": [
         "open",
         "stairs_out",
@@ -839,10 +851,10 @@
       "h": 2.25
     },
     {
-      "id": "open",
+      "id": "tower_open",
       "walls": [
-        "solid",
-        "solid",
+        "tower_solid",
+        "tower_solid",
         "open",
         "open"
       ],
@@ -950,43 +962,25 @@
     {
       "id": "solid",
       "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
         "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "open",
+        "forest",
+        "forest"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
         "open",
         "open",
         "open"
@@ -997,7 +991,7 @@
       "walls": [
         "open",
         "open",
-        "solid",
+        "open",
         "open"
       ]
     },
@@ -1005,6 +999,24 @@
       "id": "open",
       "walls": [
         "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "tower-guardrail",
         "open",
         "open",
         "open"
@@ -1012,12 +1024,12 @@
       "h": 0.25
     },
     {
-      "id": "open",
+      "id": "tower_walkway2",
       "walls": [
-        "tower_tall",
+        "tower_tall2",
         "open",
-        "open",
-        "open"
+        "tower-guardrail",
+        "tower_open"
       ],
       "h": 1.25
     },
@@ -1156,52 +1168,25 @@
     {
       "id": "solid",
       "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
         "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "open",
+        "forest",
+        "forest"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
         "open",
         "open",
         "open"
@@ -1212,7 +1197,244 @@
       "walls": [
         "open",
         "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt3",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": -0.25
+    },
+    {
+      "id": "dirt2",
+      "walls": [
+        "tower-guardrail",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "tower_walkway2",
+      "walls": [
+        "tower_overhang",
+        "open",
+        "tower-guardrail",
+        "tower_open"
+      ],
+      "h": 1
+    },
+    {
+      "id": "tower_open",
+      "walls": [
+        "tower_solid",
+        "open",
+        "open",
+        "tower_solid"
+      ],
+      "h": 1
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
         "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "open",
+        "forest",
+        "forest"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt2",
+      "walls": [
+        "open",
+        "open",
+        "open",
         "open"
       ],
       "h": -0.25
@@ -1220,14 +1442,14 @@
     {
       "id": "open",
       "walls": [
-        "open",
+        "tower-guardrail",
         "open",
         "open",
         "open"
       ]
     },
     {
-      "id": "open",
+      "id": "tower_walkway2",
       "walls": [
         "tower_overhang",
         "open",
@@ -1237,217 +1459,7 @@
       "h": 1
     },
     {
-      "id": "open",
-      "walls": [
-        "solid",
-        "open",
-        "open",
-        "solid"
-      ],
-      "h": 1
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "solid",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "solid",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "solid",
-        "open"
-      ],
-      "h": -0.25
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "tower_overhang",
-        "open",
-        "open",
-        "open"
-      ],
-      "h": 1
-    },
-    {
-      "id": "open",
+      "id": "tower_open",
       "walls": [
         "stairs_out",
         "open",
@@ -1557,52 +1569,7 @@
       "id": "solid",
       "walls": [
         "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
+        "solid",
         "open",
         "open"
       ]
@@ -1611,7 +1578,7 @@
       "id": "solid",
       "walls": [
         "solid",
-        "solid",
+        "open",
         "open",
         "open"
       ]
@@ -1621,8 +1588,8 @@
       "walls": [
         "open",
         "open",
-        "solid",
-        "solid"
+        "castle_solid",
+        "forest"
       ]
     },
     {
@@ -1631,7 +1598,52 @@
         "open",
         "open",
         "open",
-        "solid"
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt3",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
       ]
     },
     {
@@ -1645,16 +1657,16 @@
       "h": -0.25
     },
     {
-      "id": "open",
+      "id": "dirt3",
       "walls": [
-        "open",
-        "open",
+        "tower-guardrail",
+        "tower-guardrail",
         "open",
         "open"
       ]
     },
     {
-      "id": "open",
+      "id": "tower_walkway2",
       "walls": [
         "tower_overhang",
         "open",
@@ -1664,10 +1676,10 @@
       "h": 1
     },
     {
-      "id": "open",
+      "id": "tower_open",
       "walls": [
-        "solid",
-        "solid",
+        "tower_solid",
+        "tower_solid",
         "open",
         "open"
       ],
@@ -1731,61 +1743,7 @@
       "id": "solid",
       "walls": [
         "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
+        "solid",
         "open",
         "open"
       ]
@@ -1812,7 +1770,43 @@
       "id": "solid",
       "walls": [
         "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "castle_right",
+        "open",
+        "town_left",
+        "castle_solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
         "solid",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "castle_solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
         "open",
         "open"
       ]
@@ -1822,12 +1816,30 @@
       "walls": [
         "open",
         "open",
-        "solid",
-        "solid"
+        "open",
+        "open"
       ]
     },
     {
       "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt3",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt2",
       "walls": [
         "open",
         "open",
@@ -1846,9 +1858,9 @@
       "h": -0.25
     },
     {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
-        "open",
+        "tower-guardrail",
         "open",
         "open",
         "open"
@@ -1856,22 +1868,22 @@
       "h": -0.5
     },
     {
-      "id": "open",
+      "id": "tower_walkway2",
       "walls": [
+        "tower_open",
         "open",
-        "open",
-        "open",
-        "open"
+        "tower-guardrail",
+        "tower-guardrail"
       ],
       "h": 0.5
     },
     {
-      "id": "open",
+      "id": "tower_walkway2",
       "walls": [
         "tower_tall",
         "tower_tall",
         "open",
-        "open"
+        "tower_open"
       ],
       "h": 0.75
     },
@@ -1932,18 +1944,27 @@
     {
       "id": "solid",
       "walls": [
-        "open",
+        "solid",
         "open",
         "open",
         "open"
       ]
     },
     {
+      "id": "open",
+      "walls": [
+        "town_solid1",
+        "open",
+        "castle_left",
+        "castle_solid"
+      ]
+    },
+    {
       "id": "solid",
       "walls": [
         "open",
-        "open",
-        "open",
+        "solid",
+        "solid",
         "open"
       ]
     },
@@ -1952,60 +1973,6 @@
       "walls": [
         "open",
         "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
         "open",
         "open"
       ]
@@ -2022,10 +1989,55 @@
     {
       "id": "open",
       "walls": [
+        "castle_solid",
         "open",
-        "open",
+        "town_solid1",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
         "solid",
-        "solid"
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "castle_solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
       ]
     },
     {
@@ -2060,7 +2072,7 @@
     {
       "id": "open",
       "walls": [
-        "open",
+        "tower-guardrail",
         "open",
         "open",
         "open"
@@ -2068,12 +2080,12 @@
       "h": -0.75
     },
     {
-      "id": "open",
+      "id": "tower_walkway2",
       "walls": [
         "tower_tall",
         "open",
-        "open",
-        "open"
+        "tower-guardrail",
+        "tower_open"
       ],
       "h": 0.25
     },
@@ -2143,18 +2155,18 @@
     {
       "id": "solid",
       "walls": [
-        "open",
+        "solid",
         "open",
         "open",
         "open"
       ]
     },
     {
-      "id": "solid",
+      "id": "town-tree",
       "walls": [
-        "solid",
-        "solid",
+        "town_solid1",
         "open",
+        "castle_solid",
         "open"
       ]
     },
@@ -2192,39 +2204,21 @@
       ]
     },
     {
-      "id": "solid",
+      "id": "town-tree",
       "walls": [
+        "castle_window",
         "open",
-        "solid",
-        "solid",
+        "town_solid1",
         "open"
       ]
     },
     {
-      "id": "solid",
+      "id": "open",
       "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "solid",
-        "solid",
-        "open",
-        "open"
+        "castle_window",
+        "castle_solid",
+        "castle_window",
+        "castle_solid"
       ]
     },
     {
@@ -2232,8 +2226,8 @@
       "walls": [
         "open",
         "open",
-        "solid",
-        "solid"
+        "castle_window",
+        "open"
       ]
     },
     {
@@ -2247,6 +2241,24 @@
     },
     {
       "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt3",
       "walls": [
         "open",
         "open",
@@ -2266,7 +2278,7 @@
       "h": -0.5
     },
     {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
         "open",
         "open",
@@ -2278,7 +2290,7 @@
     {
       "id": "open",
       "walls": [
-        "open",
+        "tower-guardrail",
         "open",
         "open",
         "open"
@@ -2286,12 +2298,12 @@
       "h": -1
     },
     {
-      "id": "open",
+      "id": "tower_walkway2",
       "walls": [
-        "tower_tall",
+        "tower_tall2",
         "open",
-        "open",
-        "open"
+        "tower-guardrail",
+        "tower_open"
       ]
     },
     {
@@ -2369,10 +2381,10 @@
     {
       "id": "open",
       "walls": [
-        "solid",
+        "town_left",
         "open",
-        "solid",
-        "solid"
+        "castle_solid",
+        "open"
       ]
     },
     {
@@ -2403,20 +2415,11 @@
       ]
     },
     {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
-        "solid",
+        "castle_solid",
         "open",
-        "solid",
-        "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "solid",
+        "town_right",
         "open"
       ]
     },
@@ -2424,15 +2427,6 @@
       "id": "solid",
       "walls": [
         "solid",
-        "solid",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
         "open",
         "solid",
         "solid"
@@ -2443,12 +2437,30 @@
       "walls": [
         "open",
         "open",
+        "castle_solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
         "open",
         "open"
       ]
     },
     {
       "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt3",
       "walls": [
         "open",
         "open",
@@ -2490,7 +2502,7 @@
     {
       "id": "open",
       "walls": [
-        "open",
+        "tower-guardrail",
         "open",
         "open",
         "open"
@@ -2498,12 +2510,12 @@
       "h": -1
     },
     {
-      "id": "open",
+      "id": "tower_walkway2",
       "walls": [
         "tower_tall",
         "open",
-        "open",
-        "open"
+        "tower-guardrail",
+        "tower_open"
       ],
       "h": -0.25
     },
@@ -2580,11 +2592,11 @@
       ]
     },
     {
-      "id": "open",
+      "id": "dirt3",
       "walls": [
         "open",
         "open",
-        "solid",
+        "castle_right",
         "open"
       ]
     },
@@ -2594,11 +2606,11 @@
         "open",
         "open",
         "open",
-        "solid"
+        "town_trades"
       ]
     },
     {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
         "open",
         "open",
@@ -2618,13 +2630,13 @@
         "open",
         "open",
         "open",
-        "solid"
+        "town_trades_left"
       ]
     },
     {
       "id": "open",
       "walls": [
-        "solid",
+        "castle_left",
         "open",
         "open",
         "open"
@@ -2644,8 +2656,8 @@
       "walls": [
         "open",
         "open",
-        "solid",
-        "solid"
+        "castle_right",
+        "open"
       ]
     },
     {
@@ -2688,7 +2700,17 @@
       "h": -0.75
     },
     {
-      "id": "open",
+      "id": "dirt2",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": -1
+    },
+    {
+      "id": "dirt3",
       "walls": [
         "open",
         "open",
@@ -2700,17 +2722,7 @@
     {
       "id": "open",
       "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ],
-      "h": -1
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
+        "tower_open",
         "open",
         "open",
         "open"
@@ -2718,22 +2730,22 @@
       "h": -0.75
     },
     {
-      "id": "open",
+      "id": "tower_walkway2",
       "walls": [
         "tower_overhang",
         "open",
         "open",
-        "open"
+        "tower_open"
       ],
       "h": -0.5
     },
     {
-      "id": "open",
+      "id": "tower_open",
       "walls": [
-        "solid",
+        "tower_solid",
         "open",
         "open",
-        "solid"
+        "tower_solid"
       ],
       "h": -0.5
     },
@@ -2807,34 +2819,16 @@
       ]
     },
     {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
         "open",
         "open",
-        "entrance",
+        "castle_entrance",
         "open"
       ]
     },
     {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
         "open",
         "open",
@@ -2852,16 +2846,7 @@
       ]
     },
     {
-      "id": "open",
-      "walls": [
-        "open",
-        "solid",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "open",
+      "id": "dirt3",
       "walls": [
         "open",
         "open",
@@ -2870,29 +2855,96 @@
       ]
     },
     {
-      "id": "open",
+      "id": "tower_walkway",
       "walls": [
         "open",
         "open",
         "open",
+        "open"
+      ]
+    },
+    {
+      "id": "tower_walkway",
+      "walls": [
+        "open",
+        "castle_solid",
+        "open",
+        "castle_solid"
+      ]
+    },
+    {
+      "id": "tower_walkway",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "tower_walkway",
+      "walls": [
+        "open",
+        "open",
+        "tower_open",
         "open"
       ],
       "h": -0.25
     },
     {
-      "id": "open",
+      "id": "tower_walkway",
+      "walls": [
+        "open",
+        "open",
+        "tower_open",
+        "open"
+      ],
+      "h": -0.5
+    },
+    {
+      "id": "tower_walkway",
+      "walls": [
+        "open",
+        "open",
+        "tower_open",
+        "open"
+      ],
+      "h": -0.75
+    },
+    {
+      "id": "tower_walkway",
+      "walls": [
+        "open",
+        "open",
+        "tower_open",
+        "open"
+      ],
+      "h": -1
+    },
+    {
+      "id": "tower_walkway",
       "walls": [
         "open",
         "open",
         "open",
         "open"
       ],
-      "h": -0.5
+      "h": -1
     },
     {
-      "id": "open",
+      "id": "tower_walkway",
       "walls": [
+        "tower_open",
         "open",
+        "open",
+        "open"
+      ],
+      "h": -1
+    },
+    {
+      "id": "tower_walkway",
+      "walls": [
+        "tower_open",
         "open",
         "open",
         "open"
@@ -2900,49 +2952,9 @@
       "h": -0.75
     },
     {
-      "id": "open",
+      "id": "tower_walkway2",
       "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ],
-      "h": -1
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ],
-      "h": -1
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ],
-      "h": -1
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ],
-      "h": -0.75
-    },
-    {
-      "id": "open",
-      "walls": [
-        "tower_overhang",
+        "tower_overhang2",
         "open",
         "open",
         "open"
@@ -2950,7 +2962,7 @@
       "h": -0.5
     },
     {
-      "id": "open",
+      "id": "tower_open",
       "walls": [
         "stairs_out",
         "open",
@@ -3029,11 +3041,11 @@
       ]
     },
     {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
         "open",
         "open",
-        "solid",
+        "castle_left",
         "open"
       ]
     },
@@ -3041,13 +3053,13 @@
       "id": "open",
       "walls": [
         "open",
-        "solid",
+        "town_upgrades_left",
         "open",
         "open"
       ]
     },
     {
-      "id": "open",
+      "id": "dirt3",
       "walls": [
         "open",
         "door",
@@ -3062,10 +3074,10 @@
       ]
     },
     {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
         "open",
-        "solid",
+        "town_upgrades_right",
         "open",
         "open"
       ]
@@ -3073,7 +3085,7 @@
     {
       "id": "open",
       "walls": [
-        "solid",
+        "castle_right",
         "open",
         "open",
         "open"
@@ -3092,13 +3104,13 @@
       "id": "open",
       "walls": [
         "open",
-        "solid",
-        "solid",
+        "open",
+        "castle_left",
         "open"
       ]
     },
     {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
         "open",
         "open",
@@ -3147,7 +3159,7 @@
       "h": -1
     },
     {
-      "id": "open",
+      "id": "dirt3",
       "walls": [
         "open",
         "open",
@@ -3159,7 +3171,7 @@
     {
       "id": "open",
       "walls": [
-        "open",
+        "tower_open",
         "open",
         "open",
         "open"
@@ -3167,7 +3179,7 @@
       "h": -0.75
     },
     {
-      "id": "open",
+      "id": "tower_walkway2",
       "walls": [
         "tower_overhang",
         "open",
@@ -3177,10 +3189,10 @@
       "h": -0.5
     },
     {
-      "id": "open",
+      "id": "tower_open",
       "walls": [
-        "solid",
-        "solid",
+        "tower_solid",
+        "tower_solid",
         "open",
         "open"
       ],
@@ -3250,11 +3262,11 @@
       ]
     },
     {
-      "id": "open",
+      "id": "dirt3",
       "walls": [
-        "solid",
-        "solid",
-        "solid",
+        "town_right",
+        "open",
+        "castle_solid",
         "open"
       ]
     },
@@ -3286,7 +3298,16 @@
       ]
     },
     {
-      "id": "open",
+      "id": "dirt2",
+      "walls": [
+        "castle_solid",
+        "open",
+        "town_left",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
       "walls": [
         "solid",
         "solid",
@@ -3295,29 +3316,20 @@
       ]
     },
     {
-      "id": "solid",
+      "id": "open",
       "walls": [
         "open",
         "open",
-        "solid",
+        "castle_solid",
         "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "solid",
-        "open",
-        "open",
-        "solid"
       ]
     },
     {
       "id": "open",
       "walls": [
         "open",
-        "solid",
-        "solid",
+        "open",
+        "open",
         "open"
       ]
     },
@@ -3341,7 +3353,7 @@
       "h": -0.25
     },
     {
-      "id": "open",
+      "id": "dirt3",
       "walls": [
         "open",
         "open",
@@ -3381,12 +3393,12 @@
       "h": -1
     },
     {
-      "id": "open",
+      "id": "dirt2",
       "walls": [
         "tower_tall",
         "open",
         "open",
-        "open"
+        "tower_open"
       ],
       "h": -0.75
     },
@@ -3456,19 +3468,19 @@
     {
       "id": "solid",
       "walls": [
-        "open",
+        "solid",
         "open",
         "open",
         "open"
       ]
     },
     {
-      "id": "solid",
+      "id": "town-tree",
       "walls": [
-        "solid",
+        "town_solid1",
         "open",
-        "open",
-        "solid"
+        "castle_solid",
+        "open"
       ]
     },
     {
@@ -3505,30 +3517,197 @@
       ]
     },
     {
+      "id": "town-tree",
+      "walls": [
+        "castle_window",
+        "open",
+        "town_right",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "castle_window",
+        "castle_solid",
+        "castle_window",
+        "castle_solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "castle_window",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt2",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt3",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": -0.25
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": -0.5
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": -0.75
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": -1
+    },
+    {
+      "id": "open",
+      "walls": [
+        "tower_tall2",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": -1
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "town_left",
+        "castle_solid",
+        "castle_right",
+        "open"
+      ]
+    },
+    {
       "id": "solid",
       "walls": [
         "open",
         "open",
         "solid",
         "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
       ]
     },
     {
@@ -3544,8 +3723,62 @@
       "id": "open",
       "walls": [
         "open",
+        "town_right",
         "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "castle_solid",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
         "solid",
+        "open",
+        "solid",
+        "solid"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "castle_solid",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt3",
+      "walls": [
+        "open",
+        "open",
+        "open",
         "open"
       ]
     },
@@ -3591,227 +3824,6 @@
     {
       "id": "open",
       "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ],
-      "h": -1
-    },
-    {
-      "id": "open",
-      "walls": [
-        "tower_tall",
-        "open",
-        "open",
-        "open"
-      ],
-      "h": -1
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "solid",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "solid",
-        "open",
-        "open",
-        "solid"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "solid",
-        "solid",
-        "open"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ],
-      "h": -0.25
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ],
-      "h": -0.5
-    },
-    {
-      "id": "open",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ],
-      "h": -0.75
-    },
-    {
-      "id": "open",
-      "walls": [
         "tower_tall",
         "open",
         "open",
@@ -3897,61 +3909,7 @@
         "open",
         "open",
         "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
+        "solid"
       ]
     },
     {
@@ -3984,9 +3942,27 @@
     {
       "id": "open",
       "walls": [
+        "castle_left",
+        "castle_solid",
+        "town_left",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
         "open",
         "solid",
-        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "forest",
+        "castle_solid",
         "open"
       ]
     },
@@ -4001,6 +3977,42 @@
     },
     {
       "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt2",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt2",
       "walls": [
         "open",
         "open",
@@ -4020,7 +4032,7 @@
       "h": -0.5
     },
     {
-      "id": "open",
+      "id": "dirt3",
       "walls": [
         "open",
         "open",
@@ -4144,6 +4156,189 @@
         "open",
         "open",
         "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "solid",
+        "open",
+        "open",
+        "solid"
+      ]
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "forest",
+        "forest",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "dirt3",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": -0.25
+    },
+    {
+      "id": "open",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": -0.5
+    },
+    {
+      "id": "open",
+      "walls": [
+        "tower_tall",
+        "open",
+        "open",
+        "open"
+      ],
+      "h": -0.75
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "solid",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "solid",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "solid",
+      "walls": [
+        "open",
+        "open",
+        "open",
         "open"
       ]
     },
@@ -4202,50 +4397,109 @@
       ]
     },
     {
-      "id": "open",
+      "id": "town-tree",
       "walls": [
         "open",
-        "solid",
-        "solid",
+        "forest",
+        "forest",
         "open"
       ]
     },
     {
-      "id": "open",
+      "id": "town-tree",
       "walls": [
         "open",
-        "solid",
+        "forest",
         "open",
         "open"
       ]
     },
     {
-      "id": "open",
+      "id": "town-tree",
       "walls": [
         "open",
-        "solid",
+        "forest",
+        "open",
+        "open"
+      ]
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "forest",
         "open",
         "open"
       ],
       "h": -0.25
     },
     {
-      "id": "open",
+      "id": "town-tree",
       "walls": [
         "open",
-        "solid",
+        "forest",
+        "open",
+        "open"
+      ],
+      "h": -0.25
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "forest",
         "open",
         "open"
       ],
       "h": -0.5
     },
     {
-      "id": "open",
+      "id": "town-tree",
       "walls": [
-        "tower_tall",
-        "solid",
+        "open",
+        "forest",
         "open",
         "open"
+      ],
+      "h": -0.75
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "forest",
+        "open",
+        "open"
+      ],
+      "h": -0.75
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "forest",
+        "open",
+        "tower_tall"
+      ],
+      "h": -0.75
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "open",
+        "forest",
+        "open",
+        "tower_tall"
+      ],
+      "h": -0.75
+    },
+    {
+      "id": "town-tree",
+      "walls": [
+        "forest",
+        "forest",
+        "open",
+        "tower_tall"
       ],
       "h": -0.75
     },
@@ -4363,7 +4617,7 @@
         "open",
         "open",
         "open",
-        "open"
+        "solid"
       ]
     },
     {
@@ -4372,7 +4626,7 @@
         "open",
         "open",
         "open",
-        "open"
+        "solid"
       ]
     },
     {
@@ -4381,7 +4635,7 @@
         "open",
         "open",
         "open",
-        "open"
+        "solid"
       ]
     },
     {
@@ -4390,7 +4644,7 @@
         "open",
         "open",
         "open",
-        "open"
+        "solid"
       ]
     },
     {
@@ -4399,16 +4653,7 @@
         "open",
         "open",
         "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
+        "solid"
       ]
     },
     {
@@ -4462,232 +4707,7 @@
         "open",
         "open",
         "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
-      ]
-    },
-    {
-      "id": "solid",
-      "walls": [
-        "open",
-        "open",
-        "open",
-        "open"
+        "solid"
       ]
     },
     {

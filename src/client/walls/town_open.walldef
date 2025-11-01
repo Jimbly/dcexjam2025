@@ -5,7 +5,7 @@ visuals:
 - type: simple_filler
   opts:
     atlas: dcex
-    tile: solid1
+    tile: floor-dirt1
 # - type: simple_filler
 #   opts:
 #     atlas: dcex

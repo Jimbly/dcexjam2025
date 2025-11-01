@@ -6,29 +6,39 @@ visuals:
 - type: simple_wall
   opts:
     atlas: dcex
-    tile: solid1
+    tile: tower-wall
 - type: simple_wall
   opts:
     atlas: dcex
-    tile: solid1
+    tile: tower-wall
     offs: [0, 1]
 - type: simple_wall
   opts:
     atlas: dcex
-    tile: solid1
+    tile: tower-wall
     offs: [0, 2]
 - type: simple_wall
   opts:
     atlas: dcex
-    tile: solid1
+    tile: tower-wall
     offs: [0, 3]
 - type: simple_wall
   opts:
     atlas: dcex
-    tile: solid1
+    tile: tower-wall
     offs: [0, 4]
 - type: simple_wall
   opts:
     atlas: dcex
-    tile: solid1
+    tile: tower-wall
     offs: [0, 5]
+- type: simple_wall
+  opts:
+    atlas: dcex
+    tile: tower-wall
+    offs: [0, 6]
+- type: simple_wall
+  opts:
+    atlas: dcex
+    tile: tower-wall
+    offs: [0, 7]

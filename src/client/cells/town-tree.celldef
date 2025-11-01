@@ -1,0 +1,18 @@
+---
+open_move: false
+open_vis: true
+visuals:
+- pass: bg
+  type: simple_floor
+  opts:
+    atlas: dcex
+    tile: floor-dirt1
+- pass: celldetails
+  type: simple_billboard
+  opts:
+    atlas: dcex
+    tile: tree
+    width: 1
+    height: 1
+    offs: [0, 0, 0]
+    face_camera: false # Otherwise faces frustum
