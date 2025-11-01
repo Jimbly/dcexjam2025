@@ -16,7 +16,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 **Balance TODO**
 
 TODO
-* training an enemy through a door shouldn't give you a free ice spear hit (hunt fail should trigger immediate wander through door)
 * balance and level design
 * F11 for fullscreen hint somewhere
 * make dude's books more clear

@@ -293,6 +293,7 @@ export function aiTraitsClientStartup(): void {
         let dy = target_pos[1] - pos[1];
         let tot = abs(dx) + abs(dy);
         if (!tot) {
+          let ret = true;
           if (!can_see) {
             if (engine.defines.HUNTER) {
               statusSet(`edbg${this.id}`, `${this.id}: Reached last known target`).counter = 500;
@@ -302,6 +303,7 @@ export function aiTraitsClientStartup(): void {
               (this as unknown as EntityWander).wander_state.prefer_door = true;
             }
             // playUISound('hunter_lost', volume);
+            ret = false; // trigger an immediate wander
           } else {
             // at target, and player is there, don't move, combat should trigger
             if (engine.defines.HUNTER) {
@@ -309,7 +311,7 @@ export function aiTraitsClientStartup(): void {
             }
           }
           this.hunter_state.has_target = false;
-          return true;
+          return ret;
         }
         let xdir: DirType;
         if (dx) {
