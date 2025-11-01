@@ -28,6 +28,8 @@ import {
   CrawlerLevelSerialized,
 } from '../common/crawler_state';
 import { ELEMENT_NAME, FloorData, Item } from '../common/entity_game_common';
+import { LevelGenerator, levelGeneratorCreate } from '../common/level_generator';
+import '../common/levelgen_brogue'; // for side effects
 import { CrawlerWorker } from './crawler_worker';
 import {
   EntityServer,
@@ -144,52 +146,59 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
     }
   }
 
-  // generator?: LevelGenerator;
-  // levelFallbackProvider(floor_id: number, cb: (level_data: CrawlerLevelSerialized) => void): void {
-  //   assert(this.generator);
-  //   this.generator.provider(floor_id, cb);
-  // }
-  floor_level_for_id: Record<number, number> = {};
-  levelFallbackProvider(floor_id: number, cb: (level_data: CrawlerLevelSerialized) => void): void {
-    let floor_level = this.floor_level_for_id[floor_id] || 1;
+  declare generator?: LevelGenerator; // Note: needs `declare` because it's set in `super()` or TypeScript borks it
+  levelCreateGenerated(floor_id: number, cb: (level_data: CrawlerLevelSerialized) => void): void {
+    assert(this.generator);
+    this.generator.provider(floor_id, cb);
+  }
+  levelCreateFromLevel2(floor_id: number, cb: (level_data: CrawlerLevelSerialized) => void): void {
     let file = './src/client/levels/level2.json';
     assert(fs.existsSync(file));
     let data = fs.readFileSync(file, 'utf8');
     let level_data: CrawlerLevelSerialized = JSON.parse(data);
-    level_data.props = level_data.props || {};
-    level_data.props.floorlevel = String(floor_level);
-    let elements: number[] = [];
-    let remap: TSMap<string> = {};
-    let done: TSMap<boolean> = {};
-    for (let ii = 0; ii < 3; ++ii) {
-      let new_value;
-      do {
-        new_value = floor(random() * 3);
-      // eslint-disable-next-line no-unmodified-loop-condition
-      } while (ii === 2 && new_value === elements[0] && new_value === elements[1]);
-      elements.push(new_value);
-      let enemy_id;
-      do {
-        enemy_id = `enemy-${ELEMENT_NAME[new_value + 1]}-${floor(random() * 6) + 1}`;
-      } while (done[enemy_id]);
-      done[enemy_id] = true;
-      remap[`enemy${ii}`] = enemy_id;
-    }
-    remap['enemy-boss'] = `enemy-rainbow-${floor(random() * 3) + 1}`;
-    remap['enemy-mimic'] = 'enemy-mimic';
-
-    level_data.initial_entities?.forEach((ent) => {
-      assert(ent.type && typeof ent.type === 'string');
-      assert(remap[ent.type]);
-      ent.type = remap[ent.type];
-    });
-
     cb(level_data);
+  }
+  floor_level_for_id: Record<number, number> = {};
+  levelFallbackProvider(floor_id: number, cb: (level_data: CrawlerLevelSerialized) => void): void {
+    let floor_level = this.floor_level_for_id[floor_id] || 1;
+    this[floor_id >= 100 ? 'levelCreateGenerated' : 'levelCreateFromLevel2'](floor_id,
+      (level_data: CrawlerLevelSerialized) => {
+        level_data.props = level_data.props || {};
+        level_data.props.floorlevel = String(floor_level);
+        let elements: number[] = [];
+        let remap: TSMap<string> = {};
+        let done: TSMap<boolean> = {};
+        for (let ii = 0; ii < 3; ++ii) {
+          let new_value;
+          do {
+            new_value = floor(random() * 3);
+          // eslint-disable-next-line no-unmodified-loop-condition
+          } while (ii === 2 && new_value === elements[0] && new_value === elements[1]);
+          elements.push(new_value);
+          let enemy_id;
+          do {
+            enemy_id = `enemy-${ELEMENT_NAME[new_value + 1]}-${floor(random() * 6) + 1}`;
+          } while (done[enemy_id]);
+          done[enemy_id] = true;
+          remap[`enemy${ii}`] = enemy_id;
+        }
+        remap['enemy-boss'] = `enemy-rainbow-${floor(random() * 3) + 1}`;
+        remap['enemy-mimic'] = 'enemy-mimic';
 
-    // queue up a save (need to save `floorlevel` if nothing else) once everything's loaded
-    this.game_state.getLevelForFloorAsync(floor_id, (level) => {
-      this.levelSave(level, floor_id, null, false);
-    });
+        level_data.initial_entities?.forEach((ent) => {
+          assert(ent.type && typeof ent.type === 'string');
+          assert(remap[ent.type]);
+          ent.type = remap[ent.type];
+        });
+
+        cb(level_data);
+
+        // queue up a save (need to save `floorlevel` if nothing else) once everything's loaded
+        this.game_state.getLevelForFloorAsync(floor_id, (level) => {
+          this.levelSave(level, floor_id, null, false);
+        });
+      }
+    );
   }
 
   allocateFloor(floor_level: number): number {
@@ -239,10 +248,11 @@ export class GameWorker extends CrawlerWorker<Entity, GameWorker> {
       },
       serialized_ent_version: ENT_VERSION,
     });
-    // this.generator = levelGeneratorCreate({
-    //   seed: this.data.public.seed,
-    //   default_vstyle: 'dcex',
-    // });
+    this.generator = levelGeneratorCreate({
+      seed: this.data.public.seed,
+      default_vstyle: 'dcex',
+    });
+    assert(this.generator);
     this.initCrawlerStateBase();
   }
 

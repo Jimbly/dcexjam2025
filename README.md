@@ -17,10 +17,10 @@ Levels!
 * procgen tweaks:
   * windows? especially to outer sky?
   * some doors are archways?  don't interp well through them currently...
-* then: roll 10 of them and pick from them, or do full dynamic?
 * sky color/bg tweaks, some without ceilings
 
 TODO
+* hook up dynamic levels
 * deploy to staging and itch
 * set "win the game" floor to 6, hide doors to 7+?
 * choose player cloak color in customization (just 6 hard-coded? simple 2-color tint?); maybe hat color based on equipped hat?

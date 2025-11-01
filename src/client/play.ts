@@ -2295,7 +2295,7 @@ class FloorListAction extends UIAction {
     }
     y += uiButtonHeight();
 
-    if (engine.DEBUG && true) {
+    if (engine.DEBUG && false) {
       y += font.draw({
         color: 0x000000ff,
         x: 6, y, z,
@@ -2309,7 +2309,7 @@ class FloorListAction extends UIAction {
 
     this.scroll_area.end(y);
 
-    if (!isOnFloorList() && !(engine.DEBUG && true)) {
+    if (!isOnFloorList() && !(engine.DEBUG && false)) {
       uiAction(null);
     }
 
