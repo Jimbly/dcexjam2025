@@ -1,0 +1,15 @@
+---
+open_move: true
+open_vis: true
+build_hide: true # auto
+visuals:
+- type: simple_filler
+  opts:
+    atlas: dcex
+    tile: dun7-solid1
+- type: simple_filler
+  opts:
+    atlas: dcex
+    tile: dun7-solid1
+    offs: [0, 1]
+
