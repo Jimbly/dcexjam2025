@@ -2092,8 +2092,10 @@ class FloorListAction extends UIAction {
     // const FLOORLIST_BUTTON_H3 = uiButtonHeight() * 2;
     const CARD_W = FLOORLIST_W - 12;
     const CARD_PAD = 6;
+    let seen_cards: Partial<Record<number, true>> = {};
 
     function drawRoomCard(rec: RoomRecord): void {
+      seen_cards[rec.floor_id] = true;
       x = floor((FLOORLIST_W - CARD_W) / 2);
       let { room_data } = rec;
       let y_start = y;
@@ -2190,14 +2192,17 @@ class FloorListAction extends UIAction {
           room_data.recent_players[my_user_id] ||
           anyActive(room_data.recent_players)
         )) {
+          if (room_data.enemies_left > 0.75 * room_data.enemies_total) {
+            disabled_floors[floor_level] = true;
+          }
+          if (seen_cards[floor_id]) {
+            continue;
+          }
           options.push({
             floor_level,
             floor_id,
             room_data,
           });
-          if (room_data.enemies_left > 0.75 * room_data.enemies_total) {
-            disabled_floors[floor_level] = true;
-          }
         }
       }
     }
@@ -2241,7 +2246,7 @@ class FloorListAction extends UIAction {
           text: `NEW Floor\nLevel [c=${ii > my_level ? 'red' : 'level'}]${ii}[/c]`,
           disabled: disabled_floors[ii],
           disabled_focusable: true,
-          tooltip: disabled_floors[ii] ? 'Please join an active level below instead.' : undefined,
+          tooltip: disabled_floors[ii] ? 'Please join an active level instead.' : undefined,
         })) {
           allocateNewFloor(ii);
         }

@@ -13,19 +13,16 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if there are any other players in the zone, block the action (line above will handle it)
   * if I am the only player, execute a tick before allowing the action
 
-**Balance TODO**
+Levels!
+
 
 TODO
-* level design
-  * visual pass on town and tower with 3 entrances
-* F11 for fullscreen hint somewhere
-* make dude's books more clear
 * choose player cloak color in customization (just 6 hard-coded?); maybe hat color based on equipped hat?
 * golden hat reward for final level (if it shows on players)
 * fix 2 players or 1 player + 1 NPC on the same square to push in different directions
 * using basic attack on the cat should pet it
 * allow "Swap" to swap with lowest level that would be allowed
-* don't show both resume and join buttons for the same level/same people
+* make dude's books more clear
 
 Bugs:
 * visibility is different before/after turning camera/moving forward and back if directly facing a wall
