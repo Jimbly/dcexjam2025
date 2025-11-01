@@ -1,6 +1,7 @@
 ---
 open_move: true
 open_vis: true
+build_hide: true
 visuals:
 - pass: bg
   type: simple_floor

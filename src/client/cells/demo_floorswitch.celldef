@@ -1,6 +1,7 @@
 ---
 open_vis: true
 map_view_detail_frame: icon_exclamation
+build_hide: true
 visuals:
 - pass: bg
   type: simple_floor

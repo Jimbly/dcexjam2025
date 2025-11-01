@@ -2,6 +2,7 @@
 open_move: false
 open_vis: true
 ascii_char: 'f'
+build_hide: true
 visuals:
 - pass: bg
   type: simple_floor

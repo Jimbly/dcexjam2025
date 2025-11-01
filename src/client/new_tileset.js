@@ -1,6 +1,6 @@
 const assert = require('assert');
 const fs = require('fs');
-const NEW_SET = 'var';
+const NEW_SET = 'dun4';
 ['walls', 'cells', 'vstyles', 'atlases/dcex'].forEach(function (dir) {
   let files = fs.readdirSync(dir);
   files = files.filter((a) => a.startsWith('dun1'));
