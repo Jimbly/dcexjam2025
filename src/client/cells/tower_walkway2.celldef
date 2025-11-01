@@ -1,7 +1,7 @@
 ---
 open_vis: true
 default_wall: solid
-
+map_view_detail_frame: walkway
 visuals:
 - pass: bg
   type: simple_floor

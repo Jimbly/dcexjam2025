@@ -6,6 +6,8 @@ tiles:
   floor_visible_unlit: [2,0]
   floor_solid: [3,0]
   pit: [4,0]
+  tree: [5,0]
+  walkway: [6,0]
 
   playerdir0: [0,1]
   playerdir1: [1,1]

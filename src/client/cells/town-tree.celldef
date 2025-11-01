@@ -1,6 +1,7 @@
 ---
 open_move: false
 open_vis: true
+map_view_detail_frame: tree
 visuals:
 - pass: bg
   type: simple_floor
