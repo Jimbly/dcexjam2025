@@ -5427,4 +5427,8 @@ export function playStartup(): void {
     }
   });
 
+  // preload some files
+  autoAtlas('player', 'right');
+  autoAtlas('dcex', 'solid1');
+  autoAtlas('title', 'tower');
 }

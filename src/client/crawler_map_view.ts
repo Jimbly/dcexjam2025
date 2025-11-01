@@ -593,6 +593,9 @@ export function crawlerMapViewDraw({
         let vis = false;
         if (full_vis || icon === 'player_special') { // DCJAM
           vis = true;
+        } else if (!level.props.noexplore && total_enemies && num_enemies <= 3) {
+          // DCJAM: last 3 ents visible
+          vis = true;
         } else {
           let cell = level.getCell(xx, yy);
           if (!cell || cell.visible_frame === engine.frame_index - 1 && cell.visible_bits) {
