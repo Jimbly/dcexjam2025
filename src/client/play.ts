@@ -535,6 +535,7 @@ function inventoryIconDraw(param: {
   z: number;
   item: Item;
   scale?: number;
+  double_brim: boolean;
 }): void {
   let { x, y, z, item, scale } = param;
   let icon_param = {
@@ -561,10 +562,19 @@ function inventoryIconDraw(param: {
         bg_sprite.draw(icon_param);
       }
     } break;
-    case 'hat': {
-      let icon = `hat-${ELEMENT_NAME[item.subtype + 1]}`;
-      autoAtlas('ui', icon).draw(icon_param);
-    } break;
+    case 'hat':
+      if (0) {
+        let icon = `hat-${ELEMENT_NAME[item.subtype + 1]}`;
+        autoAtlas('ui', icon).draw(icon_param);
+      } else {
+        let extra = param.double_brim ? item.level * 2 - 4 : item.level - 3;
+        let left_extra = floor(extra / 2);
+        icon_param.x -= left_extra * (scale || 1);
+        icon_param.w += extra * (scale || 1);
+        let icon = `hat-${ELEMENT_NAME[item.subtype + 1]}`;
+        drawBox(icon_param, autoAtlas('ui', icon));
+      }
+      break;
     case 'potion':
       autoAtlas('ui', 'potion').draw(icon_param);
       break;
@@ -598,7 +608,10 @@ function inventoryButton(param: InventoryButtonParam): boolean {
     text: ' ',
   });
   // show icon
-  inventoryIconDraw(param);
+  inventoryIconDraw({
+    ...param,
+    double_brim: false,
+  });
   const offs = 1;
   if (item.type !== 'potion') {
     // show level
@@ -1032,6 +1045,7 @@ export function drawHatDude(
       y, z: z + 1 + ii,
       item: hat,
       scale,
+      double_brim: true,
     });
   }
   y = y0;
@@ -1041,12 +1055,12 @@ export function drawHatDude(
     let elem = ELEMENT_NAME[1 + (book.subtype % 3)];
     y -= 4 * scale;
     let grow_w = (book.level - 5);
-    autoAtlas('ui', `spellbook-side-${elem}`).draw({
+    drawBox({
       x: x0 - scale + book_xoffs + HAT_STACK_OFFS[HAT_STACK_OFFS.length - 1 - ii] * scale,
       y, z: z + 1 + ii + 10,
       w: (12 + grow_w) * scale * (dir ? 1 : -1),
       h: 12 * scale,
-    });
+    }, autoAtlas('ui', `spellbook-side-${elem}`));
   }
 }
 
@@ -1401,6 +1415,7 @@ class InventoryMenuAction extends UIAction {
       inventoryIconDraw({
         x, y: y - 2, z,
         item,
+        double_brim: false,
       });
       title_font.draw({
         style: style_inventory,
@@ -4347,6 +4362,7 @@ function drawQuickbarTooltip(action: Item | 'basic'): void {
     inventoryIconDraw({
       x: tooltip_x, y: tooltip_y - 2, z: Z.QUICKBARTOOLTIP,
       item: action,
+      double_brim: false,
     });
     title_font.draw({
       style: style_inventory,
@@ -4541,6 +4557,7 @@ function doQuickbar(): void {
           z: Z.UI + 0.2,
           scale: 1,
           item: action as Item,
+          double_brim: false,
         });
       }
       focused = last_ret.focused;
