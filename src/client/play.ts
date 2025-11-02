@@ -50,6 +50,7 @@ import {
   ButtonStateString,
   buttonText,
   drawBox,
+  drawHBox,
   drawRect,
   drawRect2,
   menuFadeParamsSetDefault,
@@ -546,8 +547,19 @@ function inventoryIconDraw(param: {
   switch (item.type) {
     case 'book': {
       let skill_details = skillDetails(item);
-      let icon = skill_details.icon;
-      autoAtlas('ui', icon).draw(icon_param);
+      autoAtlas('ui', skill_details.icon).draw(icon_param);
+      icon_param.z -= 0.1;
+      let bg_sprite = autoAtlas('ui', skill_details.bg);
+      if (item.level > 1) {
+        let extra = item.level - 1;
+        let left_extra = floor(extra / 2);
+        // let right_extra = extra - left_extra;
+        icon_param.x -= left_extra;
+        icon_param.w += extra;
+        drawHBox(icon_param, bg_sprite);
+      } else {
+        bg_sprite.draw(icon_param);
+      }
     } break;
     case 'hat': {
       let icon = `hat-${ELEMENT_NAME[item.subtype + 1]}`;
@@ -1028,10 +1040,11 @@ export function drawHatDude(
     let book = books[ii];
     let elem = ELEMENT_NAME[1 + (book.subtype % 3)];
     y -= 4 * scale;
+    let grow_w = (book.level - 5);
     autoAtlas('ui', `spellbook-side-${elem}`).draw({
       x: x0 - scale + book_xoffs + HAT_STACK_OFFS[HAT_STACK_OFFS.length - 1 - ii] * scale,
       y, z: z + 1 + ii + 10,
-      w: 12 * scale * (dir ? 1 : -1),
+      w: (12 + grow_w) * scale * (dir ? 1 : -1),
       h: 12 * scale,
     });
   }
@@ -4509,7 +4522,8 @@ function doQuickbar(): void {
       }
       activate = Boolean(button({
         ...button_param,
-        img: autoAtlas('ui', icon),
+        img: action === 'basic' ? autoAtlas('ui', icon) : undefined!,
+        text: action === 'basic' ? undefined : ' ',
         hotkey: KEYS[hotkey],
         hotpad,
         // base_name: canIssueAction() ? undefined : 'button_disabled',
@@ -4519,7 +4533,17 @@ function doQuickbar(): void {
         sound_button: null,
         sound_rollover: disable_button ? null : undefined,
       }));
-      focused = buttonLastSpotRet().focused;
+      let last_ret = buttonLastSpotRet();
+      if (action !== 'basic') {
+        inventoryIconDraw({
+          x: button_param.x,
+          y: button_param.y,
+          z: Z.UI + 0.2,
+          scale: 1,
+          item: action as Item,
+        });
+      }
+      focused = last_ret.focused;
       if (!canIssueAction()) {
         drawRect2({
           ...button_param,

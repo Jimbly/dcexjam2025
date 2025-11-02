@@ -137,43 +137,51 @@ export type SkillDetails = {
   dam: number;
   target: SkillTarget;
   icon: string;
+  bg: string;
 };
 type BookDef = {
   element: ElementName;
   name: string;
   target: SkillTarget;
   icon: string;
+  bg: string;
 };
 const BOOKS: BookDef[] = [{
   name: 'Book of Fire',
   element: 'fire',
   target: 'front',
   icon: 'spell-fire',
+  bg: 'spell-fire-bg',
 }, {
   name: 'Book of Earth',
   element: 'earth',
   target: 'front',
   icon: 'spell-earth',
+  bg: 'spell-earth-bg',
 }, {
   name: 'Book of Ice',
   element: 'ice',
   target: 'front',
   icon: 'spell-ice',
+  bg: 'spell-ice-bg',
 }, {
   name: 'Firefly',
   element: 'fire',
   target: 'adjacent',
   icon: 'spell-fire2',
+  bg: 'spell-fire-bg',
 }, {
   name: 'Earthbound',
   element: 'earth',
   target: 'diagonal',
   icon: 'spell-earth2',
+  bg: 'spell-earth-bg',
 }, {
   name: 'Snowpiercer',
   element: 'ice',
   target: 'spear',
   icon: 'spell-ice2',
+  bg: 'spell-ice-bg',
 }];
 
 export function skillDetails(item: Item): SkillDetails {
@@ -216,6 +224,7 @@ export function skillDetails(item: Item): SkillDetails {
     dam,
     target: BOOKS[subtype].target,
     icon: BOOKS[subtype].icon,
+    bg: BOOKS[subtype].bg,
   };
 }
 
