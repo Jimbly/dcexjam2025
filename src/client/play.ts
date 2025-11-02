@@ -4036,8 +4036,9 @@ function moveBlockDead(): boolean {
 
   if (buttonText({
     x: x + floor(w/2 - uiButtonWidth()/2), y, z,
-    text: 'Respawn',
+    text: `Respawn${inputPadMode() ? ' (X)' : ''}`,
     hotkeys: [KEYS.SPACE, KEYS.R],
+    hotpad: PAD.X,
   })) {
     controller.goToFloor(crawlerGameState().floor_id, 'stairs_in', 'respawn');
     my_ent.applyBatchUpdate({
@@ -4190,6 +4191,11 @@ function doHeal(all_disabled: boolean): void {
 
   let hp = my_ent.getData('stats.hp', 0);
   let hp_max = my_ent.getData('stats.hp_max', 1);
+  if (!hp) {
+    playUISound('user_error');
+    statusSet('heal', 'A potion won\'t fix this...').counter = 2500;
+    return;
+  }
   if (hp >= hp_max) {
     playUISound('user_error');
     statusSet('heal', 'Already fully healed.').counter = 2500;
@@ -4422,7 +4428,8 @@ function doQuickbar(): void {
   if (!level || crawlerController().controllerIsAnimating(0.75)) {
     all_disabled = true;
   }
-  let can_attack_anything = me.isAlive();
+  let is_alive = me.isAlive();
+  let can_attack_anything = is_alive;
 
   if (!canIssueAction()) {
     all_disabled = true;
@@ -4614,8 +4621,8 @@ function doQuickbar(): void {
   if (button({
     ...heal_button_param,
     shrink: 12/16,
-    hotkey: KEYS.H,
-    hotpad: PAD.X,
+    hotkey: is_alive ? KEYS.H : undefined,
+    hotpad: is_alive ? PAD.X : undefined,
     sound_button: null,
     img: autoAtlas('ui', 'potion'),
   })) {
