@@ -198,7 +198,7 @@ import {
   EntityDrawableSprite,
 } from './crawler_render_entities';
 import { crawlerScriptAPIDummyServer } from './crawler_script_api_client';
-import { crawlerOnScreenButton } from './crawler_ui';
+import { crawerUISetHotkeyFont, crawlerOnScreenButton } from './crawler_ui';
 import { allocateNewFloor, dialogNameRender } from './dialog_data';
 import { dialog, dialogMoveLocked, dialogReset, dialogRun, dialogStartup } from './dialog_system';
 import {
@@ -4933,6 +4933,7 @@ function playCrawl(): void {
 
   let disabled = controller.hasMoveBlocker();
   let disabled_action = !canIssueAction();
+  let show_hotkeys = useNoText();
 
   function crawlerButton(
     rx: number, ry: number,
@@ -4976,7 +4977,7 @@ function playCrawl(): void {
         toggled_down ? button_sprites_notext_down : button_sprites_notext :
         toggled_down ? button_sprites_down : button_sprites,
       is_movement: false,
-      show_hotkeys: false,
+      show_hotkeys,
     });
     // down_edge[key] += ret.down_edge;
     down[key] += ret.down;
@@ -5637,4 +5638,6 @@ export function playStartup(): void {
   autoAtlas('player', 'right');
   autoAtlas('dcex', 'solid1');
   autoAtlas('title', 'tower');
+
+  crawerUISetHotkeyFont(tiny_font, style_hotkey, TINY_FONT_H, 0, 0, ALIGN.HRIGHT);
 }
