@@ -3,3 +3,7 @@ tile_res: 12
 tiles:
   portrait0_0: [1, 0]
   portrait0_1: [2, 0]
+  player-right_0: [1, 1]
+  player-right_1: [2, 1]
+  player-left_0: [1, 2]
+  player-left_1: [2, 2]

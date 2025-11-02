@@ -178,10 +178,14 @@ export function stateHighScores(dt: number): void {
 }
 
 let hats: Item[] = [];
+let last_hat = 0;
+let cloak_color = Math.floor(Math.random() * 8);
 for (let ii = 0; ii < 7; ++ii) {
+  let hat = ii === 0 ? 0 : (last_hat + Math.floor(Math.random() * 2) + 1) % 3;
+  last_hat = hat;
   hats.push({
     type: 'hat',
-    subtype: Math.floor(Math.random() * 3),
+    subtype: hat,
     level: 7 - ii,
     count: 1,
   });
@@ -256,7 +260,7 @@ function title(dt: number): void {
     font_height_small: uiTextHeight(),
   });
 
-  drawHatDude(20, game_height - 12 - 24, Z.UI, scale, hats, []);
+  drawHatDude(20, game_height - 12 - 24, Z.UI, scale, hats, [], cloak_color);
 
   if (netSubs().loggedIn()) {
     y = 120;

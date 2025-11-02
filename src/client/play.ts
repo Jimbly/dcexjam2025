@@ -275,6 +275,18 @@ const INVENTORY_GRID_H = 5;
 const INVENTORY_MAX_SIZE = Infinity; // INVENTORY_GRID_W * INVENTORY_GRID_H;
 const MAX_FLOOR_LEVEL = 6;
 
+const PLAYER_COLORS = [
+  0xe43b44FF, // red
+  0xf77622FF, // orange
+  0xfee761FF, // yellow
+  0x63c74dFF, // green
+  0x0099dbFF, // blue
+  0xb55088FF, // purple
+  0xc0cbdcFF, // white
+  0x262b44FF, // black
+];
+const PLAYER_COLORS_VEC4 = PLAYER_COLORS.map((rgb) => vec4ColorFromIntColor(vec4(), rgb));
+
 type Entity = EntityClient;
 
 let font: Font;
@@ -686,8 +698,9 @@ function unequip(loc: 'hats' | 'books', src_idx: number, target_idx: number): vo
     ops,
     ready: false,
   };
+  let new_hat: number | null = null;
   if (loc === 'hats') {
-    let new_hat = curHat(src_list);
+    new_hat = curHat(src_list);
     if (new_hat !== null) {
       payload.costume1 = new_hat;
     }
@@ -699,6 +712,7 @@ function unequip(loc: 'hats' | 'books', src_idx: number, target_idx: number): vo
     data_assignments: {
       client_only: true,
       inventory,
+      costume1: new_hat === null ? undefined : new_hat,
       [loc]: src_list,
     },
   }, errorsToChat);
@@ -779,8 +793,9 @@ function equip(idx: number, swap_target_idx: number | null): void {
     ready: false,
   };
 
+  let new_hat: number | null = null;
   if (loc === 'hats') {
-    let new_hat = curHat(target_list);
+    new_hat = curHat(target_list);
     if (new_hat !== null) {
       payload.costume1 = new_hat;
     }
@@ -793,6 +808,7 @@ function equip(idx: number, swap_target_idx: number | null): void {
     data_assignments: {
       client_only: true,
       inventory,
+      costume1: new_hat === null ? undefined : new_hat,
       [loc]: target_list,
     },
   }, errorsToChat);
@@ -964,7 +980,10 @@ function doTradeForPotion(src_idx: number, target_idx: number): void {
 const HAT_STACK_OFFS = [
   1,2,1,0,2,1,2,1,0,1,2,0,1
 ];
-export function drawHatDude(x0: number, y0: number, z: number, scale: number, hats: Item[], books: Item[]): void {
+export function drawHatDude(
+  x0: number, y0: number, z: number, scale: number, hats: Item[], books: Item[],
+  cloak_color: number
+): void {
   let anim_t = engine.getFrameTimestamp() * 0.001;
   let dir = ((anim_t + PI/2) % (PI * 2)) < PI;
   let book_xoffs = 9 * scale;
@@ -975,12 +994,15 @@ export function drawHatDude(x0: number, y0: number, z: number, scale: number, ha
   }
   x0 += 8 * scale + round(sin(anim_t) * 8 * scale);
   let y = y0;
-  autoAtlas('player', dir ? 'player-right' : 'player-left').draw({
+  let hat_color = curHat(hats);
+  autoAtlas('player', dir ? 'player-right' : 'player-left').drawDualTint({
     x: x0,
     y,
     z,
     w: 12 * scale,
     h: 12 * scale,
+    color: PLAYER_COLORS_VEC4[cloak_color],
+    color1: PLAYER_COLORS_VEC4[hat_color === null ? 0 : hat_color],
   });
   y -= 9 * scale;
   for (let ii = 0; ii < hats.length; ++ii) {
@@ -1718,6 +1740,22 @@ class InventoryMenuAction extends UIAction {
       });
     }
 
+    if (shop_type === 'inventory') {
+      let headsize = 24;
+      let colors = {
+        color: PLAYER_COLORS_VEC4[myEnt().getData('costume0', 0)],
+        color1: PLAYER_COLORS_VEC4[myEnt().getData('costume1', 0)],
+      };
+      autoAtlas('player', 'portrait0').drawDualTint({
+        x: INVENTORY_X + INVENTORY_W - INVENTORY_PAD6 - headsize,
+        y: INVENTORY_Y + INVENTORY_H - INVENTORY_PAD6 - headsize,
+        z,
+        w: headsize,
+        h: headsize,
+        ...colors,
+      });
+    }
+
     x0 = INVENTORY_X + INVENTORY_GRID_XOFFS - 80 - INVENTORY_PAD;
     y0 = INVENTORY_Y + INVENTORY_H - FONT_HEIGHT * 4 - INVENTORY_PAD - 4;
     let y = y0;
@@ -1752,7 +1790,7 @@ class InventoryMenuAction extends UIAction {
 
     x0 = INVENTORY_X + INVENTORY_PAD6;
     y0 = INVENTORY_Y + INVENTORY_H - INVENTORY_PAD6 - 6;
-    drawHatDude(x0, y0, z, 1, hats, books);
+    drawHatDude(x0, y0, z, 1, hats, books, myEnt().getData('costume0', 0));
 
     drawBox({
       x: INVENTORY_X - 4,
@@ -1785,17 +1823,6 @@ const SETUP_H = 210;
 const SETUP_X = floor((game_width - SETUP_W)/2);
 const SETUP_Y = floor((game_height - SETUP_H)/2);
 const SETUP_EDIT_W = DISPLAY_NAME_MAX_VISUAL_SIZE.width;
-const PLAYER_COLORS = [
-  0xe43b44FF, // red
-  0xf77622FF, // orange
-  0xfee761FF, // yellow
-  0x63c74dFF, // green
-  0x0099dbFF, // blue
-  0xb55088FF, // purple
-  0xc0cbdcFF, // white
-  0x262b44FF, // black
-];
-const PLAYER_COLORS_VEC4 = PLAYER_COLORS.map((rgb) => vec4ColorFromIntColor(vec4(), rgb));
 
 function setCloakColor(new_color: number): void {
   setMiscField('costume0', new_color);
@@ -1827,6 +1854,20 @@ class SetupMenuAction extends UIAction {
     });
 
     y += 48;
+
+    let headsize = 24;
+    let colors = {
+      color: PLAYER_COLORS_VEC4[myEnt().getData('costume0', 0)],
+      color1: PLAYER_COLORS_VEC4[myEnt().getData('costume1', 0)],
+    };
+    autoAtlas('player', 'portrait0').drawDualTint({
+      x: x - 8 - headsize,
+      y: y, z,
+      w: headsize,
+      h: headsize,
+      ...colors,
+    });
+
 
     font.draw({
       style: style_inventory,
@@ -1871,15 +1912,15 @@ class SetupMenuAction extends UIAction {
     });
     y += TITLE_FONT_H + 20;
 
+    let cloak = myEnt().getData('costume0', 0);
     font.draw({
-      style: style_inventory,
+      style: cloak === 7 ? fontStyleColored(null, palette_font[PAL_WHITE + 1]) : style_inventory,
       x, y, z,
       h: uiButtonHeight(),
       w: SETUP_EDIT_W,
       align: ALIGN.HVCENTER,
       text: 'Cloak Color',
     });
-    let cloak = myEnt().getData('costume0', 0);
     drawRect(x, y, x + SETUP_EDIT_W, y + uiButtonHeight(), z - 0.1, PLAYER_COLORS_VEC4[cloak]);
 
     if (buttonText({
@@ -1904,16 +1945,22 @@ class SetupMenuAction extends UIAction {
 
     y += uiButtonHeight() + 8;
 
-    // draw Profile picture?
     // draw avatar
     const charsize = 28 * 2;
     autoAtlas('player', engine.getFrameTimestamp() % 2000 > 1500 ? 'right-attack' : 'right').drawDualTint({
       x: x - 8 - charsize, y, z, w: charsize, h: charsize,
-      color: PLAYER_COLORS_VEC4[myEnt().getData('costume0', 0)],
-      color1: PLAYER_COLORS_VEC4[myEnt().getData('costume1', 0)],
+      ...colors,
     });
 
-    // Starting spell book / hat?
+
+    font.draw({
+      color: palette_font[4],
+      x, y, z,
+      align: ALIGN.HWRAP,
+      w: 1000,
+      text: 'Note: Hat color determined\nby your largest\nequipped hat.',
+    });
+
 
     if (buttonText({
       x: SETUP_X + SETUP_W - 12 - button_w ,
@@ -1923,8 +1970,9 @@ class SetupMenuAction extends UIAction {
       text: 'Okay',
     })) {
       uiAction(null);
-      if (this.orig_name !== this.display_name) {
-        chatUI().cmdParse(`rename ${this.display_name}`);
+      let new_name = this.display_name.trim();
+      if (this.orig_name !== new_name) {
+        chatUI().cmdParse(`rename ${new_name}`);
       }
       if (!myEnt().getData('did_setup')) {
         setMiscField('did_setup', true);
@@ -3881,7 +3929,8 @@ function onBroadcast(update: EntityManagerEvent): void {
           `${type === 'hit' ? '' : ` with ${type}`} for ${-hp}` +
           `${resist ? ' (resisted)' : ''}${fatal ? ', killing it' : ''}.`);
       }
-      if (fatal && target_ent && target_ent.isEnemy() && target_ent.hit_by_us) {
+      // Note: giving rewards to all on floor for now
+      if (fatal && target_ent && target_ent.isEnemy() && (target_ent.hit_by_us || true)) {
         giveRewards(target_ent);
       }
     }
@@ -4189,11 +4238,13 @@ function doFullRestore(): void {
 const QUICKBAR_X = 14;
 const QUICKBAR_Y = 218;
 const color_disable_action = vec4(0,0,0,0.75);
+const QUICKBAR_TOOLTIP_H = 40 + FONT_HEIGHT;
+let quickbar_tooltip_up = false;
 
 function drawQuickbarTooltip(action: Item | 'basic'): void {
+  quickbar_tooltip_up = true;
   let tooltip_x = VIEWPORT_X0 + 14;
-  let tooltip_h = 40 + FONT_HEIGHT;
-  let tooltip_y0 = QUICKBAR_FRAME_Y - tooltip_h + 10;
+  let tooltip_y0 = QUICKBAR_FRAME_Y - QUICKBAR_TOOLTIP_H + 10;
   let tooltip_y = tooltip_y0;
   let tooltip_w = render_width - 14 * 2;
 
@@ -4250,7 +4301,7 @@ function drawQuickbarTooltip(action: Item | 'basic'): void {
     y: tooltip_y0 - pad,
     z: Z.QUICKBARTOOLTIP - 1,
     w: tooltip_w + pad * 2,
-    h: tooltip_h + pad * 2,
+    h: QUICKBAR_TOOLTIP_H + pad * 2,
   });
 }
 
@@ -4313,6 +4364,7 @@ function targetsForAttack(target: SkillTarget): Entity[] {
 }
 
 function doQuickbar(): void {
+  quickbar_tooltip_up = false;
   let me = myEnt();
   let books = me.data.books || [];
   let floor_level = currentFloorLevel();
@@ -4797,6 +4849,8 @@ function playCrawl(): void {
     dialog_viewport.y = 0;
     dialog_viewport.h = game_height - 3;
     dialog_viewport.z = Z.MODAL + 100;
+  } else if (quickbar_tooltip_up) {
+    dialog_viewport.h -= QUICKBAR_TOOLTIP_H;
   }
   dialogRun(dt, dialog_viewport, false);
 

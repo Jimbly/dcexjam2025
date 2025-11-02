@@ -156,6 +156,7 @@ export class EntityServer extends entityGameCommonClass(EntityBaseServer) implem
       // }
       if (!this.data.stats) {
         this.data.stats = {} as typeof default_player_stats;
+        this.data.costume0 = Math.floor(Math.random() * 8);
       }
       let key: keyof typeof default_player_stats;
       for (key in default_player_stats) {
