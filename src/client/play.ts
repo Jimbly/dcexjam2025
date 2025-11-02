@@ -720,7 +720,7 @@ function unequip(loc: 'hats' | 'books', src_idx: number, target_idx: number): vo
   my_ent.calcPlayerResist(currentFloorLevel());
 }
 
-function equip(idx: number, swap_target_idx: number | null): void {
+function equip(idx: number, swap_target_idx: number | null): number {
   let my_ent = myEnt();
   let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
   let item = inventory[idx];
@@ -814,6 +814,8 @@ function equip(idx: number, swap_target_idx: number | null): void {
   }, errorsToChat);
 
   my_ent.calcPlayerResist(currentFloorLevel());
+
+  return target_idx;
 }
 
 function doCombine(src_idx: number, target_idx: number): void {
@@ -1256,15 +1258,18 @@ class InventoryMenuAction extends UIAction {
           });
         }
       } else {
+        let is_selected = selected_idx[0] === 'hats' && selected_idx[1] === idx;
         if (inventoryButton({
           x, y, z,
           item,
           show_count: false,
-          selected: selected_idx[0] === 'hats' && selected_idx[1] === idx,
+          selected: is_selected,
         })) {
           this.selected_idx = selected_idx = ['hats', idx];
           if (buttonLastSpotRet().double_click) {
             do_action = true;
+          } else if (is_selected) {
+            this.selected_idx = selected_idx = ['null', 0];
           }
         }
       }
@@ -1282,15 +1287,18 @@ class InventoryMenuAction extends UIAction {
       if (!item) {
         drawBox(param, autoAtlas('ui', idx < level ? 'inventory-fillable-book' : 'inventory-locked'));
       } else {
+        let is_selected = selected_idx[0] === 'books' && selected_idx[1] === idx;
         if (inventoryButton({
           x, y, z,
           item,
           show_count: false,
-          selected: selected_idx[0] === 'books' && selected_idx[1] === idx,
+          selected: is_selected,
         })) {
           this.selected_idx = selected_idx = ['books', idx];
           if (buttonLastSpotRet().double_click) {
             do_action = true;
+          } else if (is_selected) {
+            this.selected_idx = selected_idx = ['null', 0];
           }
         }
       }
@@ -1321,15 +1329,18 @@ class InventoryMenuAction extends UIAction {
         if (!item) {
           autoAtlas('ui', 'inventory-empty').draw(param);
         } else {
+          let is_selected = selected_idx[0] === 'inv' && selected_idx[1] === idx;
           if (inventoryButton({
             x, y, z,
             item,
             show_count: true,
-            selected: selected_idx[0] === 'inv' && selected_idx[1] === idx,
+            selected: is_selected,
           })) {
             this.selected_idx = selected_idx = ['inv', idx];
             if (buttonLastSpotRet().double_click) {
               do_action = true;
+            } else if (is_selected) {
+              this.selected_idx = selected_idx = ['null', 0];
             }
           }
         }
@@ -1432,7 +1443,11 @@ class InventoryMenuAction extends UIAction {
           let swap_target: Item | null = null;
           for (let ii = 0; ii < target_list.length; ++ii) {
             let elem = target_list[ii];
-            if (elem.level === item.level) {
+            if (
+              elem.level === item.level ||
+              !swap_target ||
+              swap_target.level !== item.level && elem.level < swap_target.level
+            ) {
               swap_target = elem;
               swap_target_idx = ii;
             }
@@ -1451,7 +1466,8 @@ class InventoryMenuAction extends UIAction {
               disabledAction('Swap');
             } else {
               if (action('Swap')) {
-                equip(selected_idx[1], swap_target_idx);
+                let new_idx = equip(selected_idx[1], swap_target_idx);
+                this.selected_idx = selected_idx = [target_loc, new_idx];
               }
             }
           } else if (!is_at_player_level) {
@@ -1461,7 +1477,8 @@ class InventoryMenuAction extends UIAction {
                 ` ${item.type}s than the current Floor Level, so only the bottom (best) item(s) will be used.`);
             }
             if (action('Equip')) {
-              equip(selected_idx[1], null);
+              let new_idx = equip(selected_idx[1], null);
+              this.selected_idx = selected_idx = [target_loc, new_idx];
             }
           } else {
             line(`CANNOT equip:  You can only wield smaller ${target_loc} on top` +
@@ -1480,6 +1497,7 @@ class InventoryMenuAction extends UIAction {
             line('CANNOT unequip: inventory full');
           } else if (action('Unequip')) {
             unequip(sel_loc, selected_idx[1], target_idx);
+            this.selected_idx = selected_idx = ['inv', target_idx];
           }
         }
       }
@@ -1754,6 +1772,20 @@ class InventoryMenuAction extends UIAction {
         h: headsize,
         ...colors,
       });
+
+      if (selected_idx[0] === 'null') {
+        let y = INVENTORY_Y + INVENTORY_SHOP_OPTIONS_YOFFS - 12;
+        markdownAuto({
+          font_style: style_inventory,
+          x: x0, y, z,
+          w: INVENTORY_GRID_WITHSCROLL_W - 12,
+          align: ALIGN.HWRAP,
+          text:
+            'You can equip 1 Hat and 1 Book per [c=level]Player Level[/c].\n' +
+            'Each equipped item must be smaller (lower level) than the item' +
+            ' beneath it.  So, each equipped book (or hat) must be a unique level.',
+        });
+      }
     }
 
     x0 = INVENTORY_X + INVENTORY_GRID_XOFFS - 80 - INVENTORY_PAD;

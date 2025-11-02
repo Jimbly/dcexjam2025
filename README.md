@@ -14,8 +14,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if I am the only player, execute a tick before allowing the action
 
 TODO
-* fix 2 players or 1 player + 1 NPC on the same square to push in different directions
-* allow "Swap" to swap with lowest level that would be allowed
 * make dude's books more clear
 
 Bugs:
