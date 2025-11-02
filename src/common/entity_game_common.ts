@@ -71,6 +71,7 @@ export type ActionInventoryPayload = {
   dstats?: Partial<StatsData>;
   ops: ActionInventoryOp[];
   ready: boolean;
+  costume1?: number;
 };
 
 export type ActionNewFloorPayload = {

@@ -1,0 +1,5 @@
+---
+tile_res: 12
+tiles:
+  portrait0_0: [1, 0]
+  portrait0_1: [2, 0]

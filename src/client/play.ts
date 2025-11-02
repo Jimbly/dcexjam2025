@@ -15,6 +15,7 @@ import {
   fontStyle,
   fontStyleAlpha,
   fontStyleColored,
+  vec4ColorFromIntColor,
 } from 'glov/client/font';
 import * as input from 'glov/client/input';
 import {
@@ -644,6 +645,14 @@ function inventoryIndexForItemPickup(item: Item): number {
   return idx;
 }
 
+function curHat(list: Item[]): number | null {
+  if (!list.length) {
+    return null;
+  }
+  let item = list[0];
+  return [0,3,4][item.subtype];
+}
+
 function unequip(loc: 'hats' | 'books', src_idx: number, target_idx: number): void {
   let my_ent = myEnt();
   let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
@@ -677,6 +686,12 @@ function unequip(loc: 'hats' | 'books', src_idx: number, target_idx: number): vo
     ops,
     ready: false,
   };
+  if (loc === 'hats') {
+    let new_hat = curHat(src_list);
+    if (new_hat !== null) {
+      payload.costume1 = new_hat;
+    }
+  }
   my_ent.applyBatchUpdate({
     field: 'seq_inventory',
     action_id: 'inv',
@@ -763,6 +778,14 @@ function equip(idx: number, swap_target_idx: number | null): void {
     ops,
     ready: false,
   };
+
+  if (loc === 'hats') {
+    let new_hat = curHat(target_list);
+    if (new_hat !== null) {
+      payload.costume1 = new_hat;
+    }
+  }
+
   my_ent.applyBatchUpdate({
     field: 'seq_inventory',
     action_id: 'inv',
@@ -1758,10 +1781,26 @@ function setMiscField<T extends keyof EntityDataClient>(field: T, value: EntityD
 
 
 const SETUP_W = 300;
-const SETUP_H = game_height / 2;
+const SETUP_H = 210;
 const SETUP_X = floor((game_width - SETUP_W)/2);
 const SETUP_Y = floor((game_height - SETUP_H)/2);
 const SETUP_EDIT_W = DISPLAY_NAME_MAX_VISUAL_SIZE.width;
+const PLAYER_COLORS = [
+  0xe43b44FF, // red
+  0xf77622FF, // orange
+  0xfee761FF, // yellow
+  0x63c74dFF, // green
+  0x0099dbFF, // blue
+  0xb55088FF, // purple
+  0xc0cbdcFF, // white
+  0x262b44FF, // black
+];
+const PLAYER_COLORS_VEC4 = PLAYER_COLORS.map((rgb) => vec4ColorFromIntColor(vec4(), rgb));
+
+function setCloakColor(new_color: number): void {
+  setMiscField('costume0', new_color);
+}
+
 class SetupMenuAction extends UIAction {
   display_name: string;
   orig_name: string;
@@ -1830,10 +1869,50 @@ class SetupMenuAction extends UIAction {
       size: TITLE_FONT_H,
       text: this.display_name,
     });
+    y += TITLE_FONT_H + 20;
 
+    font.draw({
+      style: style_inventory,
+      x, y, z,
+      h: uiButtonHeight(),
+      w: SETUP_EDIT_W,
+      align: ALIGN.HVCENTER,
+      text: 'Cloak Color',
+    });
+    let cloak = myEnt().getData('costume0', 0);
+    drawRect(x, y, x + SETUP_EDIT_W, y + uiButtonHeight(), z - 0.1, PLAYER_COLORS_VEC4[cloak]);
 
-    // Profile picture?
-    // Clothing color?
+    if (buttonText({
+      x: x - 8 - button_w,
+      y: y,
+      z,
+      w: button_w,
+      text: '<<',
+    })) {
+      setCloakColor((cloak + PLAYER_COLORS.length - 1) % PLAYER_COLORS.length);
+    }
+
+    if (buttonText({
+      x: x + SETUP_EDIT_W + 8,
+      y: y,
+      z,
+      w: button_w,
+      text: '>>',
+    })) {
+      setCloakColor((cloak + 1) % PLAYER_COLORS.length);
+    }
+
+    y += uiButtonHeight() + 8;
+
+    // draw Profile picture?
+    // draw avatar
+    const charsize = 28 * 2;
+    autoAtlas('player', engine.getFrameTimestamp() % 2000 > 1500 ? 'right-attack' : 'right').drawDualTint({
+      x: x - 8 - charsize, y, z, w: charsize, h: charsize,
+      color: PLAYER_COLORS_VEC4[myEnt().getData('costume0', 0)],
+      color1: PLAYER_COLORS_VEC4[myEnt().getData('costume1', 0)],
+    });
+
     // Starting spell book / hat?
 
     if (buttonText({
@@ -3220,11 +3299,19 @@ function drawBattleZone(): void {
       w: BATTLEZONE_W,
       h: 25, // is_bz ? 25: 23,
     }, autoAtlas('ui', 'roundpanel'));
-    autoAtlas('ui', 'portraits-4').draw({
+    // autoAtlas('ui', 'portraits-4').draw({
+    //   x: x + 5,
+    //   y: y + 3, z,
+    //   w: 12,
+    //   h: 12,
+    // });
+    autoAtlas('player', 'portrait0').drawDualTint({
       x: x + 5,
       y: y + 3, z,
       w: 12,
       h: 12,
+      color: PLAYER_COLORS_VEC4[ent.getData('costume0', 0)],
+      color1: PLAYER_COLORS_VEC4[ent.getData('costume1', 0)],
     });
     let sprite = 'star';
     if (ent !== me) {
@@ -4671,7 +4758,7 @@ function playCrawl(): void {
     controller.setMoveBlocker(moveBlockDead);
   }
 
-  if (!myEnt().getData('did_setup') && !cur_action) {
+  if ((!myEnt().getData('did_setup') || engine.DEBUG && false) && !cur_action) {
     uiAction(new SetupMenuAction());
   }
 

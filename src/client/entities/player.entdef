@@ -78,21 +78,14 @@ traits:
   scale: 0.65
   do_alpha: true
   tint_colors:
-  - - '#E0F058' # Pants
-    - '#E098B0' # Skin
-    - '#802048' # Clothes
-  - - '#586838'
-    - '#D89048'
-    - '#A85848'
-  - - '#d8a848'
-    - '#b89038'
-    - '#803808'
-  - - '#b86878'
-    - '#d86868'
-    - '#e0a858'
-  - - '#80b068'
-    - '#a8b068'
-    - '#688020'
+  - '#e43b44' # red
+  - '#f77622' # orange
+  - '#fee761' # yellow
+  - '#63c74d' # green
+  - '#0099db' # blue
+  - '#b55088' # purple
+  - '#c0cbdc' # white
+  - '#262b44' # black
   simple_anim:
     - period: 3000
       scale: [1, 0.95]

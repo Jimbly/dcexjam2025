@@ -123,7 +123,7 @@ export type DrawableSpriteOpts = {
   sprite_hybrid?: Sprite; // assigned at load time
   scale: number;
   do_alpha?: boolean;
-  tint_colors?: [JSVec4, JSVec4, JSVec4][];
+  tint_colors?: JSVec4[];
   simple_anim?: {
     scale?: JSVec2;
     offs?: [JSVec2, JSVec2];
@@ -302,10 +302,11 @@ export function drawableSpriteDrawSub(this: EntityDrawableSprite, param: EntityD
   let shader_type: ShaderTypeEnum = ShaderType.SpriteFragment;
   if ((sprite.texs.length > 1 && tint_colors && tint_colors.length)) {
     shader_type = ShaderType.TintedSpriteFragment;
-    let costume = min(ent.data.costume || 0, tint_colors.length);
-    shader_params.tint0 = tint_colors[costume][0];
-    shader_params.tint1 = tint_colors[costume][1];
-    shader_params.tint2 = tint_colors[costume][2];
+    let costume0 = min(ent.data.costume0 || 0, tint_colors.length);
+    let costume1 = min(ent.data.costume1 || 0, tint_colors.length);
+    shader_params.tint0 = tint_colors[costume0];
+    shader_params.tint1 = tint_colors[costume1];
+    // shader_params.tint2 = tint_colors[costume][2];
   }
   if (sprite_hybrid && settings.hybrid) {
     let dist = v2dist(draw_pos, renderCamPos()) / DIM; // 0...N grid cells

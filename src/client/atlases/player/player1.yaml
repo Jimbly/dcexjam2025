@@ -1,0 +1,12 @@
+---
+tile_res: 56
+tiles:
+  right_1: [0, 0]
+  away_1: [1, 0]
+  left_1: [2, 0]
+  towards_1: [3, 0]
+  dead_1: [4, 0]
+  right-attack_1: [0, 1]
+  away-attack_1: [1, 1]
+  left-attack_1: [2, 1]
+  towards-attack_1: [3, 1]

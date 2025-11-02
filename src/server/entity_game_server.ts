@@ -50,7 +50,8 @@ entityServerRegisterFieldDefs<EntityGameDataServer>({
   town_leave_pos: { encoding: EntityFieldEncoding.IVec3 },
   state: { ephemeral: true, encoding: EntityFieldEncoding.AnsiString },
   floor: { encoding: EntityFieldEncoding.Int },
-  costume: { encoding: EntityFieldEncoding.Int },
+  costume0: { encoding: EntityFieldEncoding.Int },
+  costume1: { encoding: EntityFieldEncoding.Int },
   stats: { sub: EntityFieldSub.Record, encoding: EntityFieldEncoding.Int },
   inventory: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
   contents: { sub: EntityFieldSub.Array, encoding: EntityFieldEncoding.JSON },
@@ -173,6 +174,11 @@ export class EntityServer extends entityGameCommonClass(EntityBaseServer) implem
       // enemies don't have a rotation, but are serialized to the client as a Vec3, so need one here
       this.data.pos.push(0);
     }
+
+    if ((this.data as unknown as DataObject).costume) {
+      delete (this.data as unknown as DataObject).costume;
+    }
+
   }
 
   visibleAreaGet(): VAID {
@@ -405,6 +411,8 @@ entityServerRegisterActions([{
   allowed_data_assignments: {
     did_setup: 'boolean',
     town_leave_pos: 'array',
+    costume0: 'number',
+    costume1: 'number',
     seq_player_move: 'string',
   },
 }, {
@@ -473,6 +481,10 @@ entityServerRegisterActions([{
         this.dirtySub('stats', key);
       }
       this.entity_manager.broadcast(this, 'dstat', broadcast);
+    }
+    if (param.costume1 !== undefined) {
+      this.data.costume1 = param.costume1;
+      this.dirty('costume1');
     }
     for (let ii = 0; ii < param.ops.length; ++ii) {
       let op = param.ops[ii];

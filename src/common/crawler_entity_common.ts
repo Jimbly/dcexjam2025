@@ -16,7 +16,8 @@ export interface EntityCrawlerDataCommon extends EntityBaseDataCommon {
   pos: JSVec3;
   state?: string;
   floor: number;
-  costume?: number; // For drawablesprite with tint colors
+  costume0?: number; // For drawablesprite with tint colors
+  costume1?: number; // For drawablesprite with tint colors
   stats: { hp: number };
 }
 

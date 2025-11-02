@@ -261,6 +261,7 @@ export class EntityBaseServer extends EntityBaseCommon {
   // Serialized when saving to the data store
   toSerializedStorage(): DataObject {
     let { data } = this;
+    delete (data as DataObject).costume; // DCJAM
     let ret: DataObject = {};
     for (let key in data) {
       let field_def = entity_field_defs[key];

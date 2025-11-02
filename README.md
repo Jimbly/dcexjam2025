@@ -15,7 +15,8 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 
 TODO
 * choose player cloak color in customization (just 6 hard-coded? simple 2-color tint?); maybe hat color based on equipped hat?
-* golden hat reward for final level (if it shows on players)
+  * apply to profile picture too
+  * golden hat reward for final level (if it shows on players)
 * fix 2 players or 1 player + 1 NPC on the same square to push in different directions
 * using basic attack/wait while on same tile as the cat should pet it
 * allow "Swap" to swap with lowest level that would be allowed
