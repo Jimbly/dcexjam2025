@@ -19,10 +19,12 @@ import {
 } from 'glov/client/font';
 import * as input from 'glov/client/input';
 import {
+  inputPadMode,
   keyDownEdge,
   KEYS,
   keyUpEdge,
   PAD,
+  padButtonDownEdge,
   padButtonUpEdge,
 } from 'glov/client/input';
 import { markdownAuto } from 'glov/client/markdown';
@@ -4167,7 +4169,7 @@ function numHealingPotions(): number {
   return 0;
 }
 
-function doHeal(): void {
+function doHeal(all_disabled: boolean): void {
   let my_ent = myEnt();
   let inventory = clone(my_ent.getData<(Item|null)[]>('inventory') || []);
   let inv_idx = -1;
@@ -4190,6 +4192,10 @@ function doHeal(): void {
     playUISound('user_error');
     statusSet('heal', 'Already fully healed.').counter = 2500;
     return;
+  }
+
+  if (all_disabled) {
+    return onDisabledAction(); // eslint-disable-line @typescript-eslint/no-use-before-define
   }
 
   playUISound('potion');
@@ -4310,7 +4316,7 @@ function drawQuickbarTooltip(action: Item | 'basic'): void {
       z: Z.QUICKBARTOOLTIP,
       h: TITLE_FONT_H,
       align: ALIGN.VCENTER | ALIGN.HRIGHT,
-      text: '(press [c=hotkey]W[/c] into enemies)',
+      text: `(press [c=hotkey]${inputPadMode() ? 'Up' : 'W'}[/c] into enemies)`,
     });
     tooltip_y += TITLE_FONT_H + 2;
     let basic_damage = basicAttackDamage(myEnt().data.stats, { defense: 0 } as StatsData);
@@ -4400,6 +4406,8 @@ function targetsForAttack(target: SkillTarget): Entity[] {
   return [];
 }
 
+let quickbar_select_index = 1;
+let quickbar_tooltip_show_time = 0;
 function doQuickbar(): void {
   quickbar_tooltip_up = false;
   let me = myEnt();
@@ -4416,6 +4424,31 @@ function doQuickbar(): void {
 
   if (!canIssueAction()) {
     all_disabled = true;
+  }
+
+  if (padButtonDownEdge(PAD.LT)) {
+    quickbar_tooltip_show_time = 2000;
+    quickbar_select_index--;
+    if (!quickbar_select_index) {
+      quickbar_select_index = 10;
+    } else {
+      while (quickbar_select_index > 1 && (
+        quickbar_select_index > floor_level || !books[quickbar_select_index-1]
+      )) {
+        --quickbar_select_index;
+      }
+    }
+  }
+  if (padButtonDownEdge(PAD.RT)) {
+    quickbar_tooltip_show_time = 2000;
+    quickbar_select_index++;
+    if (quickbar_select_index > 10) {
+      quickbar_select_index = 1;
+    } else {
+      if (quickbar_select_index > floor_level || !books[quickbar_select_index-1]) {
+        quickbar_select_index = 10;
+      }
+    }
   }
 
   for (let ii = 1; ii <= 10; ++ii) {
@@ -4451,6 +4484,7 @@ function doQuickbar(): void {
       shrink: 12/16,
     };
     let hotkey = `${ii === 10 ? 0 : ii}` as '1' | '2';
+    let visible_hotkey: string | undefined = inputPadMode() ? undefined : hotkey;
     let activate = false;
     let focused = false;
     if (!icon) {
@@ -4460,11 +4494,17 @@ function doQuickbar(): void {
         disabled: true,
       });
     } else {
+      let hotpad = (inputPadMode() && (quickbar_select_index === ii)) ? PAD.A : undefined;
+      if (hotpad !== undefined) {
+        visible_hotkey = 'A';
+      }
       activate = Boolean(button({
         ...button_param,
         img: autoAtlas('ui', icon),
         hotkey: KEYS[hotkey],
+        hotpad,
         // base_name: canIssueAction() ? undefined : 'button_disabled',
+        base_name: hotpad !== undefined ? 'buttonselected' : undefined,
         disabled: disable_button,
         disabled_focusable: true,
         sound_button: null,
@@ -4479,14 +4519,16 @@ function doQuickbar(): void {
         });
       }
     }
-    tiny_font.draw({
-      ...button_param,
-      style: icon ? style_hotkey : style_hotkey_disabled,
-      size: TINY_FONT_H,
-      z: Z.UI + 2,
-      align: ALIGN.HRIGHT,
-      text: hotkey,
-    });
+    if (visible_hotkey) {
+      tiny_font.draw({
+        ...button_param,
+        style: icon ? style_hotkey : style_hotkey_disabled,
+        size: TINY_FONT_H,
+        z: Z.UI + 2,
+        align: ALIGN.HRIGHT,
+        text: visible_hotkey,
+      });
+    }
     if (skill_details && skill_details.mp_cost) {
       tiny_font.draw({
         ...button_param,
@@ -4499,7 +4541,8 @@ function doQuickbar(): void {
       });
     }
 
-    if (focused && icon) {
+    if (icon && (focused || visible_hotkey && quickbar_tooltip_show_time > 0)) {
+      quickbar_tooltip_show_time = max(0, quickbar_tooltip_show_time - getScaledFrameDt());
       drawQuickbarTooltip(action);
     }
 
@@ -4570,14 +4613,11 @@ function doQuickbar(): void {
     ...heal_button_param,
     shrink: 12/16,
     hotkey: KEYS.H,
+    hotpad: PAD.X,
     sound_button: null,
     img: autoAtlas('ui', 'potion'),
   })) {
-    if (all_disabled) {
-      onDisabledAction(); // eslint-disable-line @typescript-eslint/no-use-before-define
-    } else {
-      doHeal();
-    }
+    doHeal(all_disabled);
   }
   if (buttonLastSpotRet().focused) {
     drawQuickbarTooltip({
@@ -4600,7 +4640,7 @@ function doQuickbar(): void {
     size: TINY_FONT_H,
     z: Z.UI + 2,
     align: ALIGN.HRIGHT,
-    text: 'H',
+    text: inputPadMode() ? 'X' : 'H',
   });
   let count = numHealingPotions();
   tiny_font.draw({

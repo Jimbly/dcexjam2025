@@ -22,7 +22,6 @@ Bugs:
 Post-jam? fixes:
 * wider hats/books at least in inventory
 * clicking on viewport to move into tower and releasing activates button
-* controller support (triggers to toggle selected skill?)
 * player names over heads
 * dither instead of blur for menuUp()
 * fix single entity force_kick pingponging
@@ -31,8 +30,6 @@ Post-jam? fixes:
 * show an un-slotted, but available, quickbar slot as a different color, tooltip info, clicking opens inventory
 * click to move - ensure stop when enter (active?) battlezone
 * click to move - stop when threatened (or, always in battlezone?)
-* W on map screen is selecting Exit button, not moving player
-* Space on map screen after exit button selected is activating Wait, not closing the window
 * change W icon to basic attack icon when engaged
 * show actual item instead of chest graphic when there's a single item
 * Nope: battlezone: don't count through attack-blocking doorways - makes "nearest player" weird (someone on the other side of the door and far away) and ticking rules weird
