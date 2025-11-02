@@ -222,10 +222,11 @@ export function allocateNewFloor(floor_level: number): void {
     action_id: 'new_floor',
     payload,
   }, function (err, result?: number) {
-    dialogReset();
     errorsToChat(err);
     if (!err && result) {
       joinFloorFromTown(result);
+    } else {
+      dialogReset();
     }
   });
 }

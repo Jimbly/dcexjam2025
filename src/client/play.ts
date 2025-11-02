@@ -199,7 +199,7 @@ import {
 import { crawlerScriptAPIDummyServer } from './crawler_script_api_client';
 import { crawlerOnScreenButton } from './crawler_ui';
 import { allocateNewFloor, dialogNameRender } from './dialog_data';
-import { dialog, dialogMoveLocked, dialogRun, dialogStartup } from './dialog_system';
+import { dialog, dialogMoveLocked, dialogReset, dialogRun, dialogStartup } from './dialog_system';
 import {
   entitiesAt,
   EntityClient,
@@ -5185,6 +5185,10 @@ settingsRegister({
   },
 });
 
+function initLevel(): void {
+  dialogReset();
+}
+
 export function playStartup(): void {
   font = uiGetFont();
   title_font = uiGetTitleFont();
@@ -5207,6 +5211,7 @@ export function playStartup(): void {
     },
     play_state: play,
     // on_init_level_offline: initLevel,
+    on_init_level_online: initLevel,
     default_vstyle: 'dcex',
     allow_offline_console: engine.DEBUG,
     chat_ui_param: {
