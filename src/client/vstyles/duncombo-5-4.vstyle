@@ -1,0 +1,38 @@
+---
+fog_color: '#181425'
+background_color: '#181425'
+# background_img: backdrop_sky
+fog_params:
+- 0.0035
+- 0.0035
+- 800.0
+cell_swaps:
+  open: dun5_open
+  detail1: dun5_detail1
+  detail2: dun5_detail2
+  var_open: dun4_open
+  var_detail1: dun4_detail1
+  var_detail2: dun4_detail2
+wall_swaps:
+  open: dun5_open
+  door: dun5_door
+  door_oneway: dun5_door
+  # door_locked: demo_door_locked
+  # door_locked_unlocked: demo_door_locked_unlocked
+  secret_door: dun5_secret_door
+  secret_door_unvisited: dun5_secret_door
+  solid: dun5_solid1
+  solid2: dun5_solid2
+  window: dun5_window
+  arch: dun5_arch
+  entrance: dun5_stairs_in
+  stairs_in: dun5_stairs_in
+  stairs_out: dun5_stairs_in
+  # floorswitch: dun5_floorswitch
+  var_door: dun4_door
+  var_solid: dun4_solid1
+  var_solid2: dun4_solid2
+  var_stairs_in: dun4_stairs_in
+  var_stairs_out: dun4_stairs_in
+  var_window: dun4_window # probably unused?
+  var_arch: dun4_arch # probably unused?
