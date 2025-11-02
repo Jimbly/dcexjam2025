@@ -1998,6 +1998,7 @@ function uiTick(dt) {
         h: camera2d.hReal(),
       });
     }
+    params.cb?.(params.z - 2);
   } else {
     menu_up_time = 0;
   }

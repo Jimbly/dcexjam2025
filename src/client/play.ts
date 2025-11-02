@@ -52,6 +52,7 @@ import {
   drawBox,
   drawRect,
   drawRect2,
+  menuFadeParamsSetDefault,
   menuUp,
   modalDialog,
   panel,
@@ -85,6 +86,7 @@ import {
   Vec2,
   vec3,
   vec4,
+  zero_vec,
 } from 'glov/common/vmath';
 import {
   basicAttackDamage,
@@ -5426,6 +5428,19 @@ function initLevel(): void {
   dialogReset();
 }
 
+function menuFadeFunc(z: number): void {
+  let x = 0;
+  let y = 0;
+  let w = game_width;
+  let h = game_height;
+  dither128.draw({
+    x, y, w, h,
+    z: z - 1,
+    color: palette[PAL_BLACK],
+    uvs: [0, 0, w/128, h/128],
+  });
+}
+
 export function playStartup(): void {
   font = uiGetFont();
   title_font = uiGetTitleFont();
@@ -5680,4 +5695,12 @@ export function playStartup(): void {
   autoAtlas('title', 'tower');
 
   crawerUISetHotkeyFont(tiny_font, style_hotkey, TINY_FONT_H, 0, 0, ALIGN.HRIGHT);
+
+  menuFadeParamsSetDefault({
+    blur: [0, 0],
+    saturation: [1, 1],
+    brightness: [1, 1],
+    fallback_darken: zero_vec,
+    cb: menuFadeFunc,
+  });
 }
