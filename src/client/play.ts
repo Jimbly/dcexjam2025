@@ -991,6 +991,7 @@ export function drawHatDude(
   let book_xoffs = 9 * scale;
   let hat_xoffs = -1 * scale;
   if (!dir) {
+    book_xoffs -= 12;
     book_xoffs *= -1;
     hat_xoffs *= -1;
   }
@@ -1022,11 +1023,11 @@ export function drawHatDude(
   for (let ii = 0; ii < books.length; ++ii) {
     let book = books[ii];
     let elem = ELEMENT_NAME[1 + (book.subtype % 3)];
-    y -= 6 * scale;
+    y -= 4 * scale;
     autoAtlas('ui', `spellbook-side-${elem}`).draw({
       x: x0 - scale + book_xoffs + HAT_STACK_OFFS[HAT_STACK_OFFS.length - 1 - ii] * scale,
       y, z: z + 1 + ii + 10,
-      w: 12 * scale,
+      w: 12 * scale * (dir ? 1 : -1),
       h: 12 * scale,
     });
   }
@@ -1454,6 +1455,10 @@ class InventoryMenuAction extends UIAction {
           }
           let is_at_player_level = target_list.length >= level;
           let is_at_floor_level = target_list.length >= floor_level;
+
+          if (!is_at_player_level && swap_target && swap_target.level !== item.level) {
+            swap_target = null;
+          }
 
           if (swap_target) {
             if (swap_target.subtype === item.subtype) {

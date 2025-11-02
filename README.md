@@ -13,9 +13,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if there are any other players in the zone, block the action (line above will handle it)
   * if I am the only player, execute a tick before allowing the action
 
-TODO
-* make dude's books more clear
-
 Bugs:
 * visibility is different before/after turning camera/moving forward and back if directly facing a wall
   * relatedly: moving backwards through a door and I could see the enemy on the other side
