@@ -8,7 +8,7 @@ traits:
 - id: stats_enemy
   hp: 5
   attack: 3
-  defense: 0.3334
+  defense: 0.15
   element: fire
 - id: hunter
 - id: wander

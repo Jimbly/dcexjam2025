@@ -6,8 +6,8 @@ const fs = require('fs');
 const HP_LOW = 2; // normal = 5
 const HP_HIGH = 8;
 const HP_BOSS = -2; // scalar
-const DEF_LOW = 0.3334;
-const DEF_BOSS = 0.75;
+const DEF_LOW = 0.15;
+const DEF_BOSS = 0.5;
 const ATTACK_HIGH = 4; // normal == 3
 
 let data = {

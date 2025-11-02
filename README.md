@@ -14,16 +14,13 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if I am the only player, execute a tick before allowing the action
 
 TODO
-* playtest
-  * make a combo, test it, repeat, see how far we get
-  * do 4 of these, then break for below
-* set "win the game" floor to 6, hide doors to 7+?
 * choose player cloak color in customization (just 6 hard-coded? simple 2-color tint?); maybe hat color based on equipped hat?
 * golden hat reward for final level (if it shows on players)
 * fix 2 players or 1 player + 1 NPC on the same square to push in different directions
 * using basic attack/wait while on same tile as the cat should pet it
 * allow "Swap" to swap with lowest level that would be allowed
 * make dude's books more clear
+* don't clear "loading..." when generating a level until we're fully connected
 
 Bugs:
 * visibility is different before/after turning camera/moving forward and back if directly facing a wall

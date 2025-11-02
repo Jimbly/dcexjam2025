@@ -8,7 +8,7 @@ traits:
 - id: stats_enemy
   hp: -2
   attack: 3
-  defense: 0.75
+  defense: 0.5
 - id: hunter
 - id: wander
 - id: drawable

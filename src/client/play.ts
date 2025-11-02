@@ -272,7 +272,7 @@ const MAX_TICK_RANGE = 12; // if enemies are more steps than this from a player,
 const INVENTORY_GRID_W = 8;
 const INVENTORY_GRID_H = 5;
 const INVENTORY_MAX_SIZE = Infinity; // INVENTORY_GRID_W * INVENTORY_GRID_H;
-const MAX_FLOOR_LEVEL = 9;
+const MAX_FLOOR_LEVEL = 6;
 
 type Entity = EntityClient;
 
@@ -1554,12 +1554,16 @@ class InventoryMenuAction extends UIAction {
 
             for (let dsub = 0; dsub < 2; ++dsub) {
               let subtype;
-              if (dsub) {
-                // next element, same style
-                subtype = ((item.subtype + 1) % 3) + (item.subtype >= 3 ? 3 : 0);
+              if (item.type === 'book') {
+                if (dsub) {
+                  // next element, same style
+                  subtype = ((item.subtype + 1) % 3) + (item.subtype >= 3 ? 3 : 0);
+                } else {
+                  // same element, different style
+                  subtype = (item.subtype + 3) % 6;
+                }
               } else {
-                // same element, different style
-                subtype = (item.subtype + 3) % 6;
+                subtype = (item.subtype + 1) % 3;
               }
               let target_item: Item = {
                 ...item,
@@ -2825,8 +2829,9 @@ function checkFloorCompletion(locked: boolean): void {
 
     let is_final_floor = currentFloorLevel() === MAX_FLOOR_LEVEL;
     if (is_final_floor) {
-      let msg = 'You have cleared the highest floor of the tower and saved the world,' +
-        ' consider yourself a hero.';
+      let msg = 'You have cleared the sixth floor of the tower and saved the world,' +
+        ' consider yourself a hero.  You win.  If you _really_ want to, you can ' +
+        ' keep climbing to higher heights.';
       dialog('modal', msg);
       chatUI().addChat(msg);
     } else {
@@ -2887,7 +2892,7 @@ function drawStats(): void {
       text: `XP ${xp - prev_xp}/${next_xp - prev_xp}`,
     });
     y += FONT_HEIGHT;
-    drawBar(bar_sprites.xpbar, x, y, z, STATS_BAR_W, STATS_XP_BAR_H, xp/next_xp);
+    drawBar(bar_sprites.xpbar, x, y, z, STATS_BAR_W, STATS_XP_BAR_H, (xp - prev_xp)/(next_xp - prev_xp));
   }
 
   // gold and floor level
