@@ -1,0 +1,28 @@
+---
+fog_color: '#3e8948'
+background_color: '#3e8948'
+background_img: backdrop_sky
+fog_params:
+- 0.0035
+- 0.0035
+- 800.0
+cell_swaps:
+  open: dun10_open
+  detail1: dun10_detail1
+  detail2: dun10_detail2
+wall_swaps:
+  open: dun10_open
+  door: dun10_door
+  door_oneway: dun10_door
+  # door_locked: demo_door_locked
+  # door_locked_unlocked: demo_door_locked_unlocked
+  secret_door: dun10_secret_door
+  secret_door_unvisited: dun10_secret_door
+  solid: dun10_solid1
+  solid2: dun10_solid2
+  window: dun10_window
+  arch: dun10_arch
+  entrance: dun10_stairs_in
+  stairs_in: dun10_stairs_in
+  stairs_out: dun10_stairs_in
+  # floorswitch: dun10_floorswitch

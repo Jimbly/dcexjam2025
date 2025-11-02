@@ -15,3 +15,36 @@ visuals:
     tile: dun5-ceiling
 
 corners: # pillars and floor/ceiling details
+  one:
+  - pass: details
+    type: simple_pillar
+    opts:
+      quadrants: 1
+      segments: 12
+      roundness: 0
+      atlas: dcex
+      tile: dun5-solid1
+      height: 1
+      offs: [0,0,0]
+  two:
+  - pass: details
+    type: simple_pillar
+    opts:
+      quadrants: 2
+      segments: 12
+      roundness: 0
+      atlas: dcex
+      tile: dun5-solid2
+      height: 1
+      offs: [0,0,0]
+  three:
+  - pass: details
+    type: simple_pillar
+    opts:
+      quadrants: 3
+      segments: 12
+      roundness: 0
+      atlas: dcex
+      tile: dun5-solid1
+      height: 1
+      offs: [0,0,0]

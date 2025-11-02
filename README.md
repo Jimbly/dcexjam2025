@@ -13,15 +13,10 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
   * if there are any other players in the zone, block the action (line above will handle it)
   * if I am the only player, execute a tick before allowing the action
 
-Levels!
-* procgen tweaks:
-  * windows? especially to outer sky?
-  * some doors are archways?  don't interp well through them currently...
-* set up combos:
-  * sky color/bg tweaks, some without ceilings only as combo main, not secondary
-  * pillars on at least a couple?
-
 TODO
+* playtest
+  * make a combo, test it, repeat, see how far we get
+  * do 4 of these, then break for below
 * set "win the game" floor to 6, hide doors to 7+?
 * choose player cloak color in customization (just 6 hard-coded? simple 2-color tint?); maybe hat color based on equipped hat?
 * golden hat reward for final level (if it shows on players)
@@ -37,6 +32,7 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
+* controller support (triggers to toggle selected skill?)
 * player names over heads
 * use floaters to show player numbers on floors
 * wider hats/books at least in inventory

@@ -1,0 +1,19 @@
+---
+tile_res: 12
+tiles:
+  dun10-solid1: [0, 0]
+  dun10-solid2: [1, 0]
+  dun10-window: [2, 0]
+  dun10-secret: [3, 0]
+
+  dun10-door: [0, 1]
+  # dun10-unused: [1, 1]
+  dun10-stairs_in: [2, 1]
+  dun10-arch: [3, 1]
+
+  dun10-detail1: [0, 2]
+  dun10-detail2: [1, 2]
+  dun10-ceiling: [2, 2]
+  dun10-floor: [3, 2]
+
+  dun10-wallabove: [0, 3]

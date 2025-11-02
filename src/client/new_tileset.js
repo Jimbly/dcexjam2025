@@ -1,9 +1,9 @@
 const assert = require('assert');
 const fs = require('fs');
-const NEW_SET = 'dun7';
+const NEW_SET = 'dun12';
 ['walls', 'cells', 'vstyles', 'atlases/dcex'].forEach(function (dir) {
   let files = fs.readdirSync(dir);
-  files = files.filter((a) => a.startsWith('dun1'));
+  files = files.filter((a) => a.match(/^dun1[^0-9]/));
   assert(files.length);
   files.forEach(function (filename) {
     let outfile = `${dir}/${filename.replace('dun1', NEW_SET)}`;

@@ -7,12 +7,12 @@ visuals:
   type: simple_floor
   opts:
     atlas: dcex
-    tile: dun2-floor
+    tile: dun12-floor
 - pass: bg
   type: simple_ceiling
   opts:
     atlas: dcex
-    tile: dun2-ceiling
+    tile: dun12-ceiling
 
 corners: # pillars and floor/ceiling details
   one:
@@ -23,7 +23,7 @@ corners: # pillars and floor/ceiling details
       segments: 12
       roundness: 0
       atlas: dcex
-      tile: dun2-solid1
+      tile: dun12-solid1
       height: 1
       offs: [0,0,0]
   two:
@@ -34,7 +34,7 @@ corners: # pillars and floor/ceiling details
       segments: 12
       roundness: 0
       atlas: dcex
-      tile: dun2-solid1
+      tile: dun12-solid1
       height: 1
       offs: [0,0,0]
   three:
@@ -45,6 +45,17 @@ corners: # pillars and floor/ceiling details
       segments: 12
       roundness: 0
       atlas: dcex
-      tile: dun2-solid1
+      tile: dun12-solid1
+      height: 1
+      offs: [0,0,0]
+  four:
+  - pass: details
+    type: simple_pillar
+    opts:
+      quadrants: 4
+      segments: 12
+      roundness: 0
+      atlas: dcex
+      tile: dun12-solid1
       height: 1
       offs: [0,0,0]

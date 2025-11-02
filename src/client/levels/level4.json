@@ -2521,8 +2521,10 @@
     }
   ],
   "state": {},
-  "vstyle": "duncombo-1-2",
+  "vstyle": "dun5",
   "seed": "97364938",
-  "props": {},
+  "props": {
+    "floorlevel": "2"
+  },
   "paths": {}
 }
