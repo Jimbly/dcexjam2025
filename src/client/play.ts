@@ -4496,8 +4496,26 @@ function doQuickbar(): void {
         playUISound('invalid_action');
         statusSet('onDisabledAction', 'Cannot attack while moving').counter = 2500;
       } else if (!can_attack) {
-        playUISound('user_error');
-        statusSet('onDisabledAction', 'No target for your attack').counter = 2500;
+        let handled = false;
+        if (action === 'basic' && isTown()) {
+          let pos = myEnt().getData<JSVec3>('pos')!;
+          let target_pos: JSVec2 = [pos[0] + DX[pos[2]], pos[1] + DY[pos[2]]];
+          let ents = entitiesAt(entityManager(), target_pos, crawlerGameState().floor_id, true);
+          ents = ents.filter((a) => a.type_id === 'demo_wander');
+          if (!ents.length) {
+            ents = entitiesAt(entityManager(), pos, crawlerGameState().floor_id, true);
+            ents = ents.filter((a) => a.type_id === 'demo_wander');
+          }
+          if (ents.length) {
+            statusSet('onDisabledAction', 'Meow.').counter = 2500;
+            ents[0].triggerAnimation?.('meow');
+            handled = true;
+          }
+        }
+        if (!handled) {
+          playUISound('user_error');
+          statusSet('onDisabledAction', 'No target for your attack').counter = 2500;
+        }
       } else {
         playUISound('invalid_action');
         statusSet('onDisabledAction', 'Unknown error');

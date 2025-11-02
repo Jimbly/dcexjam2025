@@ -10,6 +10,11 @@ traits:
     idle:
       frames: [cat-1, cat-2]
       times: 600
+    meow:
+      frames: [cat-4, cat-2, cat-4, cat-1, cat-4, cat-2]
+      times: [100, 200, 100, 200, 100, 200]
+      transition_to: idle
+      loop: false
   sprite_data:
     atlas: dcex
     filter_min: LINEAR_MIPMAP_LINEAR

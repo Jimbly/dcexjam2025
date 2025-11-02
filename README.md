@@ -15,7 +15,6 @@ Dungeon Crawler Limited Asset Jam 2025 Entry by Jimbly - "Tower of Hats"
 
 TODO
 * fix 2 players or 1 player + 1 NPC on the same square to push in different directions
-* using basic attack/wait while on same tile as the cat should pet it
 * allow "Swap" to swap with lowest level that would be allowed
 * make dude's books more clear
 
