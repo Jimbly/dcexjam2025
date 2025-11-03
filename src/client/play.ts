@@ -4323,7 +4323,7 @@ let quickbar_tooltip_up = false;
 function drawQuickbarTooltip(action: Item | 'basic'): void {
   quickbar_tooltip_up = true;
   let tooltip_x = VIEWPORT_X0 + 14;
-  let tooltip_y0 = QUICKBAR_FRAME_Y - QUICKBAR_TOOLTIP_H + 10;
+  let tooltip_y0 = QUICKBAR_FRAME_Y - QUICKBAR_TOOLTIP_H - 4;
   let tooltip_y = tooltip_y0;
   let tooltip_w = render_width - 14 * 2;
 
