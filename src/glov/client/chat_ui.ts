@@ -685,6 +685,7 @@ export type ChatUIParam = {
   renderables?: TSMap<MarkdownRenderable>;
   hide_disconnected_message?: boolean;
   disconnected_message_top?: boolean;
+  label_while_focused?: Text;
   label_while_hidden?: Text;
   channel_join_message?: Text;
 
@@ -736,6 +737,7 @@ class ChatUI {
   private hide_disconnected_message: boolean;
   private disconnected_message_top: boolean;
   private label_while_hidden: Text;
+  private label_while_focused: Text;
   private channel_join_message: Text | null;
   private inner_width_adjust: number;
   private border?: number;
@@ -806,6 +808,7 @@ class ChatUI {
     this.font_height = params.font_height || style.text_height;
     this.hide_disconnected_message = params.hide_disconnected_message || false;
     this.disconnected_message_top = params.disconnected_message_top || false;
+    this.label_while_focused = params.label_while_focused || 'Chat';
     this.label_while_hidden = params.label_while_hidden || '<Press Enter to chat>';
     this.channel_join_message = params.channel_join_message || null;
     this.scroll_area = scrollAreaCreate({
@@ -1546,6 +1549,8 @@ class ChatUI {
           this.scroll_area.keyboardScroll();
         }
         let res = this.edit_text_entry.run({
+          placeholder: getStringIfLocalizable(this.edit_text_entry.isFocused() ?
+            this.label_while_focused : this.label_while_hidden),
           x, y, w: input_width, font_height: input_height, pointer_lock: opts.pointerlock
         });
         is_focused = this.isFocused();
