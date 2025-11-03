@@ -974,8 +974,8 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
   updateRoomDist();
   num_tries = 500;
   let num_loops = 0;
-  let max_add_loops = 10;
-  let secret_add_loops = 2;
+  let max_add_loops = 8; // DCJAM: make configurable? was 10
+  let secret_add_loops = 0; // DCJAM: make configurable? was 2
   const min_loop_dist = 4;
   while (num_tries && max_add_loops && wall_segments.length) {
     --num_tries;

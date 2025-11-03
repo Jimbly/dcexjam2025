@@ -20,7 +20,6 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
-* floor 144 on prod (can we get the seed?) had no mimics, secret doors in weird places
 * style chat text entry
 * sync bug:
     local moved forward, queued tick; was broadcast to slippers
