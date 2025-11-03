@@ -443,10 +443,12 @@ function aiDoEnemy(
   let attacker_stats = ent.data.stats;
   let { dam, style, resist } = damage(attacker_stats, target_stats);
   let target_hp = target_ent.getData('stats.hp', 0);
-  addFloater(target_ent.id, `${style === 'miss' ? 'WHIFF!\n' : ''}\n-${dam}`, '');
+  let new_hp = max(0, target_hp - dam);
+  let fatal = new_hp === 0;
+  addFloater(target_ent.id, `-${dam}${resist ? '\nRESIST!' : ''}`, fatal ? 'death' : 'damage');
   addFloater(ent.id, null, 'attack');
   let pred_ids: EntityPredictionID[] = [];
-  target_ent.predictedSet(pred_ids, 'stats.hp', max(0, target_hp - dam));
+  target_ent.predictedSet(pred_ids, 'stats.hp', new_hp);
   assert.equal(pred_ids.length, 1);
   let pred_id = pred_ids[0][1];
   let payload: ActionAttackPayload = {

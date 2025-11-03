@@ -3217,11 +3217,11 @@ function drawStatsOverViewport(): void {
       float *= -1;
     }
     let text_height = uiTextHeight() * 2;
-    font.drawSizedAligned(fontStyleAlpha(style_text, alpha),
-      VIEWPORT_X0 + render_width/2,
+    font.drawSizedAlignedWrapped(fontStyleAlpha(style_text, alpha),
+      VIEWPORT_X0 + render_width/2 - 200,
       round(VIEWPORT_Y0 + render_height * 0.9 + float) - floater.yoffs * (text_height + 1), Z.FLOATERS + ii * 0.01,
-      text_height, ALIGN.HCENTER|ALIGN.VBOTTOM,
-      0, 0, floater.msg);
+      0, text_height, ALIGN.HCENTER|ALIGN.VBOTTOM,
+      400, 0, floater.msg);
   }
   if (blink < 1) {
     blink = easeOut(blink, 2);
