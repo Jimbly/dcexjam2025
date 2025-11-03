@@ -3114,7 +3114,7 @@ function drawStats(): void {
       y: level === MAX_LEVEL ? y + 4 : y,
       w,
       align: ALIGN.HCENTER,
-      text: `Floor Level ${currentFloorLevel()}`,
+      text: `Floor ${level > 5 ? 'L' : 'Level '}${currentFloorLevel()}`,
     });
   }
   y += FONT_HEIGHT;

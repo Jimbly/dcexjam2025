@@ -27,20 +27,19 @@ Post-jam? fixes:
 * combat log should include which attack it was, so players can help other players learn
 * prune combat message from log after 10 or so, just chat in history
 * floor 144 on prod (can we get the seed?) had no mimics, secret doors in weird places
-* xp at level 7 overlaps floor level
 * style chat text entry
 * clicking on viewport to move into tower and releasing activates button
-  sync bug:
+* sync bug:
     local moved forward, queued tick; was broadcast to slippers
     slippers moved forward twice quickly ran ai update
     local, before receiving this, ran queued ai update, thinking slippers was outside the zone
     local's update failed to apply, and prediction was never removed
     applyAIUpdate never calls the resp function upon failure!
+
 * player names over heads
 * fix single entity force_kick pingponging
 * battlezone: maybe kick to menu if skipped 3 times in a row
 * aiHunt should prefer the previous position if it's a valid pathing option (so, side-stepping will never get around them)
-* show an un-slotted, but available, quickbar slot as a different color, tooltip info, clicking opens inventory
 * click to move - ensure stop when enter (active?) battlezone
 * click to move - stop when threatened (or, always in battlezone?)
 * change W icon to basic attack icon when engaged
