@@ -12,6 +12,23 @@ html, body {
   position: absolute;
 }
 
+@font-face {
+  font-family: 'custom';
+  src: url('CelticTime.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body .glovui_dynamic input {
+  font-family: custom,"Lucida Console",Courier,monospace;
+  padding-left: 2px;
+  font-size: 140%;
+}
+/*input.canvas_render {
+  position: relative;
+  top: -15%;
+}
+*/
 /* replace textarea font with fixed-width
 @font-face {
   font-family: 'perfectvga';
@@ -25,7 +42,6 @@ textarea, input.canvas_render {
   font-family: perfectvga,"Lucida Console",Courier,monospace;
 }
 input.canvas_render {
-  /* Nudge up a bit, as it doesn't quite line up with parent element for unknown reasons */
   position: relative;
   top: -15%;
 }
