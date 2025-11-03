@@ -31,7 +31,6 @@ Post-jam? fixes:
     local, before receiving this, ran queued ai update, thinking slippers was outside the zone
     local's update failed to apply, and prediction was never removed
     applyAIUpdate never calls the resp function upon failure!
-* inventory block within range 2
 
 * player names over heads
 * fix single entity force_kick pingponging

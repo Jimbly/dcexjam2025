@@ -2607,6 +2607,7 @@ let battlezone_map_stride = 0;
 export function isBattleZone(x: number, y: number): boolean {
   return Boolean(battlezone_map[x + y * battlezone_map_stride]);
 }
+let player_in_combat = false;
 function battleZonePrep(): void {
   let script_api = crawlerScriptAPI();
   script_api.is_visited = true; // Always visited for AI
@@ -2618,6 +2619,7 @@ function battleZonePrep(): void {
   if (!level) {
     return;
   }
+  player_in_combat = false;
   script_api.setLevel(level);
   let stride = battlezone_map_stride = level.w + 100;
   // for each player, claim closest entities
@@ -2651,6 +2653,7 @@ function battleZonePrep(): void {
   let todo: JSVec3[] = []; // x, y, dist
   let done: Partial<Record<number, true>>;
   let player_ent_id: EntityID;
+  let my_ent_id = myEntID();
   function push(pos: JSVec3): void {
     let idx = pos[0] + pos[1] * stride;
     let dist = pos[2];
@@ -2670,6 +2673,9 @@ function battleZonePrep(): void {
         }
         if (dist <= BATTLEZONE_RANGE && enemy_ent.isEnemy()) {
           enemy_ent.in_zone_ents.push(player_ent_id);
+          if (player_ent_id === my_ent_id) {
+            player_in_combat = true;
+          }
         }
       }
     }
@@ -2757,7 +2763,7 @@ function battleZonePrep(): void {
   for (let key in battle_zones) {
     battle_zones[key] = effZone(battle_zones[key]);
   }
-  // paint battle zones on map, proceeding out from enemes
+  // paint battle zones on map, proceeding out from enemies
   battlezone_map.length = 0;
   function push2(pos: JSVec3): void {
     let idx = pos[0] + pos[1] * stride;
@@ -4923,6 +4929,9 @@ function drawFrames(): void {
 }
 
 function canOpenInventory(): boolean {
+  if (1) {
+    return !player_in_combat;
+  }
   let my_ent = myEnt();
   let game_state = crawlerGameState();
   let { floor_id } = game_state;
@@ -5259,7 +5268,7 @@ function playCrawl(): void {
       uiAction(null);
     } else if (!canOpenInventory()) {
       playUISound('invalid_action');
-      statusSet('onDisabledAction', 'Cannot open inventory while in combat').counter = 2500;
+      statusSet('onDisabledAction', 'Cannot open inventory - monsters lurk nearby!').counter = 2500;
     } else {
       uiAction(new InventoryMenuAction('inventory'));
     }
