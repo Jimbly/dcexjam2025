@@ -4320,7 +4320,7 @@ const color_disable_action = vec4(0,0,0,0.75);
 const QUICKBAR_TOOLTIP_H = 40 + FONT_HEIGHT;
 let quickbar_tooltip_up = false;
 
-function drawQuickbarTooltip(action: Item | 'basic'): void {
+function drawQuickbarTooltip(action: Item | 'basic', hotkey?: string): void {
   quickbar_tooltip_up = true;
   let tooltip_x = VIEWPORT_X0 + 14;
   let tooltip_y0 = QUICKBAR_FRAME_Y - QUICKBAR_TOOLTIP_H - 4;
@@ -4348,11 +4348,11 @@ function drawQuickbarTooltip(action: Item | 'basic'): void {
     markdownAuto({
       x: tooltip_x,
       w: tooltip_w,
-      y: tooltip_y + 2,
+      y: tooltip_y - 1,
       z: Z.QUICKBARTOOLTIP,
       h: TITLE_FONT_H,
       align: ALIGN.VCENTER | ALIGN.HRIGHT,
-      text: `(press [c=hotkey]${inputPadMode() ? 'Up' : 'W'}[/c] into enemies)`,
+      text: `Press [c=hotkey]${inputPadMode() ? 'Up' : 'W'}[/c] into enemies`,
     });
     tooltip_y += TITLE_FONT_H + 2;
     let basic_damage = basicAttackDamage(myEnt().data.stats, { defense: 0 } as StatsData);
@@ -4372,6 +4372,18 @@ function drawQuickbarTooltip(action: Item | 'basic'): void {
       z: Z.QUICKBARTOOLTIP,
       text: itemName(action),
     });
+    if (hotkey && !inputPadMode()) {
+      markdownAuto({
+        x: tooltip_x,
+        w: tooltip_w,
+        y: tooltip_y - 1,
+        z: Z.QUICKBARTOOLTIP,
+        h: TITLE_FONT_H,
+        align: ALIGN.VCENTER | ALIGN.HRIGHT,
+        text: `Hotkey: [c=hotkey]${hotkey}[/c]`,
+      });
+    }
+
     tooltip_y += TITLE_FONT_H + 2;
     itemInfo(action, line);
   }
@@ -4605,7 +4617,7 @@ function doQuickbar(): void {
 
     if (icon && (focused || visible_hotkey && quickbar_tooltip_show_time > 0)) {
       quickbar_tooltip_show_time = max(0, quickbar_tooltip_show_time - getScaledFrameDt());
-      drawQuickbarTooltip(action);
+      drawQuickbarTooltip(action, visible_hotkey);
     }
 
     if (activate) {
@@ -4687,7 +4699,7 @@ function doQuickbar(): void {
       subtype: 0,
       level: 1,
       count: 1,
-    });
+    }, 'H');
   }
   if (!canIssueAction()) {
     drawRect2({
