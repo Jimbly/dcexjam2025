@@ -21,7 +21,6 @@ Bugs:
 
 Post-jam? fixes:
 * clicking mid-screen to unfocus chat should not trigger movement
-* combat log should include which attack it was, so players can help other players learn
 * prune combat message from log after 10 or so, just chat in history
 * floor 144 on prod (can we get the seed?) had no mimics, secret doors in weird places
 * style chat text entry

@@ -138,9 +138,11 @@ export type SkillDetails = {
   target: SkillTarget;
   icon: string;
   bg: string;
+  attack_verb: string;
 };
 type BookDef = {
   element: ElementName;
+  attack_verb: string;
   name: string;
   target: SkillTarget;
   icon: string;
@@ -149,36 +151,42 @@ type BookDef = {
 const BOOKS: BookDef[] = [{
   name: 'Book of Fire',
   element: 'fire',
+  attack_verb: 'fire',
   target: 'front',
   icon: 'spell-fire',
   bg: 'spell-fire-bg',
 }, {
   name: 'Book of Earth',
   element: 'earth',
+  attack_verb: 'earth',
   target: 'front',
   icon: 'spell-earth',
   bg: 'spell-earth-bg',
 }, {
   name: 'Book of Ice',
   element: 'ice',
+  attack_verb: 'ice',
   target: 'front',
   icon: 'spell-ice',
   bg: 'spell-ice-bg',
 }, {
   name: 'Firefly',
   element: 'fire',
+  attack_verb: 'firefly',
   target: 'adjacent',
   icon: 'spell-fire2',
   bg: 'spell-fire-bg',
 }, {
   name: 'Earthbound',
   element: 'earth',
+  attack_verb: 'earthbind',
   target: 'diagonal',
   icon: 'spell-earth2',
   bg: 'spell-earth-bg',
 }, {
   name: 'Snowpiercer',
   element: 'ice',
+  attack_verb: 'snowpierce',
   target: 'spear',
   icon: 'spell-ice2',
   bg: 'spell-ice-bg',
@@ -221,6 +229,7 @@ export function skillDetails(item: Item): SkillDetails {
   return {
     mp_cost,
     element: ELEMENT[BOOKS[subtype].element],
+    attack_verb: BOOKS[subtype].attack_verb,
     dam,
     target: BOOKS[subtype].target,
     icon: BOOKS[subtype].icon,
@@ -277,10 +286,12 @@ export function skillAttackDamage(skill_details: SkillDetails, player: StatsData
   resist: boolean;
 } {
   let dam = skill_details.dam + BASIC_DAMAGE;
-  return calcDamage({
+  let ret = calcDamage({
     dam: dam * outgoingDamagePenalty(player.level, monster.level),
     element: skill_details.element,
   }, monster);
+  ret.style = skill_details.attack_verb;
+  return ret;
 }
 
 // for (let ii = 0; ii < 6; ++ii) {
