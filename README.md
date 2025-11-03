@@ -20,7 +20,6 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
-* secret door on bloody wall tileset is less noticeable than bloody wall
 * add icons to "picked up" text
 * clicking mid-screen to unfocus chat should not trigger movement
 * combat log should include which attack it was, so players can help other players learn
