@@ -5163,10 +5163,16 @@ function playCrawl(): void {
 
   button_y0 = MOVE_BUTTONS_Y0;
 
-  if (keyUpEdge(KEYS.B)) {
+  let build_mode_allowed = engine.DEBUG || chatUI().getAccessObj().access?.sysadmin;
+  if (build_mode_allowed && keyUpEdge(KEYS.B)) {
     if (!netSubs().loggedIn()) {
       modalDialog({
         text: 'Cannot enter build mode - not logged in',
+        buttons: { ok: null },
+      });
+    } else if (!build_mode_allowed) {
+      modalDialog({
+        text: 'Cannot enter build mode - access denied',
         buttons: { ok: null },
       });
     } else {

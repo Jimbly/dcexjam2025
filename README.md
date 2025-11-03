@@ -20,6 +20,7 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
+* style chat text entry
 * clicking on viewport to move into tower and releasing activates button
 * player names over heads
 * fix single entity force_kick pingponging

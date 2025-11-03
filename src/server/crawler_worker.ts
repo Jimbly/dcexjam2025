@@ -301,6 +301,9 @@ CrawlerWorker.registerClientHandler('build', function (
   pak: Packet,
   resp_func: NetResponseCallback<CrawlerLevelSerialized>
 ): void {
+  if (!src.sysadmin) { // DCJAM - need better solution for this!
+    return void resp_func('ERR_ACCESS_DENIED');
+  }
   let floor = pak.readInt();
   let level = this.game_state.getLevelForFloorExisting(floor);
   let diff: Diff = pak.readJSON() as Diff;
