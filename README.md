@@ -20,11 +20,8 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
-* clicking mid-screen to unfocus chat should not trigger movement
-* prune combat message from log after 10 or so, just chat in history
 * floor 144 on prod (can we get the seed?) had no mimics, secret doors in weird places
 * style chat text entry
-* clicking on viewport to move into tower and releasing activates button
 * sync bug:
     local moved forward, queued tick; was broadcast to slippers
     slippers moved forward twice quickly ran ai update
@@ -32,6 +29,8 @@ Post-jam? fixes:
     local's update failed to apply, and prediction was never removed
     applyAIUpdate never calls the resp function upon failure!
 
+* clicking mid-screen to unfocus chat should not trigger movement
+* clicking on viewport to move into tower and releasing activates button
 * player names over heads
 * fix single entity force_kick pingponging
 * battlezone: maybe kick to menu if skipped 3 times in a row

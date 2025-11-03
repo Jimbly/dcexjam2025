@@ -133,6 +133,8 @@ const color_same_user_rollover = vec4(1, 1, 1, 0.25);
 
 const MAX_PER_STYLE: TSMap<number> = {
   join_leave: 3,
+  combat: 12, // DCJAM
+  reward: 9, // DCJAM
 };
 
 interface ChatMessage extends ChatMessageDataBroadcast {
