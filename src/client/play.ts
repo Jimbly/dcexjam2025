@@ -4448,6 +4448,7 @@ let quickbar_tooltip_show_time = 0;
 function doQuickbar(): void {
   quickbar_tooltip_up = false;
   let me = myEnt();
+  let my_level = me.getData('stats.level', 1);
   let books = me.data.books || [];
   let floor_level = currentFloorLevel();
 
@@ -4495,11 +4496,11 @@ function doQuickbar(): void {
     let icon: string | undefined;
     let skill_details: SkillDetails | undefined;
     let disable_button = false;
+    let item_slot = ii - 1;
     if (ii === 10) {
       action = 'basic';
       icon = 'spell-basic';
     } else {
-      let item_slot = ii - 1;
       if (!books[item_slot]) {
         disabled = true;
       } else {
@@ -4526,11 +4527,22 @@ function doQuickbar(): void {
     let activate = false;
     let focused = false;
     if (!icon) {
-      button({
-        ...button_param,
-        text: ' ',
-        disabled: true,
-      });
+      if (item_slot < min(floor_level, my_level)) {
+        disabled = false;
+        if (button({
+          ...button_param,
+          text: ' ',
+          tooltip: 'Empty Book slot, equip new Books in the inventory',
+        })) {
+          uiAction(new InventoryMenuAction('inventory'));
+        }
+      } else {
+        button({
+          ...button_param,
+          text: ' ',
+          disabled: true,
+        });
+      }
     } else {
       let hotpad = (inputPadMode() && (quickbar_select_index === ii)) ? PAD.A : undefined;
       if (hotpad !== undefined) {
