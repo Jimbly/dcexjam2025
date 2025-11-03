@@ -648,7 +648,7 @@ class MDRChatSource implements MDLayoutBlock, MDDrawBlock {
   }
 }
 
-export type SystemStyles = 'def' | 'error' | 'link' | 'link_hover' | 'system';
+export type SystemStyles = 'def' | 'self' | 'user' | 'error' | 'link' | 'link_hover' | 'system';
 export type ChatUIParamStyles = Partial<Record<SystemStyles | string, FontStyle>>;
 
 export type ExtraButtonsPreState = {
@@ -686,6 +686,7 @@ export type ChatUIParam = {
   hide_disconnected_message?: boolean;
   disconnected_message_top?: boolean;
   label_while_hidden?: Text;
+  channel_join_message?: Text;
 
   inner_width_adjust?: number;
   border?: number;
@@ -735,6 +736,7 @@ class ChatUI {
   private hide_disconnected_message: boolean;
   private disconnected_message_top: boolean;
   private label_while_hidden: Text;
+  private channel_join_message: Text | null;
   private inner_width_adjust: number;
   private border?: number;
   private volume_join_leave: number;
@@ -805,6 +807,7 @@ class ChatUI {
     this.hide_disconnected_message = params.hide_disconnected_message || false;
     this.disconnected_message_top = params.disconnected_message_top || false;
     this.label_while_hidden = params.label_while_hidden || '<Press Enter to chat>';
+    this.channel_join_message = params.channel_join_message || null;
     this.scroll_area = scrollAreaCreate({
       background_color: null,
       auto_scroll: true,
@@ -834,7 +837,17 @@ class ChatUI {
     let outline_width = params.outline_width || 1;
     this.styles = defaults(params.styles || {}, {
       def: fontStyle(null, {
-        color: 0xEEEEEEff,
+        color: 0xF7F7F7ff,
+        outline_width,
+        outline_color: 0x000000ff,
+      }),
+      user: fontStyle(null, {
+        color: 0xEEBBCCff,
+        outline_width,
+        outline_color: 0x000000ff,
+      }),
+      self: fontStyle(null, {
+        color: 0xF7F7F7ff,
         outline_width,
         outline_color: 0x000000ff,
       }),
@@ -1103,6 +1116,13 @@ class ChatUI {
     if (!quiet && client_id !== netClientId()) {
       if (this.volume_in) {
         playUISound('msg_in', this.volume_in);
+      }
+    }
+    if (id && !style) {
+      if (id === netUserId()) {
+        style = 'self';
+      } else {
+        style = 'user';
       }
     }
     display_name = display_name || id;
@@ -1845,7 +1865,8 @@ class ChatUI {
       }
 
       // Then join message
-      this.addChat(`Joined channel ${this.channel.channel_id}`, 'join_leave');
+      this.addChat(getStringIfLocalizable(this.channel_join_message) ||
+        `Joined channel ${this.channel.channel_id}`, 'join_leave');
       // Then who's here now
       if (here.length || friends.length) {
         let msg = [];

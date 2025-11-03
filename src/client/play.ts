@@ -3019,7 +3019,7 @@ function checkFloorCompletion(locked: boolean): void {
     // floor is cleared, and we're free
     did_floor_reward[floor_id] = true;
     playUISound('floor_clear');
-    chatUI().addChat('The floor has been cleared!  You feel fully restored.');
+    chatUI().addChat('The floor has been cleared!  You feel fully restored.', 'levelup');
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     doFullRestore();
 
@@ -3029,7 +3029,7 @@ function checkFloorCompletion(locked: boolean): void {
         ' consider yourself a hero.  You win.  If you _really_ want to, you can' +
         ' keep climbing to higher heights.';
       dialog('modal', msg);
-      chatUI().addChat(msg);
+      chatUI().addChat(msg, 'levelup');
     } else {
       statusPush('The floor has been cleared!  You feel fully restored.');
     }
@@ -3827,7 +3827,7 @@ function giveXP(xp_reward: number): void {
       let new_hp = maxHP(new_level);
       let delta_hp = new_hp - old_hp;
       let stat_delta = `+${delta_mp}MP, +${delta_hp}MaxHP`;
-      chat_ui.addChat(`You level up to L${new_level}, ${stat_delta}`);
+      chat_ui.addChat(`You level up to L${new_level}, ${stat_delta}`, 'levelup');
       data_assignments['stats.level'] = new_level;
       data_assignments['stats.hp_max'] = new_hp;
       data_assignments['stats.hp'] = my_ent.getData('stats.hp', 0) + delta_hp;
@@ -3936,14 +3936,14 @@ function giveRewards(target_ent: Entity): void {
     if (xp_reward_level < reward_level) {
       // capped by my level
       chat_ui.addChat(`You gain ${xp_reward} XP (enemy L${enemy_level} >> your L${my_level},` +
-        ` capped to reward L${xp_reward_level})`);
+        ` capped to reward L${xp_reward_level})`, 'reward');
     } else {
       // capped by a friend
       chat_ui.addChat(`You gain ${xp_reward} XP (enemy L${enemy_level} > your L${my_level},` +
-        ` assist L${highest_hitter}, reward L${reward_level})`);
+        ` assist L${highest_hitter}, reward L${reward_level})`, 'reward');
     }
   } else {
-    chat_ui.addChat(`You gain ${xp_reward} XP (enemy L${enemy_level})`);
+    chat_ui.addChat(`You gain ${xp_reward} XP (enemy L${enemy_level})`, 'reward');
   }
 
   giveXP(xp_reward);
@@ -3979,12 +3979,12 @@ function onBroadcast(update: EntityManagerEvent): void {
       }
       if (source === myEntID()) {
         chat_ui.addChat(`You ${type} it for ${-hp}${resist ? ' (resisted)' : ''}` +
-          `${fatal ? ', killing it' : ''}.`);
+          `${fatal ? ', killing it' : ''}.`, 'combat');
       } else if (target === myEntID()) {
         if (type === 'opportunity') {
-          chat_ui.addChat(`It opportunity attacks you for ${-hp} damage.`);
+          chat_ui.addChat(`It opportunity attacks you for ${-hp} damage.`, 'combat');
         } else {
-          chat_ui.addChat(`It hits you with ${type} for ${-hp}${resist ? ' (resisted)' : ''}.`);
+          chat_ui.addChat(`It hits you with ${type} for ${-hp}${resist ? ' (resisted)' : ''}.`, 'combat');
         }
         if (!fatal) {
           // hit me, but didn't kill me
@@ -3996,7 +3996,7 @@ function onBroadcast(update: EntityManagerEvent): void {
         chat_ui.addChat(`${source_ent?.data.display_name || source_ent?.display_name || source} hits` +
           ` ${target_ent?.data.display_name || target_ent?.display_name || target}` +
           `${type === 'hit' ? '' : ` with ${type}`} for ${-hp}` +
-          `${resist ? ' (resisted)' : ''}${fatal ? ', killing it' : ''}.`);
+          `${resist ? ' (resisted)' : ''}${fatal ? ', killing it' : ''}.`, 'combat');
       }
       // Note: giving rewards to all on floor for now
       if (fatal && target_ent && target_ent.isEnemy() && (target_ent.hit_by_us || true)) {

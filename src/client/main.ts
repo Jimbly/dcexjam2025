@@ -27,7 +27,7 @@ import { MODE_DEVELOPMENT, platformGetID } from 'glov/client/client_config';
 import { cmd_parse } from 'glov/client/cmds';
 import * as engine from 'glov/client/engine';
 import { environmentsInit } from 'glov/client/environments';
-import { Font, fontCreate, fontStyleColored } from 'glov/client/font';
+import { Font, fontCreate, fontStyle, fontStyleColored } from 'glov/client/font';
 import {
   markdown_default_renderables,
   markdownImageRegisterAutoAtlas,
@@ -51,7 +51,7 @@ import {
 } from './crawler_play.js';
 import { crawlerRenderSetLODBiasRange } from './crawler_render';
 import { game_height, game_width } from './globals';
-import { PAL_BLACK, palette, palette_font } from './palette';
+import { PAL_BLACK, PAL_GREEN, PAL_WHITE, palette, palette_font } from './palette';
 import { playStartup } from './play';
 import { SOUND_DATA } from './sound_data';
 import { titleInit, titleStartup } from './title';
@@ -304,14 +304,43 @@ export function main(): void {
     fontStyleColored(null, palette_font[PAL_BLACK - 4]),
   );
 
+  const outline_width = 2.5;
   chat_ui = chatUICreate({
     max_len: 1000,
     w: 264,
     h: 96,
-    outline_width: 3,
+    outline_width,
     fade_start_time: [10000, 5000],
     fade_time: [1000, 1000],
     renderables: markdown_default_renderables, // use all system renderables
+    channel_join_message: 'Joined global chat channel',
+    styles: {
+      user: fontStyle(null, {
+        color: palette_font[PAL_BLACK + 4],
+        outline_width,
+        outline_color: 0x000000ff,
+      }),
+      levelup: fontStyle(null, {
+        color: palette_font[PAL_GREEN],
+        outline_width,
+        outline_color: 0x000000ff,
+      }),
+      reward: fontStyle(null, {
+        color: palette_font[PAL_GREEN + 1],
+        outline_width,
+        outline_color: 0x000000ff,
+      }),
+      combat: fontStyle(null, {
+        color: palette_font[PAL_WHITE + 2],
+        outline_width,
+        outline_color: 0x000000ff,
+      }),
+      system: fontStyle(null, {
+        color: palette_font[PAL_WHITE + 2],
+        outline_width,
+        outline_color: 0x000000ff,
+      }),
+    },
   });
 
   markdownImageRegisterAutoAtlas('demo');

@@ -20,8 +20,25 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
+* if you've got a quickbar slot that could be used, (and have a book of that level?), show empty quickbar slot
+* secret door on bloody wall tileset is less noticeable than bloody wall
+* healing should flash green not black
+* add "hotkey: 1" to quickbar tooltip
+* add icons to "picked up" text
+* clicking mid-screen to unfocus chat should not trigger movement
+* combat log should include which attack it was, so players can help other players learn
+* prune combat message from log after 10 or so, just chat in history
+* floor 144 on prod (can we get the seed?) had no mimics, secret doors in weird places
+* quickbar tooltip (and then dialog) shift up to not obscure MP bar
+* xp at level 7 overlaps floor level
 * style chat text entry
 * clicking on viewport to move into tower and releasing activates button
+  sync bug:
+    local moved forward, queued tick; was broadcast to slippers
+    slippers moved forward twice quickly ran ai update
+    local, before receiving this, ran queued ai update, thinking slippers was outside the zone
+    local's update failed to apply, and prediction was never removed
+    applyAIUpdate never calls the resp function upon failure!
 * player names over heads
 * fix single entity force_kick pingponging
 * battlezone: maybe kick to menu if skipped 3 times in a row
