@@ -28,7 +28,7 @@ import {
   padButtonUpEdge,
 } from 'glov/client/input';
 import { markdownAuto } from 'glov/client/markdown';
-import { markdownSetColorStyle } from 'glov/client/markdown_renderables';
+import { markdownImageRegisterAutoAtlas, markdownSetColorStyle } from 'glov/client/markdown_renderables';
 import { ClientChannelWorker, netClient, netSubs, netUserId } from 'glov/client/net';
 import { ScrollArea, scrollAreaCreate } from 'glov/client/scroll_area';
 import { MenuItem } from 'glov/client/selection_box';
@@ -528,6 +528,23 @@ export function currentFloorLevel(): number {
 
 export function isTown(): boolean {
   return currentFloorLevel() > MAX_LEVEL;
+}
+
+function inventoryIcon(item: Item): string {
+  switch (item.type) {
+    case 'book': {
+      let skill_details = skillDetails(item);
+      return skill_details.icon;
+      // let bg_sprite = autoAtlas('ui', skill_details.bg);
+    }
+    case 'hat':
+      return `hat-${ELEMENT_NAME[item.subtype + 1]}`;
+    case 'potion':
+      return 'potion';
+    default:
+      unreachable(item.type);
+  }
+  return 'unknown';
 }
 
 function inventoryIconDraw(param: {
@@ -5419,7 +5436,17 @@ function pickupOnClient(item: Item): boolean {
       inventory,
     },
   }, errorsToChat);
-  statusPush(`Picked up ${itemName(item)}`);
+  let icon = inventoryIcon(item);
+  if (icon.startsWith('spell-')) {
+    icon += '-full';
+  }
+  let name = itemName(item);
+  if (name.match(/^L\d /)) {
+    name = `L${name[1]} [img=${icon}]${name.slice(2)}`;
+  } else {
+    name = `[img=${icon}]${name}`;
+  }
+  statusPush(`Picked up ${name}`);
   return true;
 }
 
@@ -5787,4 +5814,6 @@ export function playStartup(): void {
     fallback_darken: zero_vec,
     cb: menuFadeFunc,
   });
+
+  markdownImageRegisterAutoAtlas('ui');
 }
