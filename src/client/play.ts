@@ -3026,7 +3026,7 @@ function checkFloorCompletion(locked: boolean): void {
     let is_final_floor = currentFloorLevel() === MAX_FLOOR_LEVEL;
     if (is_final_floor) {
       let msg = 'You have cleared the sixth floor of the tower and saved the world,' +
-        ' consider yourself a hero.  You win.  If you _really_ want to, you can ' +
+        ' consider yourself a hero.  You win.  If you _really_ want to, you can' +
         ' keep climbing to higher heights.';
       dialog('modal', msg);
       chatUI().addChat(msg);
