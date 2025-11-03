@@ -135,6 +135,7 @@ import {
   aiStepFloor,
   aiTraitsClientStartup,
 } from './ai';
+import { blend } from './blend';
 // import './client_cmds';
 import {
   buildModeActive,
@@ -2963,7 +2964,7 @@ function drawBar(
   return full_w;
 }
 
-export function drawHealthBar(
+function drawHealthBar(
   x: number, y: number, z: number,
   w: number, h: number,
   hp: number, hp_max: number,
@@ -3081,14 +3082,15 @@ function drawStats(): void {
       text: `Level ${level}`,
     });
     y += FONT_HEIGHT - 2;
+    let xp_cur_above = ceil(blend('xp', xp - prev_xp));
     font.draw({
       style: style_stats,
       x: x + STATS_X_INDENT,
       y,
-      text: `XP ${xp - prev_xp}/${next_xp - prev_xp}`,
+      text: `XP ${xp_cur_above}/${next_xp - prev_xp}`,
     });
     y += FONT_HEIGHT;
-    drawBar(bar_sprites.xpbar, x, y, z, STATS_BAR_W, STATS_XP_BAR_H, (xp - prev_xp)/(next_xp - prev_xp));
+    drawBar(bar_sprites.xpbar, x, y, z, STATS_BAR_W, STATS_XP_BAR_H, xp_cur_above/(next_xp - prev_xp));
   }
 
   // gold and floor level
@@ -3147,10 +3149,10 @@ function drawStats(): void {
   let hp_max = me.getData('stats.hp_max', 1);
   let mp = me.getData('stats.mp', 0);
   let mp_max = me.maxMP();
-  drawHealthBar(x, y, z, HP_BAR_W, HP_BAR_H, hp, hp_max, `HP ${hp}/${hp_max}`);
+  drawHealthBar(x, y, z, HP_BAR_W, HP_BAR_H, blend('myhp', hp), hp_max, `HP ${hp}/${hp_max}`);
   x += HP_BAR_W + 12 * 2;
 
-  drawHealthBar(x, y, z, HP_BAR_W, HP_BAR_H, mp, mp_max, `MP ${mp}/${mp_max}`, bar_sprites.mpbar);
+  drawHealthBar(x, y, z, HP_BAR_W, HP_BAR_H, blend('mymp', mp), mp_max, `MP ${mp}/${mp_max}`, bar_sprites.mpbar);
 }
 
 let damage_floaters: (Floater & {
@@ -3660,8 +3662,10 @@ function drawEnemyStats(ent: Entity): void {
   let hp = ent.getData('stats.hp', 0);
   let hp_max = ent.getData('stats.hp_max', 0);
   let bar_h = ENEMY_HP_BAR_H;
-  let show_text = `${hp}`;
-  drawHealthBar(ENEMY_HP_BAR_X, ENEMY_HP_BAR_Y, Z.UI, ENEMY_HP_BAR_W, bar_h, hp, hp_max, show_text);
+  let hp_disp = hp ? blend('enemyhp', hp) : 0;
+  let show_text = `${floor(hp_disp)}`;
+  drawHealthBar(ENEMY_HP_BAR_X, ENEMY_HP_BAR_Y, Z.UI, ENEMY_HP_BAR_W, bar_h,
+    hp_disp, hp_max, show_text);
   if (ent.display_name) {
     font.drawSizedAligned(style_text, ENEMY_HP_BAR_X, ENEMY_HP_BAR_Y + bar_h, Z.UI,
       uiTextHeight(), ALIGN.HVCENTER,
