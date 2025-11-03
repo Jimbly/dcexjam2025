@@ -3780,7 +3780,7 @@ function relPosForDamage(ent: Entity): JSVec2 | null {
 }
 
 // old-to-do: move into crawler_play?
-export function addFloater(ent_id: EntityID, message: string | null, anim?: string): void {
+export function addFloater(ent_id: EntityID, message: string | null, anim?: string, blink_good?: boolean): void {
   let ent = entityManager().getEnt(ent_id);
   if (ent) {
     if (message) {
@@ -3798,6 +3798,7 @@ export function addFloater(ent_id: EntityID, message: string | null, anim?: stri
       ent.floaters.push({
         start: engine.frame_timestamp,
         msg: message,
+        blink_good,
       });
     }
     if (ent.triggerAnimation && anim) {
@@ -3971,7 +3972,8 @@ function onBroadcast(update: EntityManagerEvent): void {
     } else {
       // someone else did
       if (hp) {
-        addFloater(target, `${hp > 0 ? '+' : ''}${hp}${resist ? '\nRESIST!' : ''}`, fatal ? 'death' : 'damage');
+        let good = hp > 0;
+        addFloater(target, `${good ? '+' : ''}${hp}${resist ? '\nRESIST!' : ''}`, fatal ? 'death' : 'damage', good);
         addFloater(source, null, 'attack');
       }
     }

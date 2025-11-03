@@ -21,7 +21,6 @@ Bugs:
 
 Post-jam? fixes:
 * secret door on bloody wall tileset is less noticeable than bloody wall
-* healing should flash green not black
 * add icons to "picked up" text
 * clicking mid-screen to unfocus chat should not trigger movement
 * combat log should include which attack it was, so players can help other players learn
