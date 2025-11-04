@@ -122,13 +122,8 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
       action_id,
       data_assignments,
       payload,
-    });
+    }, resp_func);
     entityPosManager().otherEntityChanged(this.id);
-    // this.actionSend({
-    //   action_id,
-    //   data_assignments,
-    //   payload,
-    // }, resp_func);
   }
   aiLastUpdatedBySomeoneElse(): boolean {
     return false;

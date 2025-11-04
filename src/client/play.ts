@@ -384,6 +384,16 @@ export function errorsToChat(err: unknown): void {
   }
 }
 
+function errorsToChatQuiet(err: unknown): void {
+  if (err) {
+    if (err === 'ERR_FIELD_MISMATCH') {
+      console.error(`Silently ignoring ${err}`);
+    } else {
+      getChatUI().addChat(`Error executing action: ${err}`, 'error');
+    }
+  }
+}
+
 
 abstract class UIAction {
   abstract tick(): void;
@@ -2943,7 +2953,7 @@ function aiStep(): void {
         data_assignments: {
           ready: false,
         },
-      }, errorsToChat);
+      }, errorsToChatQuiet);
     }
   }
 }

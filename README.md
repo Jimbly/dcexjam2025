@@ -20,12 +20,6 @@ Bugs:
 * simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
-* sync bug:
-    local moved forward, queued tick; was broadcast to slippers
-    slippers moved forward twice quickly ran ai update
-    local, before receiving this, ran queued ai update, thinking slippers was outside the zone
-    local's update failed to apply, and prediction was never removed
-    applyAIUpdate never calls the resp function upon failure!
 
 * clicking mid-screen to unfocus chat should not trigger movement
 * clicking on viewport to move into tower and releasing activates button
