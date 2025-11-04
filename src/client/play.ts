@@ -4162,6 +4162,9 @@ function doAttack(target_ents: Entity[], action: Item | 'basic'): void {
     let resist;
     if (action === 'basic') {
       ({ dam, style, resist } = basicAttackDamage(attacker_stats, target_stats));
+      if (engine.defines.INSTAKILL) {
+        dam = 99;
+      }
     } else {
       let details = skillDetails(action);
       ({ dam, style, resist } = skillAttackDamage(details, attacker_stats, target_stats));

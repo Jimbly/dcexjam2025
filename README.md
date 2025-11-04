@@ -17,10 +17,8 @@ Bugs:
 * visibility is different before/after turning camera/moving forward and back if directly facing a wall
   * relatedly: moving backwards through a door and I could see the enemy on the other side
   * relatedly: always show monster behind (and diagonals? and when bumping a blocked door?)
-* simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Post-jam? fixes:
-
 * clicking mid-screen to unfocus chat should not trigger movement
 * clicking on viewport to move into tower and releasing activates button
 * player names over heads
@@ -32,6 +30,7 @@ Post-jam? fixes:
 * change W icon to basic attack icon when engaged
 * show actual item instead of chest graphic when there's a single item
 * Nope: battlezone: don't count through attack-blocking doorways - makes "nearest player" weird (someone on the other side of the door and far away) and ticking rules weird
+* unable to reproduce: simultaneously: B ready'd by moving into battle zone. A attacked and killed entity (didn't think B was in zone at start of attack, showed in-zone by the time attack action was ack'd). now both are not in a battle zone, B still flagged as ready.  both A and B tick (a different set of) the AI and try to un-flag B as being ready
 
 Credits
 =======
