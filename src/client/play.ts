@@ -1691,7 +1691,7 @@ class InventoryMenuAction extends UIAction {
                   subtype = (item.subtype + 3) % 6;
                 }
               } else {
-                subtype = (item.subtype + 1) % 3;
+                subtype = (item.subtype + 1 + dsub) % 3;
               }
               let target_item: Item = {
                 ...item,
