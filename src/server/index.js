@@ -6,6 +6,8 @@ import * as path from 'path';
 import * as express from 'express';
 import * as express_static_gzip from 'express-static-gzip';
 import { platformRegister } from 'glov/common/platform';
+import 'glov/server/channel_server';
+import { displayNameChangeLimitSet } from 'glov/server/default_workers';
 import { permTokenWorkerInit } from 'glov/server/perm_token_worker';
 import {
   requestLogEverything,
@@ -29,6 +31,8 @@ platformRegister('itch', {
   random_creation_name: true,
   exit: false,
 });
+
+displayNameChangeLimitSet(0); // DCJAM
 
 const argv = minimist(process.argv.slice(2));
 
