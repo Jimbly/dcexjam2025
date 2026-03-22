@@ -319,6 +319,11 @@ export function main(): void {
       reward: 9, // DCJAM
     },
     styles: {
+      def: fontStyle(null, {
+        color: palette_font[PAL_WHITE],
+        outline_width,
+        outline_color: 0x000000ff,
+      }),
       user: fontStyle(null, {
         color: palette_font[PAL_BLACK + 4],
         outline_width,

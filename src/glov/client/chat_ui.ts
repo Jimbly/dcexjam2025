@@ -645,7 +645,6 @@ class MDRChatSource implements MDLayoutBlock, MDDrawBlock {
   }
 }
 
-// DCJAM
 export type SystemStyles = 'def' | 'self' | 'user' | 'error' | 'link' | 'link_hover' | 'system';
 export type ChatUIParamStyles = Partial<Record<SystemStyles | string, FontStyle>>;
 
@@ -846,16 +845,16 @@ class ChatUI {
     let outline_width = params.outline_width || 1;
     this.styles = defaults(params.styles || {}, {
       def: fontStyle(null, {
-        color: 0xF7F7F7ff, // DCJAM
+        color: 0xEEEEEEff,
         outline_width,
         outline_color: 0x000000ff,
       }),
-      user: fontStyle(null, { // DCJAM
+      user: fontStyle(null, {
         color: 0xEEBBCCff,
         outline_width,
         outline_color: 0x000000ff,
       }),
-      self: fontStyle(null, { // DCJAM
+      self: fontStyle(null, {
         color: 0xF7F7F7ff,
         outline_width,
         outline_color: 0x000000ff,
@@ -1134,7 +1133,7 @@ class ChatUI {
         playUISound('msg_in', this.volume_in);
       }
     }
-    if (id && !style) { // DCJAM
+    if (id && !style) {
       if (id === netUserId()) {
         style = 'self';
       } else {
