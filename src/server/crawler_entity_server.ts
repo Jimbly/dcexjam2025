@@ -66,9 +66,9 @@ export function crawlerEntityAlloc(data: DataObject): Entity {
 }
 
 function onEntDefReload(type_id: string): void {
-  let channels = glov_server.channel_server.getLocalChannelsByType('game');
-  for (let ii = 0; ii < channels.length; ++ii) {
-    let channel = channels[ii];
+  let channels = glov_server.channel_server.local_channels;
+  for (let channel_id in channels) {
+    let channel = channels[channel_id];
     if (channel.entity_manager) {
       let reloaded = channel.entity_manager.entitiesReload((ent: Entity) => ent.type_id === type_id);
       if (reloaded.length) {
@@ -97,8 +97,8 @@ export function crawlerEntityTraitsServerStartup<TBaseClass extends EntityCrawle
       pos: { encoding: EntityFieldEncoding.IVec3 },
       state: { ephemeral: true, encoding: EntityFieldEncoding.AnsiString },
       floor: { encoding: EntityFieldEncoding.Int },
-      costume0: { encoding: EntityFieldEncoding.Int },
-      costume1: { encoding: EntityFieldEncoding.Int },
+      costume0: { encoding: EntityFieldEncoding.Int }, // DCJAM
+      costume1: { encoding: EntityFieldEncoding.Int }, // DCJAM
       stats: { sub: EntityFieldSub.Record, encoding: EntityFieldEncoding.Int },
       seq_player_move: { encoding: EntityFieldEncoding.AnsiString },
       vis_data: { server_only: true },
@@ -126,7 +126,7 @@ export function crawlerEntityTraitsServerStartup<TBaseClass extends EntityCrawle
       allowed_data_assignments: {
         seq_ai_update: 'string',
         pos: 'array',
-        last_pos: 'array',
+        last_pos: 'array', // DCJAM
       },
     }, {
       action_id: 'set_debug',
