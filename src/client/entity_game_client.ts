@@ -10,7 +10,7 @@ import {
   EntityID,
   NetErrorCallback,
 } from 'glov/common/types.js';
-import type { ROVec2, ROVec3 } from 'glov/common/vmath';
+import type { ROVec2 } from 'glov/common/vmath';
 import { hatDetails, maxMP } from '../common/combat';
 import { EntityCrawlerDataCommon, entSamePos } from '../common/crawler_entity_common';
 import {
@@ -75,16 +75,13 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
 
   hit_by_us = false; // whether or not we get XP from their death
 
+  draw_cb_frame = 0;
+
   declare onDelete: (reason: string) => number;
   declare draw2D: (param: EntityDraw2DOpts) => void;
   declare draw?: (param: EntityDrawOpts) => void;
   declare onDeleteSub?: (param: EntityOnDeleteSubParam) => void;
   declare triggerAnimation?: (anim: string) => void;
-
-  declare draw_cb?: (param: {
-    pos: ROVec3;
-  }) => void;
-  draw_cb_frame = 0;
 
   // On prototype properties:
   declare type_id: string; // will be constant on the prototype
