@@ -10,7 +10,7 @@ import {
   EntityID,
   NetErrorCallback,
 } from 'glov/common/types.js';
-import type { ROVec2 } from 'glov/common/vmath';
+import type { ROVec2, ROVec3 } from 'glov/common/vmath';
 import { hatDetails, maxMP } from '../common/combat';
 import { EntityCrawlerDataCommon, entSamePos } from '../common/crawler_entity_common';
 import {
@@ -75,6 +75,9 @@ export class EntityClient extends entityGameCommonClass(EntityBaseClient) implem
 
   hit_by_us = false; // whether or not we get XP from their death
 
+  draw_cb?: (param: {
+    pos: ROVec3;
+  }) => void;
   draw_cb_frame = 0;
 
   declare onDelete: (reason: string) => number;
