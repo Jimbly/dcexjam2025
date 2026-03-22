@@ -1,6 +1,6 @@
 // Portions Copyright 2023 Jimb Esser (https://github.com/Jimbly/)
 // Released under MIT License: https://opensource.org/licenses/MIT
-/* globals localStorage */
+/* globals localStorage, alert */
 
 export const FRIEND_CAT_FRIENDS = 'friends';
 export const FRIEND_CAT_GLOBAL = 'global';
@@ -1017,7 +1017,9 @@ export function scoreUpdatePlayerName(new_player_name: string): void {
     if (err) {
       player_name = old_name;
       errorReportSetDetails('score_name', player_name);
-      // alert(`Error updating player name: "${err}"`); // eslint-disable-line no-alert
+      if (0) { // DCJAM
+        alert(`Error updating player name: "${err}"`); // eslint-disable-line no-alert
+      }
     } else {
       score_user_provider.setName!(new_player_name);
       for (let ii = 0; ii < all_score_systems.length; ++ii) {
