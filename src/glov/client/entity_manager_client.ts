@@ -831,7 +831,7 @@ class ClientEntityManagerImpl<
     // this.fadeInEnt(ent, fade_in_time); // no: flickers with fading out server ents when used for chests
     this.emit('ent_update', ent.id);
 
-    // DCJAM: also delete oldest ones
+    // Probably want configurable: also delete oldest ones
     const MAX_CLIENT_ENTS = 100;
     let oldest_id = this.last_local_ent_id + MAX_CLIENT_ENTS;
     if (oldest_id < 0 && this.entities[oldest_id]) {
