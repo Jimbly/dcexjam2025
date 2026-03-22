@@ -314,6 +314,10 @@ export function main(): void {
     fade_time: [1000, 1000],
     renderables: markdown_default_renderables, // use all system renderables
     channel_join_message: 'Joined global chat channel',
+    max_per_style: {
+      combat: 12, // DCJAM
+      reward: 9, // DCJAM
+    },
     styles: {
       user: fontStyle(null, {
         color: palette_font[PAL_BLACK + 4],
