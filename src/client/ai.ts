@@ -534,7 +534,7 @@ export function aiStepFloor(
   defines: Partial<Record<string, true>>,
   ai_pause: boolean,
   script_api: CrawlerScriptAPI,
-  filter: (ent: Entity) => boolean,
+  filter?: (ent: Entity) => boolean,
 ): void {
   if (ai_pause) {
     return;
@@ -549,7 +549,7 @@ export function aiStepFloor(
       continue;
     }
 
-    if (!filter(ent)) {
+    if (filter && !filter(ent)) {
       continue;
     }
 
