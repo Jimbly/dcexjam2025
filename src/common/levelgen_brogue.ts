@@ -825,7 +825,7 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
             if (room[xx + yy * room.w]) {
               // we're part of the room
               let test_idx = room_x + xx + (room_y + yy) * work.w;
-              if (work[test_idx] || reservedPos(test_idx)) {
+              if (work[test_idx] || reservedPos(test_idx)) { // DCJAM
                 // overlaps with part of another room
                 continue next_door;
               }
@@ -1107,7 +1107,7 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
       continue;
     }
     let priority = 0;
-    if (room.size < 4) {
+    if (room.size < 4) { // DCJAM
       priority -= 100;
     }
     priority += max(100 - room_dist[1][ii], 0);
@@ -1118,7 +1118,7 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
   let room_tiles: Partial<Record<RoomID, CellDesc>> = {};
   let shop_opts = params.shop_cell_ids.slice(0);
   shuffleArray(rand, shop_opts);
-  for (let ii = 0; ii < shops && leafs.length; ++ii) {
+  for (let ii = 0; ii < shops && leafs.length; ++ii) { // DCJAM
     let room_id = leafs.pop()![1];
     let room = rooms[room_id];
     room.need_doors = true;
@@ -1131,6 +1131,7 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
     assert(adjacent_room !== room);
     adjacent_room.variant_disallowed = true;
   }
+
 
   function numWallsAtCorner(cx: number, cy: number): number {
     cx--;
@@ -1289,44 +1290,50 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
     cell.desc = cell_descs[ii < num_detail1 ? CellType.DETAIL1 : CellType.DETAIL2];
   }
 
-  // Convert some rooms to variant-styled
-  let variant_rooms = [];
-  for (let ii = 1; ii < rooms.length; ++ii) {
-    let room = rooms[ii];
-    if (room.variant_disallowed) {
-      continue;
-    }
-    variant_rooms.push(room);
-  }
-  shuffleArray(variant_rooms, rand);
-  const desired_size = 6;
-  variant_rooms.sort((a, b) => {
-    return abs(a.size! - desired_size) - abs(b.size! - desired_size);
-  });
-  variant_rooms = variant_rooms.slice(0, var_rooms);
-  let room_is_variant: Partial<Record<number, true>> = {};
-  for (let ii = 0; ii < variant_rooms.length; ++ii) {
-    let room = variant_rooms[ii];
-    room_is_variant[room.id] = true;
-  }
-  for (let yy = 0; yy < h; ++yy) {
-    for (let xx = 0; xx < w; ++xx) {
-      let cell = cells[xx + yy * w];
-      let room_id = work[xx + 1 + (yy + 1) * work.w];
-      if (!room_id || !room_is_variant[room_id]) {
+  if (1) { // DCJAM
+    // Convert some rooms to variant-styled
+    // Note: this requires there to exist cell and wall defs named
+    // var_solid1, var_open, etc, for all used defs.
+    let variant_rooms = [];
+    for (let ii = 1; ii < rooms.length; ++ii) {
+      let room = rooms[ii];
+      if (room.variant_disallowed) {
         continue;
       }
-      if (cell.desc.procgen_replaceable) {
-        cell.desc = crawlerGetCellDesc(`var_${cell.desc.id}`);
-      }
-      for (let ii = 0; ii < cell.walls.length; ++ii) {
-        let wall_desc = cell.walls[ii];
-        cell.walls[ii] = crawlerGetWallDesc(`var_${wall_desc.id}`);
+      variant_rooms.push(room);
+    }
+    shuffleArray(variant_rooms, rand);
+    const desired_size = 6;
+    variant_rooms.sort((a, b) => {
+      return abs(a.size! - desired_size) - abs(b.size! - desired_size);
+    });
+    variant_rooms = variant_rooms.slice(0, var_rooms);
+    let room_is_variant: Partial<Record<number, true>> = {};
+    for (let ii = 0; ii < variant_rooms.length; ++ii) {
+      let room = variant_rooms[ii];
+      room_is_variant[room.id] = true;
+    }
+    for (let yy = 0; yy < h; ++yy) {
+      for (let xx = 0; xx < w; ++xx) {
+        let cell = cells[xx + yy * w];
+        let room_id = work[xx + 1 + (yy + 1) * work.w];
+        if (!room_id || !room_is_variant[room_id]) {
+          continue;
+        }
+        if (cell.desc.procgen_replaceable) {
+          cell.desc = crawlerGetCellDesc(`var_${cell.desc.id}`);
+        }
+        for (let ii = 0; ii < cell.walls.length; ++ii) {
+          let wall_desc = cell.walls[ii];
+          cell.walls[ii] = crawlerGetWallDesc(`var_${wall_desc.id}`);
+        }
       }
     }
   }
 
-  level.setVstyle(vstyles[rand.range(vstyles.length)]);
+  if (vstyles.length) {
+    level.setVstyle(vstyles[rand.range(vstyles.length)]);
+  }
 
   let gen_data: PrivateGenData = {
     rooms,
@@ -1496,7 +1503,13 @@ function connectLevelBrogue(generator: LevelGenerator, floor_id: number, seed: s
       let yy = (ii - xx) / w;
       let room_id = getRoomID(xx, yy);
       let room = rooms[room_id];
-      if (room && !room.secret && (!room.has_entrance || dist(xx, yy, level.special_pos.stairs_in) > 3)) {
+      if (!room) {
+        continue;
+      }
+      if (room.secret) { // DCJAM
+        continue;
+      }
+      if (!room.has_entrance || dist(xx, yy, level.special_pos.stairs_in) > 3) {
         open_cells.push(ii);
       }
     }
@@ -1530,7 +1543,7 @@ function connectLevelBrogue(generator: LevelGenerator, floor_id: number, seed: s
     });
   }
 
-  // Place mimics
+  // DCJAM Place mimics
   for (let ii = 1; ii < rooms.length; ++ii) {
     let room = rooms[ii];
     if (!room.secret) {
