@@ -35,7 +35,7 @@ import { statusSet } from './status';
 
 const { abs, floor, max, random } = Math;
 
-type Entity = EntityClient;
+type Entity = EntityClient; // DCJAM
 
 function randomFrom<T>(arr: T[]): T {
   return arr[floor(random() * arr.length)];
@@ -82,7 +82,7 @@ export type WanderState = {
   home_pos: JSVec3;
   prefer_door: boolean;
 };
-export type EntityWander = EntityClient & {
+export type EntityWander = Entity & {
   wander_state: WanderState;
   wander_opts: WanderOpts;
   aiWander: (game_state: CrawlerState, script_api: CrawlerScriptAPI) => boolean;
@@ -92,7 +92,7 @@ export type PatrolOpts = Record<never, never>;
 export type PatrolState = {
   last_pos: JSVec3;
 };
-export type EntityPatrol = EntityClient & {
+export type EntityPatrol = Entity & {
   patrol_state: PatrolState;
   patrol_opts: PatrolOpts;
   aiPatrol: (game_state: CrawlerState, script_api: CrawlerScriptAPI) => boolean;
@@ -105,7 +105,7 @@ export type HunterState = {
   has_target: boolean;
   target_pos: JSVec3;
 };
-export type EntityHunter = EntityClient & {
+export type EntityHunter = Entity & {
   hunter_state: HunterState;
   hunter_opts: HunterOpts;
   aiHunt: (game_state: CrawlerState, script_api: CrawlerScriptAPI) => boolean;
@@ -156,7 +156,7 @@ export function aiTraitsClientStartup(): void {
         if (level.getCell(new_pos[0], new_pos[1])?.props?.noai ||
           level.getCell(new_pos[0], new_pos[1])?.events?.length
         ) {
-          // avoid going onto events (e.g. stairs in/out
+          // avoid going onto events (e.g. stairs in/out)
           return false;
         }
         if (entitiesAt(this.entity_manager, new_pos, floor_id, true).length) {
@@ -323,7 +323,7 @@ export function aiTraitsClientStartup(): void {
           if (level.getCell(new_pos[0], new_pos[1])?.props?.noai ||
             level.getCell(new_pos[0], new_pos[1])?.events?.length
           ) {
-            // avoid going onto events (e.g. stairs in/out
+            // avoid going onto events (e.g. stairs in/out)
             dx = 0;
           }
         }
@@ -337,7 +337,7 @@ export function aiTraitsClientStartup(): void {
           if (level.getCell(new_pos[0], new_pos[1])?.props?.noai ||
             level.getCell(new_pos[0], new_pos[1])?.events?.length
           ) {
-            // avoid going onto events (e.g. stairs in/out
+            // avoid going onto events (e.g. stairs in/out)
             dy = 0;
           }
         }
@@ -532,9 +532,13 @@ export function aiStepFloor(
   game_state: CrawlerState,
   entity_manager: EntityManager<Entity>,
   defines: Partial<Record<string, true>>,
+  ai_pause: boolean,
   script_api: CrawlerScriptAPI,
   filter: (ent: Entity) => boolean,
 ): void {
+  if (ai_pause) {
+    return;
+  }
   let entities = entity_manager.entities;
   let level = game_state.levels[floor_id];
   script_api.setLevel(level);
