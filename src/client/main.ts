@@ -362,6 +362,7 @@ export function main(): void {
     button_height: 11,
     cell_props: [
     ],
+    height_steps: 12, // DCJAM
   });
   playStartup();
   engine.setState(titleInit);

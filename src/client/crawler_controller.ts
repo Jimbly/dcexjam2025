@@ -225,6 +225,7 @@ function startMove(
     let is_facing_ent = dir === new_rot;
     if (blocked_vis) {
       // Can't see through this wall, and there's a monster on the other side!
+      // DCJAM
       script_api.status('move_blocked', 'Something\'s blocking the door!\n(Maybe step back and wait?)');
     } else if (!is_facing_ent) {
       script_api.status('move_blocked', 'Something blocks your way.');

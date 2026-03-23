@@ -698,6 +698,7 @@ function toggleWithSelected(): void {
   crawlerBuildModeCommit();
 }
 
+let height_steps = 16;
 function adjustCellHeight(delta: number): void {
   crawlerBuildModeBegin();
   let game_state = crawlerGameState();
@@ -714,7 +715,7 @@ function adjustCellHeight(delta: number): void {
     statusPush('Out of bounds');
     return;
   }
-  target_cell.h = round(target_cell.h * 12 + delta) / 12; // DCJAM
+  target_cell.h = round(target_cell.h * height_steps + delta) / height_steps;
 
   crawlerBuildModeCommit();
 }
@@ -1770,6 +1771,7 @@ export function crawlerBuildModeStartup(params: {
   button_height?: number;
   level_props?: string[];
   cell_props?: string[];
+  height_steps?: number;
 }): void {
   font = params.font || uiGetFont();
   button_height = params.button_height || uiButtonHeight();
@@ -1779,6 +1781,7 @@ export function crawlerBuildModeStartup(params: {
   }));
   addProps(params.level_props, params.cell_props);
   default_event_name = crawlerScriptListEvents()[0];
+  height_steps = params.height_steps || 16;
 }
 
 cmd_parse.register({
