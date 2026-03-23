@@ -80,7 +80,7 @@ const PADNAMES = [
   'LT',
   'RT',
   'Back',
-  '▶',
+  '▶', // START
   'LS',
   'RS',
   // '↑', // don't show these, should be obvious from the buttons
@@ -142,7 +142,7 @@ export function crawlerOnScreenButton(param: {
         if (idx >= KEYS.A && idx <= KEYS.Z) {
           visible_hotkey = String.fromCharCode(idx);
         } else if (idx === KEYS.ESC) {
-          visible_hotkey = 'Esc';
+          visible_hotkey = 'Esc'; // DCJAM
         }
       }
     }
