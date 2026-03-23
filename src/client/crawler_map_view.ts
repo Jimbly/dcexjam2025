@@ -53,7 +53,7 @@ import { buildModeActive } from './crawler_build_mode';
 import { crawlerEntityManager, crawlerMyEnt } from './crawler_entity_client';
 import { crawlerController, crawlerSetLevelGenMode } from './crawler_play';
 import { CrawlerScriptAPIClient } from './crawler_script_api_client';
-import { isBattleZone } from './play';
+import { isBattleZone } from './play'; // DCJAM
 
 type Shader = ReturnType<typeof shaderCreate>;
 
@@ -62,6 +62,7 @@ const { floor, max, min, round, PI } = Math;
 let compass_sprite: Sprite;
 let sprite_mult: Shader;
 let allow_pathfind: boolean = true;
+let show_enemies_when_fewer_than = 0;
 
 let build_mode_entity_icons: Partial<Record<string, string>> = {
   def: 'spawner',
@@ -224,7 +225,7 @@ export function crawlerMapViewDraw({
     }
     let { ret, state } = ui.buttonShared(hover_area);
     if (state === 'rollover') {
-      const size = 2;
+      const size = 2; // DCJAM
       ui.drawRect(hover_area.x - size, hover_area.y - size,
         hover_area.x + hover_area.w + size,
         hover_area.y + hover_area.h + size,
@@ -249,6 +250,7 @@ export function crawlerMapViewDraw({
   //last_progress = level.seen_cells/level.total_cells;
   last_progress = total_enemies ? max(0, 1 - (num_enemies / total_enemies)) : 1;
   // let floor_title = level.props.title as string || `Floor ${game_state.floor_id}`;
+  // DCJAM
   let floor_title = level.props.floorlevel ? `Floor ${level.props.floorlevel} #${game_state.floor_id}` : '';
   let floor_subtitle = level.props.subtitle as string || '';
   if (fullscreen) {
@@ -593,8 +595,8 @@ export function crawlerMapViewDraw({
         let vis = false;
         if (full_vis || icon === 'player_special') { // DCJAM
           vis = true;
-        } else if (!level.props.noexplore && total_enemies && num_enemies <= 3) {
-          // DCJAM: last 3 ents visible
+        } else if (!level.props.noexplore && total_enemies && num_enemies < show_enemies_when_fewer_than) {
+          // last 3 ents visible
           vis = true;
         } else {
           let cell = level.getCell(xx, yy);
@@ -713,6 +715,7 @@ export function crawlerMapViewStartup(param: {
   hide_name_on_minimap?: boolean;
   ents_visible_outside_fog_of_war?: boolean;
   compass_border_w?: number;
+  show_enemies_when_fewer_than?: number;
 }): void {
   allow_pathfind = param.allow_pathfind ?? true;
   hide_name_on_minimap = param.hide_name_on_minimap ?? false;
@@ -742,4 +745,5 @@ export function crawlerMapViewStartup(param: {
     filter_mag: gl.NEAREST,
   });
   sprite_mult = shaderCreate('shaders/sprite_mult.fp');
+  show_enemies_when_fewer_than = param.show_enemies_when_fewer_than || 0;
 }

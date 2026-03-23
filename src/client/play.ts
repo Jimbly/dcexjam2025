@@ -5767,6 +5767,7 @@ export function playStartup(): void {
     // style_map_name: fontStyle(...)
     compass_border_w: 6,
     hide_name_on_minimap: true,
+    show_enemies_when_fewer_than: 4,
   });
 
   markdownSetColorStyle('hotkey', fontStyle(null, {
