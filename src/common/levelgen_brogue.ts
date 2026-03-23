@@ -36,6 +36,8 @@ export type GenParamsBrogue = {
   passageway_chance: number;
   pits_min: number;
   pits_random: number;
+  max_add_loops: number;
+  secret_add_loops: number;
   detail1: number;
   detail2: number;
   enemies_min: number;
@@ -91,6 +93,8 @@ export const default_gen_params_brogue: GenParamsBrogue = {
   detail2: 0.03,
   pits_min: 0,
   pits_random: 0,
+  max_add_loops: 8, // DCJAM: was 10
+  secret_add_loops: 0, // DCJAM: was 2
   enemies_min: 20,
   enemies_random: 2,
   vstyles: [
@@ -705,7 +709,21 @@ function descsFromParams(params: GenParamsBrogue) {
 }
 
 function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBrogue): CrawlerLevel {
-  let { w, h, max_rooms, var_rooms, passageway_chance, shops, closets, secrets, detail1, detail2, vstyles } = params;
+  let {
+    w,
+    h,
+    max_rooms,
+    var_rooms,
+    passageway_chance,
+    shops,
+    closets,
+    secrets,
+    detail1,
+    detail2,
+    vstyles,
+    max_add_loops,
+    secret_add_loops,
+  } = params;
   let rand = randCreate(mashString(seed));
   let last_room_id = 0;
   let work = roomTempBuffered(w, h);
@@ -974,8 +992,6 @@ function generateLevelBrogue(floor_id: number, seed: string, params: GenParamsBr
   updateRoomDist();
   num_tries = 500;
   let num_loops = 0;
-  let max_add_loops = 8; // DCJAM: make configurable? was 10
-  let secret_add_loops = 0; // DCJAM: make configurable? was 2
   const min_loop_dist = 4;
   while (num_tries && max_add_loops && wall_segments.length) {
     --num_tries;

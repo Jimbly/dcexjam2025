@@ -117,7 +117,8 @@ crawlerScriptRegisterEvent({
     let params = param.split(' ');
     let delta = Number(params[0]);
     if (api.getFloor() + delta < 0) {
-      api.status('stairs', 'This is where you arrived, try to find an entrance to the tower instead.');
+      // DCJAM
+      api.status('stairs', 'This is where you arrived, try to find an entrance to the tower instead.'); // DCJAM
       return;
     }
     let idx = 1;
