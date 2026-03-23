@@ -100,22 +100,25 @@ export function main(): void {
       api_path: `${getURLBase()}.proxy/api/`,
     }], cmd_parse, 'discord');
   } else if (platformGetID() === 'itch') {
-    let host = 'http://www.dashingstrike.com/dcex25';
-    if (MODE_DEVELOPMENT ||
-      window.location.host.indexOf('staging') !== -1 ||
-      window.location.host.startsWith('localhost')
-    ) {
-      host = 'http://staging.dashingstrike.com/dcex25';
-      // host = 'http://localhost:4005';
-    }
-    if (window.location.href.startsWith('https://')) {
-      host = host.replace(/^http:/, 'https:');
-    }
+    // For online multiplayer:
+    if (1) { // DCJAM
+      let host = 'http://www.dashingstrike.com/dcex25';
+      if (MODE_DEVELOPMENT ||
+        window.location.host.indexOf('staging') !== -1 ||
+        window.location.host.startsWith('localhost')
+      ) {
+        host = 'http://staging.dashingstrike.com/dcex25';
+        // host = 'http://localhost:4005';
+      }
+      if (window.location.href.startsWith('https://')) {
+        host = host.replace(/^http:/, 'https:');
+      }
 
-    environmentsInit([{
-      name: 'itch',
-      api_path: `${host}/api/`,
-    }], cmd_parse, 'itch');
+      environmentsInit([{
+        name: 'itch',
+        api_path: `${host}/api/`,
+      }], cmd_parse, 'itch');
+    }
   }
 
   if (engine.DEBUG || true) {

@@ -248,7 +248,7 @@ export function aiTraitsClientStartup(): void {
         // in range?
         let pos = this.getData<JSVec3>('pos')!;
         let player_pos = myEnt().getData<JSVec3>('pos')!;
-        if (this.closest_ent) {
+        if (this.closest_ent) { // DCJAM
           let closest_ent = entityManager().entities[this.closest_ent];
           if (closest_ent) {
             player_pos = closest_ent.getData<JSVec3>('pos')!;
@@ -438,6 +438,7 @@ function aiDoEnemy(
     return false;
   }
 
+  // DCJAM
   target_ent.calcPlayerResist(currentFloorLevel());
   let target_stats = target_ent.data.stats;
   let attacker_stats = ent.data.stats;
@@ -527,15 +528,16 @@ export function aiDoFloor(
   }
 }
 
-export function aiStepFloor(
-  floor_id: number,
-  game_state: CrawlerState,
-  entity_manager: EntityManager<Entity>,
-  defines: Partial<Record<string, true>>,
-  ai_pause: boolean,
-  script_api: CrawlerScriptAPI,
-  filter?: (ent: Entity) => boolean,
-): void {
+export function aiStepFloor(params: {
+  floor_id: number;
+  game_state: CrawlerState;
+  entity_manager: EntityManager<Entity>;
+  defines: Partial<Record<string, true>>;
+  ai_pause: boolean;
+  script_api: CrawlerScriptAPI;
+  filter?: (ent: Entity) => boolean;
+}): void {
+  const { floor_id, game_state, entity_manager, defines, ai_pause, script_api, filter } = params;
   if (ai_pause) {
     return;
   }

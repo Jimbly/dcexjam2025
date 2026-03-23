@@ -2933,9 +2933,15 @@ function aiStep(): void {
       the_battle_zone && ent.last_closest_ent && entities[ent.last_closest_ent]!.battle_zone === the_battle_zone);
   }
 
-  aiStepFloor(game_state.floor_id, game_state, entityManager(), engine.defines,
+  aiStepFloor({
+    floor_id: game_state.floor_id,
+    game_state,
+    entity_manager: entityManager(),
+    defines: engine.defines,
+    ai_pause: Boolean(settings.ai_pause),
     script_api,
-    entityFilter);
+    filter: entityFilter,
+  });
 
   // for each player, unflag as ready
   for (let ent_id in entities) {
