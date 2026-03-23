@@ -412,7 +412,7 @@ export function crawlerInitVisData(floor_id: number): void {
 
 cmd_parse.register({
   cmd: 'floor',
-  access_show: ['sysadmin'],
+  access_show: ['sysadmin'], // DCJAM
   help: 'Display or change floor',
   func: function (str: string, resp_func: CmdRespFunc) {
     let floor_id = Number(str);
@@ -500,7 +500,7 @@ function crawlerOnInitHaveLevel(floor_id: number): void {
 
 cmd_parse.register({
   cmd: 'floor_reset',
-  access_show: ['sysadmin'],
+  access_show: ['sysadmin'], // DCJAM
   help: 'Resets floor',
   func: function (str: string, resp_func: CmdRespFunc): void {
     if (isOnlineOnly()) {
@@ -526,7 +526,7 @@ cmd_parse.register({
 });
 cmd_parse.register({
   cmd: 'spawn',
-  access_show: ['sysadmin'],
+  access_show: ['sysadmin'], // DCJAM
   help: 'Spawns an entity of the specified type',
   prefix_usage_with_help: true,
   usage: '/spawn [type_id]',
