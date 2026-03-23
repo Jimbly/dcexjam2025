@@ -123,7 +123,7 @@ export type DrawableSpriteOpts = {
   sprite_hybrid?: Sprite; // assigned at load time
   scale: number;
   do_alpha?: boolean;
-  tint_colors?: JSVec4[];
+  tint_colors?: JSVec4[]; // DCJAM
   simple_anim?: {
     scale?: JSVec2;
     offs?: [JSVec2, JSVec2];
@@ -237,7 +237,7 @@ export function drawableSpriteDrawSub(this: EntityDrawableSprite, param: EntityD
     let t = getFrameTimestamp() - grow_at;
     if (t < grow_time) {
       t /= grow_time;
-      scale *= 1 + easeIn(1 - t, 2) * 0.25;
+      scale *= 1 + easeIn(1 - t, 2) * 0.25; // DCJAM
     }
   }
   let force_alpha = false;
@@ -302,6 +302,7 @@ export function drawableSpriteDrawSub(this: EntityDrawableSprite, param: EntityD
   let shader_type: ShaderTypeEnum = ShaderType.SpriteFragment;
   if ((sprite.texs.length > 1 && tint_colors && tint_colors.length)) {
     shader_type = ShaderType.TintedSpriteFragment;
+    // DCJAM
     let costume0 = min(ent.data.costume0 || 0, tint_colors.length);
     let costume1 = min(ent.data.costume1 || 0, tint_colors.length);
     shader_params.tint0 = tint_colors[costume0];

@@ -99,7 +99,7 @@ export type Floater = {
   start: number;
   msg: string;
   blink_good?: boolean;
-  yoffs?: number;
+  yoffs?: number; // DCJAM
 };
 
 
@@ -332,7 +332,11 @@ function drawableSpriteUpdateAnim(this: EntityDrawableSprite, dt: number): numbe
         }
       }
     }
+    let last_frame = anim.getFrame();
     anim.update(dt);
+    if (last_frame === anim.getFrame()) {
+      do_update = false;
+    }
     ent.drawable_sprite_state.anim_update_frame = getFrameIndex();
   }
   let frame = anim.getFrame();
@@ -405,7 +409,7 @@ function crawlerTraitsInit(ent_factory: TraitFactory<Entity, DataObject>): void 
     },
     default_opts: {
       lod_bias: [-4, 0],
-      biasL: [-0.2, 0.3],
+      biasL: [-0.2, 0.3], // DCJAM
       biasF: [0, -0.25],
       biasR: [-0.2, 0.3],
       biasIn: [0, 0.3, 0.25],
@@ -587,7 +591,7 @@ export function crawlerEntitiesInit(mode: OnlineMode): void {
 cmd_parse.register({
   cmd: 'entset',
   help: '(Debug) Set entity field on self',
-  access_show: ['sysadmin'],
+  access_show: ['sysadmin'], // DCJAM
   func: function (param: string, resp_func: CmdRespFunc) {
     let ent = crawlerMyEnt();
     if (!ent) {
@@ -622,7 +626,7 @@ cmd_parse.register({
 cmd_parse.register({
   cmd: 'entget',
   help: '(Debug) Get entity field from self',
-  access_show: ['sysadmin'],
+  access_show: ['sysadmin'], // DCJAM
   func: function (param: string, resp_func: CmdRespFunc) {
     let ent = crawlerMyEnt();
     if (!ent) {
@@ -634,7 +638,7 @@ cmd_parse.register({
 });
 cmd_parse.register({
   cmd: 'stat',
-  access_show: ['sysadmin'],
+  access_show: ['sysadmin'], // DCJAM
   help: 'Set or displays entity stats',
   usage: 'Usage: /stat [ent_id] [statname [new_value]]',
   prefix_usage_with_help: true,
