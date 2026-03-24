@@ -50,7 +50,7 @@ import {
   crawlerRenderSetUIClearColor,
 } from './crawler_play.js';
 import { crawlerRenderSetLODBiasRange } from './crawler_render';
-import { game_height, game_width } from './globals';
+import { FONT_HEIGHT, game_height, game_width } from './globals';
 import { PAL_BLACK, PAL_GREEN, PAL_WHITE, palette, palette_font } from './palette';
 import { playStartup } from './play';
 import { SOUND_DATA } from './sound_data';
@@ -59,6 +59,7 @@ import { titleInit, titleStartup } from './title';
 const { round } = Math;
 
 Z.BACKGROUND = 1;
+Z.CONTROLLER_FADE = 5;
 Z.SPRITES = 10;
 Z.PARTICLES = 20;
 Z.CHAT = 60;
@@ -290,7 +291,7 @@ export function main(): void {
 
   ui.scaleSizes(13 / 32);
   ui.setModalSizes(0, round(game_width * 0.8), round(game_height * 0.23), 0, 0);
-  ui.setFontHeight(11);
+  ui.setFontHeight(FONT_HEIGHT);
   ui.setButtonHeight(20);
   scrollAreaSetPixelScale(1);
   ui.setPanelPixelScale(1);

@@ -245,6 +245,7 @@ entityServerRegisterActions<EntityCrawlerServer>([{
   action_id: 'stat_debug',
   self_only: false,
   handler: function ({ payload }, resp_func) {
+    // TODO: /stat no longer calls this, we don't get the `dstat` broadcast anymore
     let mod = payload as Partial<Record<string, number>>;
     let broadcast = {} as Partial<Record<string, number>>;
     for (let key in mod) {

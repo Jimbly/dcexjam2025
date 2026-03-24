@@ -19,6 +19,7 @@ import { JSVec3 } from '../common/crawler_state';
 type VisData = Partial<Record<number, string>>;
 export type EntityCrawlerDataServer = EntityCrawlerDataCommon & {
   seq_player_move: string;
+  seq_ai_update: string;
   vis_data?: VisData;
 };
 
@@ -102,6 +103,9 @@ export function crawlerEntityTraitsServerStartup<TBaseClass extends EntityCrawle
       stats: { sub: EntityFieldSub.Record, encoding: EntityFieldEncoding.Int },
       seq_player_move: { encoding: EntityFieldEncoding.AnsiString },
       vis_data: { server_only: true },
+
+      // AI state
+      seq_ai_update: { ephemeral: true, encoding: EntityFieldEncoding.AnsiString },
     });
 
     type ActionFloorChangePayload = {
@@ -116,6 +120,12 @@ export function crawlerEntityTraitsServerStartup<TBaseClass extends EntityCrawle
       },
     }, {
       action_id: 'move',
+      allowed_data_assignments: {
+        pos: 'array', // actually number[3]
+        seq_player_move: 'string',
+      },
+    }, {
+      action_id: 'teleport',
       allowed_data_assignments: {
         pos: 'array', // actually number[3]
         seq_player_move: 'string',

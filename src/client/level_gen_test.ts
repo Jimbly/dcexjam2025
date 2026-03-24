@@ -2,8 +2,9 @@ import * as glov_font from 'glov/client/font';
 import { keyDownEdge } from 'glov/client/input';
 import { slider } from 'glov/client/slider';
 import {
-  print,
   uiButtonHeight,
+  uiGetFont,
+  uiTextHeight,
 } from 'glov/client/ui';
 import { dotPropGet, dotPropSet } from 'glov/common/dot-prop';
 import { clamp, clone } from 'glov/common/util';
@@ -54,15 +55,25 @@ export function levelGenTest(game_state: CrawlerState): boolean {
   let y = -1;
   let w = 40;
   let z = Z.DEBUG + 10;
+  let h = uiButtonHeight() * 0.5;
+  let text_height = uiTextHeight() * 0.75;
 
   function param(
     shortname: string, key: string, min: number, max: number,
     proc: (v:number) => number, keydec?: number, keyinc?: number
   ): void {
     let value = dotPropGet(params, key);
-    dotPropSet(params, key, (value = proc(slider(value, { x, y, z, w, min, max }))));
-    print(style, x + w + 2, y + 4, z, `${value} : ${shortname}`);
-    y += uiButtonHeight();
+    dotPropSet(params, key, (value = proc(slider(value, { x, y, z, w, h, min, max }))));
+    uiGetFont().draw({
+      style,
+      size: text_height,
+      x: x + w + 2,
+      y, z,
+      h,
+      align: glov_font.ALIGN.VCENTER,
+      text: `${value} : ${shortname}`,
+    });
+    y += h;
     if (keydec && keyDownEdge(keydec)) {
       dotPropSet(params, key, clamp(value - 1, min, max));
     }
@@ -81,13 +92,15 @@ export function levelGenTest(game_state: CrawlerState): boolean {
     param(key, `odds.${key}`, 0, 10, round);
   }
   param('hallway', 'hallway_chance', 0, 1, hundreds);
-  // param('closets', 'closets', 0, 100, round);
+  param('closets', 'closets', 0, 100, round);
   param('passage', 'passageway_chance', 0, 1, hundreds);
-  param('mimics', 'shops', 0, 6, round);
+  param('max_add_loops', 'max_add_loops', 0, 20, round);
+  param('secret_add_loops', 'secret_add_loops', 0, 20, round);
+  param('shops', 'shops', 0, 3, round);
   param('detail1', 'detail1', 0, 0.5, hundreds);
   param('detail2', 'detail2', 0, 0.5, hundreds);
-  // param('min pits', 'pits_min', 0, 20, round);
-  // param('+ pits rnd', 'pits_random', 0, 20, round);
+  param('min pits', 'pits_min', 0, 20, round);
+  param('+ pits rnd', 'pits_random', 0, 20, round);
   param('min enemies', 'enemies_min', 0, 20, round);
   param('+ enemies rnd', 'enemies_random', 0, 20, round);
 

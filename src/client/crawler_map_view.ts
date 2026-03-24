@@ -174,6 +174,7 @@ export type CrawlerMapViewParam = {
   level_gen_test: boolean;
   script_api: CrawlerScriptAPIClient;
   button_disabled: boolean;
+  style_map_name_override?: FontStyle | null;
 };
 
 let last_num_enemies: [number, number] = [0, 0];
@@ -197,6 +198,7 @@ export function crawlerMapViewDraw({
   compass_y,
   tile_size,
   step_size,
+  style_map_name_override,
 }: CrawlerMapViewParam): void {
   const build_mode = buildModeActive();
   let { level } = game_state;
@@ -253,12 +255,13 @@ export function crawlerMapViewDraw({
   // DCJAM
   let floor_title = level.props.floorlevel ? `Floor ${level.props.floorlevel} #${game_state.floor_id}` : '';
   let floor_subtitle = level.props.subtitle as string || '';
+  let eff_style_map_name = style_map_name_override === undefined ? style_map_name : style_map_name_override;
   if (fullscreen) {
-    if (style_map_name) {
-      ui.font.drawSizedAligned(style_map_name, x, y + 2, z + 1, text_height,
+    if (eff_style_map_name) {
+      ui.font.drawSizedAligned(eff_style_map_name, x, y + 2, z + 1, text_height,
         ui.font.ALIGN.HCENTER, w, 0, floor_title);
       if (floor_subtitle) {
-        ui.font.drawSizedAligned(style_map_name, x, y + 2 + text_height + 2, z + 1, text_height * 0.75,
+        ui.font.drawSizedAligned(eff_style_map_name, x, y + 2 + text_height + 2, z + 1, text_height * 0.75,
           ui.font.ALIGN.HCENTER, w, 0, floor_subtitle);
       }
     }
@@ -321,8 +324,8 @@ export function crawlerMapViewDraw({
   }
 
   if (!fullscreen) {
-    if (style_map_name && !hide_name_on_minimap) {
-      ui.font.drawSizedAligned(style_map_name, x, y + 1, z + 1, text_height,
+    if (eff_style_map_name && !hide_name_on_minimap) {
+      ui.font.drawSizedAligned(eff_style_map_name, x, y + 1, z + 1, text_height,
         ui.font.ALIGN.HCENTER, w, 0, floor_title);
     }
     // Optional star for showing completion

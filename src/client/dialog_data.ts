@@ -35,14 +35,16 @@ import {
 } from './entity_game_client';
 import {
   errorsToChat,
-  joinFloorFromTown,
   myEnt,
   myEntOptional,
-  showFloorList,
-  showShop,
-  uiActionClear,
 } from './play';
 import { statusPush } from './status';
+import { uiActionClear } from './uiaction';
+import {
+  joinFloorFromTown,
+  showFloorList,
+} from './uiaction_floor_list';
+import { showShop } from './uiaction_inventory';
 
 const { round } = Math;
 

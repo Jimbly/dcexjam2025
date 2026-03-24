@@ -1,21 +1,21 @@
 export const TITLE_FONT_H = 14;
+const FRAME_HORIZ_SPLIT = 240;
+export const FRAME_VERT_SPLIT = 276;
+const FRAME_LR_SPLIT = 288;
 
 import assert from 'assert';
 import { autoResetSkippedFrames } from 'glov/client/auto_reset';
-import { autoAtlas } from 'glov/client/autoatlas';
+import { autoAtlas, autoAtlasSwap } from 'glov/client/autoatlas';
 import { cmd_parse } from 'glov/client/cmds';
 import { dynGeomForward } from 'glov/client/dyn_geom';
-import { editBox } from 'glov/client/edit_box';
 import * as engine from 'glov/client/engine';
 import { EntityPredictionID } from 'glov/client/entity_base_client';
 import {
   ALIGN,
   Font,
-  FontStyle,
   fontStyle,
   fontStyleAlpha,
   fontStyleColored,
-  vec4ColorFromIntColor,
 } from 'glov/client/font';
 import * as input from 'glov/client/input';
 import {
@@ -28,16 +28,22 @@ import {
   padButtonUpEdge,
 } from 'glov/client/input';
 import { markdownAuto } from 'glov/client/markdown';
-import { markdownImageRegisterAutoAtlas, markdownSetColorStyle } from 'glov/client/markdown_renderables';
-import { ClientChannelWorker, netClient, netSubs, netUserId } from 'glov/client/net';
-import { ScrollArea, scrollAreaCreate } from 'glov/client/scroll_area';
-import { MenuItem } from 'glov/client/selection_box';
+import {
+  markdownImageRegisterAutoAtlas,
+  markdownSetColorStyle,
+} from 'glov/client/markdown_renderables';
+import {
+  ClientChannelWorker,
+  netSubs,
+} from 'glov/client/net';
+import {
+  scrollAreaCreate,
+} from 'glov/client/scroll_area';
 import * as settings from 'glov/client/settings';
 import {
   settingsRegister,
   settingsSet,
 } from 'glov/client/settings';
-import { SimpleMenu, simpleMenuCreate } from 'glov/client/simple_menu';
 import {
   Sprite,
   spriteClipPop,
@@ -50,11 +56,8 @@ import {
   ButtonStateString,
   buttonText,
   drawBox,
-  drawHBox,
-  drawRect,
   drawRect2,
   menuFadeParamsSetDefault,
-  menuUp,
   modalDialog,
   panel,
   playUISound,
@@ -65,17 +68,14 @@ import {
   uiGetTitleFont,
   uiTextHeight,
 } from 'glov/client/ui';
-import * as urlhash from 'glov/client/urlhash';
-import * as walltime from 'glov/client/walltime';
 import { webFSAPI } from 'glov/client/webfs';
 import { EntityManagerEvent } from 'glov/common/entity_base_common';
 import { DISPLAY_NAME_MAX_VISUAL_SIZE } from 'glov/common/net_common';
 import {
-  ChannelDataClients,
   EntityID,
   TSMap,
 } from 'glov/common/types';
-import { capitalize, clamp, clone, easeOut, ridx, secondsToFriendlyString, sign } from 'glov/common/util';
+import { clamp, clone, easeOut, ridx, sign } from 'glov/common/util';
 import { unreachable } from 'glov/common/verify';
 import {
   JSVec2,
@@ -115,8 +115,6 @@ import {
   DX,
   DXY,
   DY,
-  SOUTH,
-  WEST,
 } from '../common/crawler_state';
 import {
   ActionAttackPayload,
@@ -124,9 +122,6 @@ import {
   ActionInventoryPayload,
   BroadcastDataDstat,
   ELEMENT_NAME,
-  FloorData,
-  FloorPlayerData,
-  FloorRoomData,
   Item,
   StatsData,
 } from '../common/entity_game_common';
@@ -160,8 +155,6 @@ import {
   crawlerMyEnt,
   crawlerMyEntOptional,
   Floater,
-  isLocal,
-  isOnline,
   myEntID,
 } from './crawler_entity_client';
 import {
@@ -182,7 +175,6 @@ import {
   crawlerPlayTopOfFrame,
   crawlerPlayWantMode,
   crawlerPrepAndRenderFrame,
-  crawlerRoom,
   crawlerSaveGame,
   crawlerScriptAPI,
   crawlerTurnBasedClearQueue,
@@ -196,6 +188,7 @@ import {
 import {
   crawlerRenderViewportSet,
   DIM,
+  renderSetScreenShake,
   renderViewportShear,
 } from './crawler_render';
 import {
@@ -205,7 +198,7 @@ import {
 } from './crawler_render_entities';
 import { crawlerScriptAPIDummyServer } from './crawler_script_api_client';
 import { crawerUISetHotkeyFont, crawlerOnScreenButton } from './crawler_ui';
-import { allocateNewFloor, dialogNameRender } from './dialog_data';
+import { dialogNameRender } from './dialog_data';
 import { dialog, dialogMoveLocked, dialogReset, dialogRun, dialogStartup } from './dialog_system';
 import {
   entitiesAt,
@@ -214,24 +207,27 @@ import {
   entityManager,
 } from './entity_game_client';
 import {
+  FONT_HEIGHT,
   game_height,
   game_width,
+  MOVE_BUTTON_H,
+  MOVE_BUTTON_W,
+  QUICKBAR_FRAME_Y,
   render_height,
   render_width,
+  TINY_FONT_H,
   VIEWPORT_X0,
   VIEWPORT_Y0,
 } from './globals';
 import { levelGenTest } from './level_gen_test';
 import { chatUI, tinyFont } from './main';
-import { musicCurTrack, tickMusic } from './music';
+import { tickMusic } from './music';
 import {
   PAL_BLACK,
   PAL_BLUE,
-  PAL_CYAN,
   PAL_GREEN,
   PAL_RED,
   PAL_WHITE,
-  PAL_YELLOW,
   palette,
   palette_font,
 } from './palette';
@@ -242,7 +238,31 @@ import {
   statusSet,
   statusTick,
 } from './status';
+import {
+  outline_width,
+  PLAYER_COLORS_VEC4,
+  style_hotkey,
+  style_hotkey_disabled,
+  style_inventory,
+  style_item_count,
+  style_item_level,
+  style_mp_cost,
+  style_mp_cost_over,
+  style_text,
+} from './styles';
 import { setScore } from './title';
+import { uiActionClear, uiActionCurrent, uiActionTick } from './uiaction';
+import { closeFloorList, floorListActive } from './uiaction_floor_list';
+import {
+  curHat,
+  inventoryIcon,
+  inventoryIconDraw,
+  inventoryIndexForItemPickup,
+  inventoryMenuActive,
+  showShop,
+} from './uiaction_inventory';
+import { pauseMenuActive, pauseMenuOpen } from './uiaction_pause_menu';
+import { setupMenuActive, setupMenuOpen } from './uiaction_setup_menu';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { abs, ceil, cos, floor, max, min, PI, random, round, sin } = Math;
@@ -251,6 +271,7 @@ declare module 'glov/client/settings' {
   export let ai_pause: 0 | 1; // TODO: move to ai.ts
   export let show_fps: 0 | 1;
   export let turn_toggle: 0 | 1;
+  export let depixel: 0 | 1;
 }
 
 // const ATTACK_WINDUP_TIME = 1000;
@@ -265,33 +286,20 @@ const FULLMAP_STEP_SIZE = MINIMAP_STEP_SIZE;
 const FULLMAP_TILE_SIZE = FULLMAP_STEP_SIZE * 12/12;
 const COMPASS_X = MINIMAP_X;
 const COMPASS_Y = MINIMAP_Y + MINIMAP_H;
-const BUTTON_W = 20;
-const FONT_HEIGHT = 11;
-const TINY_FONT_H = 8;
-const QUICKBAR_FRAME_Y = VIEWPORT_Y0 + render_height - 3;
-const FRAME_HORIZ_SPLIT = 240;
-const FRAME_VERT_SPLIT = 276;
-const FRAME_LR_SPLIT = 288;
+const DO_COMPASS = false; // DCJAM
+const DO_MOVEMENT_BUTTONS = true;
 
 const BATTLEZONE_RANGE = 2;
 const BATTLEZONE_SKIP_TIME = engine.DEBUG ? 1000 : 5000;
 const MAX_TICK_RANGE = 12; // if enemies are more steps than this from a player, use Manhattan dist instead
-const INVENTORY_GRID_W = 8;
-const INVENTORY_GRID_H = 5;
-const INVENTORY_MAX_SIZE = Infinity; // INVENTORY_GRID_W * INVENTORY_GRID_H;
 const MAX_FLOOR_LEVEL = 6;
 
-const PLAYER_COLORS = [
-  0xe43b44FF, // red
-  0xf77622FF, // orange
-  0xfee761FF, // yellow
-  0x63c74dFF, // green
-  0x0099dbFF, // blue
-  0xb55088FF, // purple
-  0xc0cbdcFF, // white
-  0x262b44FF, // black
-];
-const PLAYER_COLORS_VEC4 = PLAYER_COLORS.map((rgb) => vec4ColorFromIntColor(vec4(), rgb));
+const DIALOG_RECT = {
+  x: VIEWPORT_X0 + 8,
+  w: render_width - 16,
+  y: VIEWPORT_Y0,
+  h: render_height - 5, // DCJAM
+};
 
 type Entity = EntityClient;
 
@@ -330,42 +338,6 @@ let frame_sprites: {
 };
 let dither128: Sprite;
 
-const outline_width = 2.5;
-const style_text = fontStyle(null, {
-  color: palette_font[PAL_WHITE],
-  outline_width,
-  outline_color: palette_font[PAL_BLACK],
-});
-
-const style_hotkey = fontStyle(null, {
-  color: palette_font[PAL_BLACK],
-  outline_width: 3.5,
-  outline_color: palette_font[PAL_BLACK - 3],
-});
-const style_hotkey_disabled = fontStyle(style_hotkey, {
-  outline_color: palette_font[PAL_BLACK - 2],
-});
-const style_item_count = fontStyle(null, {
-  color: palette_font[PAL_BLACK],
-  outline_width: 3.5,
-  outline_color: palette_font[PAL_BLACK - 5],
-});
-const style_mp_cost_over = fontStyle(null, {
-  outline_width: 3.5,
-  outline_color: palette_font[PAL_RED - 2],
-  color: palette_font[PAL_RED],
-});
-const style_mp_cost = fontStyle(null, {
-  color: palette_font[PAL_CYAN],
-  outline_width: 3.5,
-  outline_color: palette_font[PAL_CYAN - 2],
-});
-const style_item_level = fontStyle(null, {
-  color: palette_font[PAL_YELLOW],
-  outline_width: 3.5,
-  outline_color: palette_font[PAL_YELLOW - 5],
-});
-
 export function myEnt(): Entity {
   return crawlerMyEnt() as Entity;
 }
@@ -373,10 +345,6 @@ export function myEnt(): Entity {
 export function myEntOptional(): Entity | undefined {
   return crawlerMyEntOptional() as Entity | undefined;
 }
-
-// function entityManager(): ClientEntityManagerInterface<Entity> {
-//   return crawlerEntityManager() as ClientEntityManagerInterface<Entity>;
-// }
 
 export function errorsToChat(err: unknown): void {
   if (err) {
@@ -394,134 +362,6 @@ function errorsToChatQuiet(err: unknown): void {
   }
 }
 
-
-abstract class UIAction {
-  abstract tick(): void;
-  declare name: string;
-  declare is_overlay_menu: boolean;
-  declare is_fullscreen_ui: boolean;
-}
-UIAction.prototype.name = 'UnknownAction';
-UIAction.prototype.is_overlay_menu = false;
-UIAction.prototype.is_fullscreen_ui = false;
-
-let cur_action: UIAction | null = null;
-
-function uiAction(action: UIAction | null): void {
-  if (action) {
-    assert(!cur_action);
-    cur_action = action;
-  } else {
-    cur_action = null;
-  }
-}
-
-export function uiActionClear(): void {
-  uiAction(null);
-}
-
-const PAUSE_MENU_W = floor(160/346*game_width);
-let pause_menu: SimpleMenu;
-class PauseMenuAction extends UIAction {
-  tick(): void {
-    if (!pause_menu) {
-      pause_menu = simpleMenuCreate({
-        x: floor((game_width - PAUSE_MENU_W)/2),
-        y: 50,
-        z: Z.MODAL + 2,
-        width: PAUSE_MENU_W,
-      });
-    }
-    let items: MenuItem[] = [{
-      name: 'Return to game',
-      cb: function () {
-        uiAction(null);
-      },
-    }, {
-      name: 'SFX Vol',
-      slider: true,
-      value_inc: 0.05,
-      value_min: 0,
-      value_max: 1,
-    }, {
-      name: 'Mus Vol',
-      slider: true,
-      value_inc: 0.05,
-      value_min: 0,
-      value_max: 1,
-    }, {
-      name: `Turn: ${settings.turn_toggle ? 'A/S/4/6/←/→': 'Q/E/7/9/LB/RB'}`,
-      cb: () => {
-        settingsSet('turn_toggle', 1 - settings.turn_toggle);
-      },
-    }];
-    if (isLocal()) {
-      items.push({
-        name: 'Save game',
-        cb: function () {
-          crawlerSaveGame('manual');
-          statusPush('Game saved.');
-          uiAction(null);
-        },
-      });
-    }
-    items.push({
-      name: 'Character Customization...',
-      cb: function () {
-        uiAction(null);
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        uiAction(new SetupMenuAction());
-      },
-    }, {
-      name: isOnline() ? 'Return to Title' : 'Save and Exit',
-      cb: function () {
-        if (!isOnline()) {
-          crawlerSaveGame('manual');
-        }
-        urlhash.go('');
-      },
-    });
-    if (isLocal()) {
-      items.push({
-        name: 'Exit without saving',
-        cb: function () {
-          urlhash.go('');
-        },
-      });
-    }
-
-    let volume_item = items[1];
-    volume_item.value = settings.volume_sound;
-    volume_item.name = `SFX Vol: ${(settings.volume_sound * 100).toFixed(0)}`;
-    volume_item = items[2];
-    volume_item.value = settings.volume_music;
-    volume_item.name = `Mus Vol: ${(settings.volume_music * 100).toFixed(0)}`;
-
-    pause_menu.run({
-      slider_w: floor(PAUSE_MENU_W/2),
-      items,
-    });
-
-    settingsSet('volume_sound', pause_menu.getItem(1).value as number);
-    settingsSet('volume_music', pause_menu.getItem(2).value as number);
-
-    let track = musicCurTrack();
-    if (track) {
-      font.draw({
-        x: 0, w: game_width,
-        y: 200,
-        z: Z.MODAL + 1,
-        align: ALIGN.HCENTER,
-        text: `Current BGM: ${track.split('/')[1]}`,
-      });
-    }
-
-    menuUp();
-  }
-}
-PauseMenuAction.prototype.name = 'PauseMenu';
-PauseMenuAction.prototype.is_overlay_menu = true;
-
 export function currentFloorLevel(): number {
   let game_state = crawlerGameState();
   let { floor_id } = game_state;
@@ -538,502 +378,6 @@ export function currentFloorLevel(): number {
 
 export function isTown(): boolean {
   return currentFloorLevel() > MAX_LEVEL;
-}
-
-function inventoryIcon(item: Item): string {
-  switch (item.type) {
-    case 'book': {
-      let skill_details = skillDetails(item);
-      return skill_details.icon;
-      // let bg_sprite = autoAtlas('ui', skill_details.bg);
-    }
-    case 'hat':
-      return `hat-${ELEMENT_NAME[item.subtype + 1]}`;
-    case 'potion':
-      return 'potion';
-    default:
-      unreachable(item.type);
-  }
-  return 'unknown';
-}
-
-function inventoryIconDraw(param: {
-  x: number;
-  y: number;
-  z: number;
-  item: Item;
-  scale?: number;
-  double_brim: boolean;
-}): void {
-  let { x, y, z, item, scale } = param;
-  let icon_param = {
-    x: x + 4 * (scale || 1),
-    y: y + 4 * (scale || 1),
-    w: 12 * (scale || 1),
-    h: 12 * (scale || 1),
-    z: z + 1,
-  };
-  switch (item.type) {
-    case 'book': {
-      let skill_details = skillDetails(item);
-      autoAtlas('ui', skill_details.icon).draw(icon_param);
-      icon_param.z -= 0.1;
-      let bg_sprite = autoAtlas('ui', skill_details.bg);
-      if (item.level > 1) {
-        let extra = item.level - 1;
-        let left_extra = floor(extra / 2);
-        // let right_extra = extra - left_extra;
-        icon_param.x -= left_extra;
-        icon_param.w += extra;
-        drawHBox(icon_param, bg_sprite);
-      } else {
-        bg_sprite.draw(icon_param);
-      }
-    } break;
-    case 'hat':
-      if (0) {
-        let icon = `hat-${ELEMENT_NAME[item.subtype + 1]}`;
-        autoAtlas('ui', icon).draw(icon_param);
-      } else {
-        let extra = param.double_brim ? item.level * 2 - 4 : item.level - 3;
-        let left_extra = floor(extra / 2);
-        icon_param.x -= left_extra * (scale || 1);
-        icon_param.w += extra * (scale || 1);
-        let icon = `hat-${ELEMENT_NAME[item.subtype + 1]}`;
-        drawBox(icon_param, autoAtlas('ui', icon));
-      }
-      break;
-    case 'potion':
-      autoAtlas('ui', 'potion').draw(icon_param);
-      break;
-    default:
-      unreachable(item.type);
-  }
-}
-
-type InventoryButtonParam = {
-  x: number;
-  y: number;
-  z: number;
-  item: Item;
-  show_count: boolean;
-  selected: boolean;
-  nointeract?: boolean;
-};
-function inventoryButton(param: InventoryButtonParam): boolean {
-  let { x, y, z, item, show_count, selected, nointeract } = param;
-  let button_param = {
-    x,
-    y,
-    z,
-    w: BUTTON_W,
-    h: BUTTON_W,
-  };
-  let ret = button({
-    ...button_param,
-    base_name: selected ? 'buttonselected' : nointeract ? 'buttonframe' : undefined,
-    disabled: nointeract ? true : undefined,
-    text: ' ',
-  });
-  // show icon
-  inventoryIconDraw({
-    ...param,
-    double_brim: false,
-  });
-  const offs = 1;
-  if (item.type !== 'potion') {
-    // show level
-    tiny_font.draw({
-      ...button_param,
-      x: button_param.x + 1 + offs,
-      y: button_param.y - offs,
-      style: style_item_level,
-      size: TINY_FONT_H,
-      z: z + 3,
-      align: ALIGN.HRIGHT,
-      text: `L${item.level}`,
-    });
-  }
-  if (item.type === 'book' && !show_count) {
-    // show mp cost
-    let skill_details = skillDetails(item);
-    tiny_font.draw({
-      ...button_param,
-      x: button_param.x + 1 - offs,
-      y: button_param.y + offs,
-      style: skill_details.mp_cost > myEnt().maxMP() ? style_mp_cost_over : style_mp_cost,
-      size: TINY_FONT_H,
-      z: z + 3,
-      align: ALIGN.VBOTTOM,
-      text: `${skill_details.mp_cost}`,
-    });
-  }
-  if (show_count) {
-    // show count
-    tiny_font.draw({
-      ...button_param,
-      x: button_param.x + offs,
-      y: button_param.y + offs,
-      style: style_item_count,
-      size: TINY_FONT_H,
-      z: z + 3,
-      align: ALIGN.VBOTTOM | ALIGN.HRIGHT,
-      text: `${item.count > 99 ? '9+' : item.count}`,
-    });
-  }
-
-  return Boolean(ret);
-}
-
-function inventoryIndexForItemPickup(item: Item): number {
-  let my_ent = myEnt();
-  let inventory = my_ent.getData<(Item|null)[]>('inventory', []);
-  let idx = -1;
-  if (!inventory) {
-    my_ent.data.inventory = inventory = [];
-    idx = 0;
-  } else {
-    let open_slot = inventory.length;
-    for (let ii = inventory.length - 1; ii >= 0; --ii) {
-      let elem = inventory[ii];
-      if (!elem) {
-        open_slot = ii;
-      } else if (elem.type === item.type && elem.subtype === item.subtype && elem.level === item.level) {
-        idx = ii;
-        break;
-      }
-    }
-    if (idx === -1) {
-      idx = open_slot;
-    }
-  }
-
-  if (idx >= INVENTORY_MAX_SIZE) {
-    return -1;
-  }
-  return idx;
-}
-
-function curHat(list: Item[]): number | null {
-  if (!list.length) {
-    return null;
-  }
-  let item = list[0];
-  return [0,3,4][item.subtype];
-}
-
-function unequip(loc: 'hats' | 'books', src_idx: number, target_idx: number): void {
-  let my_ent = myEnt();
-  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
-  assert(target_idx !== -1);
-  let src_list = my_ent.getData<Item[]>(loc, []);
-  let item = src_list[src_idx];
-  assert.equal(item.count, 1);
-
-  let ops: ActionInventoryOp[] = [];
-  if (inventory[target_idx]) {
-    inventory[target_idx]!.count += item.count;
-    ops.push({
-      idx: target_idx,
-      delta: item.count,
-    });
-  } else {
-    inventory[target_idx] = item;
-    ops.push({
-      idx: target_idx,
-      delta: 1,
-      item,
-    });
-  }
-  src_list.splice(src_idx, 1);
-  ops.push({
-    list: loc,
-    idx: src_idx,
-    delta: -1,
-  });
-  let payload: ActionInventoryPayload = {
-    ops,
-    ready: false,
-  };
-  let new_hat: number | null = null;
-  if (loc === 'hats') {
-    new_hat = curHat(src_list);
-    if (new_hat !== null) {
-      payload.costume1 = new_hat;
-    }
-  }
-  my_ent.applyBatchUpdate({
-    field: 'seq_inventory',
-    action_id: 'inv',
-    payload,
-    data_assignments: {
-      client_only: true,
-      inventory,
-      costume1: new_hat === null ? undefined : new_hat,
-      [loc]: src_list,
-    },
-  }, errorsToChat);
-
-  my_ent.calcPlayerResist(currentFloorLevel());
-}
-
-function equip(idx: number, swap_target_idx: number | null): number {
-  let my_ent = myEnt();
-  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
-  let item = inventory[idx];
-  assert(item);
-  assert(item.type === 'hat' || item.type === 'book');
-  const loc = `${item.type}s` as const;
-  let target_list = my_ent.getData<Item[]>(loc, []);
-
-  let ops: ActionInventoryOp[] = [];
-  if (item.count === 1) {
-    // remove from inventory
-    inventory[idx] = null;
-  } else {
-    // decrement from inventory
-    item.count--;
-  }
-  ops.push({
-    idx,
-    delta: -1,
-  });
-  if (swap_target_idx !== null) {
-    // move swap target to inventory
-    let swap_target = target_list[swap_target_idx];
-    assert(swap_target);
-    let inv_idx = inventoryIndexForItemPickup(swap_target);
-    assert(inv_idx !== -1);
-    if (inventory[inv_idx]) {
-      inventory[inv_idx].count++;
-      ops.push({
-        idx: inv_idx,
-        delta: 1,
-      });
-    } else {
-      inventory[inv_idx] = swap_target;
-      ops.push({
-        idx: inv_idx,
-        item: swap_target,
-      });
-    }
-    // remove swap target from equipment
-    target_list.splice(swap_target_idx, 1);
-    ops.push({
-      list: loc,
-      idx: swap_target_idx,
-      delta: -1,
-    });
-  }
-  // put item in target
-  let target_idx = target_list.length;
-  for (let ii = 0; ii < target_list.length; ++ii) {
-    if (target_list[ii].level < item.level) {
-      target_idx = ii;
-      break;
-    }
-  }
-
-  let new_item = {
-    ...item,
-    count: 1,
-  };
-  target_list.splice(target_idx, 0, new_item);
-  ops.push({
-    list: loc,
-    idx: target_idx,
-    item: new_item,
-  });
-
-  let payload: ActionInventoryPayload = {
-    ops,
-    ready: false,
-  };
-
-  let new_hat: number | null = null;
-  if (loc === 'hats') {
-    new_hat = curHat(target_list);
-    if (new_hat !== null) {
-      payload.costume1 = new_hat;
-    }
-  }
-
-  my_ent.applyBatchUpdate({
-    field: 'seq_inventory',
-    action_id: 'inv',
-    payload,
-    data_assignments: {
-      client_only: true,
-      inventory,
-      costume1: new_hat === null ? undefined : new_hat,
-      [loc]: target_list,
-    },
-  }, errorsToChat);
-
-  my_ent.calcPlayerResist(currentFloorLevel());
-
-  return target_idx;
-}
-
-function doCombine(src_idx: number, target_idx: number): void {
-  let my_ent = myEnt();
-  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
-  let item = inventory[src_idx];
-  assert(item);
-  assert(item.type === 'hat' || item.type === 'book');
-
-  let ops: ActionInventoryOp[] = [];
-  if (item.count === 2) {
-    // remove from inventory
-    inventory[src_idx] = null;
-  } else {
-    // decrement from inventory
-    item.count -= 2;
-  }
-  ops.push({
-    idx: src_idx,
-    delta: -2,
-  });
-  if (inventory[target_idx]) {
-    inventory[target_idx].count++;
-    ops.push({
-      idx: target_idx,
-      delta: 1,
-    });
-  } else {
-    let new_item = {
-      ...item,
-      level: item.level + 1,
-      count: 1,
-    };
-    inventory[target_idx] = new_item;
-    ops.push({
-      idx: target_idx,
-      item: new_item,
-    });
-  }
-
-  let payload: ActionInventoryPayload = {
-    ops,
-    ready: false,
-  };
-  my_ent.applyBatchUpdate({
-    field: 'seq_inventory',
-    action_id: 'inv',
-    payload,
-    data_assignments: {
-      client_only: true,
-      inventory,
-    },
-  }, errorsToChat);
-}
-
-function doDownvert(src_idx: number, target_idx: number, subtype: number): void {
-  let my_ent = myEnt();
-  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
-  let item = inventory[src_idx];
-  assert(item);
-  assert(item.type === 'hat' || item.type === 'book');
-
-  let ops: ActionInventoryOp[] = [];
-  if (item.count === 1) {
-    // remove from inventory
-    inventory[src_idx] = null;
-  } else {
-    // decrement from inventory
-    item.count--;
-  }
-  ops.push({
-    idx: src_idx,
-    delta: -1,
-  });
-  if (inventory[target_idx]) {
-    inventory[target_idx].count++;
-    ops.push({
-      idx: target_idx,
-      delta: 1,
-    });
-  } else {
-    let new_item = {
-      ...item,
-      subtype,
-      level: item.level - 1,
-      count: 1,
-    };
-    inventory[target_idx] = new_item;
-    ops.push({
-      idx: target_idx,
-      item: new_item,
-    });
-  }
-
-  let payload: ActionInventoryPayload = {
-    ops,
-    ready: false,
-  };
-  my_ent.applyBatchUpdate({
-    field: 'seq_inventory',
-    action_id: 'inv',
-    payload,
-    data_assignments: {
-      client_only: true,
-      inventory,
-    },
-  }, errorsToChat);
-}
-
-function doTradeForPotion(src_idx: number, target_idx: number): void {
-  let my_ent = myEnt();
-  let inventory = clone(my_ent.getData<(Item|null)[]>('inventory', []));
-  let item = inventory[src_idx];
-  assert(item);
-  assert(item.type === 'hat' || item.type === 'book');
-
-  let ops: ActionInventoryOp[] = [];
-  if (item.count === 1) {
-    // remove from inventory
-    inventory[src_idx] = null;
-  } else {
-    // decrement from inventory
-    item.count--;
-  }
-  ops.push({
-    idx: src_idx,
-    delta: -1,
-  });
-  if (inventory[target_idx]) {
-    inventory[target_idx].count++;
-    ops.push({
-      idx: target_idx,
-      delta: 1,
-    });
-  } else {
-    let new_item: Item = {
-      type: 'potion',
-      subtype: 0,
-      level: 1,
-      count: 1,
-    };
-    inventory[target_idx] = new_item;
-    ops.push({
-      idx: target_idx,
-      item: new_item,
-    });
-  }
-
-  let payload: ActionInventoryPayload = {
-    ops,
-    ready: false,
-  };
-  my_ent.applyBatchUpdate({
-    field: 'seq_inventory',
-    action_id: 'inv',
-    payload,
-    data_assignments: {
-      client_only: true,
-      inventory,
-    },
-  }, errorsToChat);
 }
 
 const HAT_STACK_OFFS = [
@@ -1099,7 +443,7 @@ const TARGET_DESC: Record<SkillTarget, string> = {
   spear: 'the enemies in the [c=target]2 cells in front[/c] of you',
 };
 
-function itemInfo(item: Item, line: (text: string) => void): void {
+export function itemInfo(item: Item, line: (text: string) => void): void {
   if (item.type === 'potion') {
     line(`Heals for ${POTION_HEAL_PORTION*100}% Max HP` +
       ` (${round(POTION_HEAL_PORTION * myEnt().getData('stats.hp_max',1))} HP)` +
@@ -1120,791 +464,7 @@ function itemInfo(item: Item, line: (text: string) => void): void {
   }
 }
 
-const TYPE_SORT = {
-  potion: 0,
-  hat: 1,
-  book: 2,
-};
-
-function cmpItem(a: Item | null, b: Item | null): number {
-  if (!a) {
-    if (!b) {
-      return 0;
-    }
-    return 1;
-  } else if (!b) {
-    return -1;
-  }
-  if (a.type !== b.type) {
-    return TYPE_SORT[a.type] - TYPE_SORT[b.type];
-  }
-  let d = a.level - b.level;
-  if (d) {
-    return d;
-  }
-  return a.subtype - b.subtype;
-}
-
-function sortInventory(): void {
-  let inventory_old = myEnt().getData<(Item|null)[]>('inventory', []);
-  let inventory_new = clone(inventory_old);
-  inventory_new.sort(cmpItem);
-  while (inventory_new.length && !inventory_new[inventory_new.length - 1]) {
-    inventory_new.pop();
-  }
-
-  let ops: ActionInventoryOp[] = [];
-
-  for (let ii = 0; ii < inventory_old.length; ++ii) {
-    let new_elem = inventory_new[ii];
-    let old_elem = inventory_old[ii];
-    if (cmpItem(new_elem, old_elem) === 0) {
-      continue;
-    }
-    if (old_elem) {
-      ops.push({
-        idx: ii,
-        delta: -old_elem.count,
-      });
-    }
-    if (new_elem) {
-      ops.push({
-        idx: ii,
-        item: new_elem,
-      });
-    }
-  }
-
-  let payload: ActionInventoryPayload = {
-    ops,
-    ready: false,
-  };
-  myEnt().applyBatchUpdate({
-    field: 'seq_inventory',
-    action_id: 'inv',
-    payload,
-    data_assignments: {
-      client_only: true,
-      inventory: inventory_new,
-    },
-  }, errorsToChat);
-}
-
-
-type ShopType = 'inventory' | 'upgrades' | 'trades';
-
-const INVENTORY_LEFT_COLUMN = 52;
-const INVENTORY_PAD = 4;
-const INVENTORY_BETWEEN_ITEM_COLUMNS = 12;
-const INVENTORY_PAD6 = 6;
-const INVENTORY_HATS_XOFFS = INVENTORY_LEFT_COLUMN + INVENTORY_PAD;
-const INVENTORY_BOOKS_XOFFS = INVENTORY_HATS_XOFFS + BUTTON_W + INVENTORY_BETWEEN_ITEM_COLUMNS;
-const INVENTORY_GRID_XOFFS = INVENTORY_BOOKS_XOFFS + BUTTON_W +
-  INVENTORY_BETWEEN_ITEM_COLUMNS + INVENTORY_PAD6;
-const INVENTORY_GRID_W_PX = INVENTORY_GRID_W * (BUTTON_W + INVENTORY_PAD) - INVENTORY_PAD;
-const INVENTORY_GRID_WITHSCROLL_W = INVENTORY_GRID_W_PX +
-  INVENTORY_PAD + BUTTON_W;
-const INVENTORY_GRID_H_PX = INVENTORY_GRID_H * (BUTTON_W + INVENTORY_PAD) - INVENTORY_PAD;
-const INVENTORY_W = INVENTORY_GRID_XOFFS +
-  INVENTORY_GRID_WITHSCROLL_W +
-  INVENTORY_PAD6 + INVENTORY_PAD6;
-const INVENTORY_GRID_YOFFS = INVENTORY_PAD6 * 2;
-const INVENTORY_INFO_YOFFS = INVENTORY_GRID_YOFFS +
-  INVENTORY_GRID_H_PX +
-  INVENTORY_PAD6 * 2;
-const INVENTORY_H = 290;
-const INVENTORY_SHOP_OPTIONS_YOFFS = INVENTORY_H - 60;
-const INVENTORY_X = floor((game_width - INVENTORY_W) / 2);
-const INVENTORY_Y = floor((game_height - INVENTORY_H) / 2);
-const INVENTORY_ACTION_W = 52;
-const TRADE_ACTION_W = 60;
-const style_inventory = fontStyleColored(null, palette_font[PAL_BLACK - 1]);
-class InventoryMenuAction extends UIAction {
-  scroll_area: ScrollArea;
-  constructor(public shop_type: ShopType) {
-    super();
-    myEntOptional()?.calcPlayerResist(currentFloorLevel());
-    this.scroll_area = scrollAreaCreate({
-      background_color: null,
-      auto_hide: true,
-    });
-  }
-  selected_idx: [string, number] = ['null', 0];
-  tick(): void {
-    let z = Z.MODAL;
-
-    let { shop_type } = this;
-
-    let my_ent = myEnt();
-    let level = my_ent.getData('stats.level', 1);
-    let floor_level = currentFloorLevel();
-    let inventory = my_ent.getData<(Item|null)[]>('inventory', []);
-    let hats = my_ent.getData<Item[]>('hats', []);
-    let books = my_ent.getData<Item[]>('books', []);
-    let { selected_idx } = this;
-
-    if (engine.DEBUG && selected_idx[0] === 'null' && false) {
-      selected_idx = this.selected_idx = ['inv', 2];
-    }
-
-    let x0 = INVENTORY_X + INVENTORY_HATS_XOFFS;
-    let y0 = INVENTORY_Y + INVENTORY_GRID_YOFFS;
-
-    let level_y = y0 + (BUTTON_W + INVENTORY_PAD) * (MAX_LEVEL - level) - 3;
-    autoAtlas('ui', 'inventory-separator').draw({
-      x: INVENTORY_X + INVENTORY_BOOKS_XOFFS + BUTTON_W - 83,
-      y: level_y,
-      z,
-      w: 83,
-      h: 2,
-    });
-    font.draw({
-      style: style_inventory,
-      x: x0 - 2,
-      y: level_y + 1,
-      z,
-      align: ALIGN.HRIGHT,
-      text: `Player L${level}`,
-    });
-    let do_action = false;
-    if (floor_level < level) {
-      level_y = y0 + (BUTTON_W + INVENTORY_PAD) * (MAX_LEVEL - floor_level) - 3;
-      autoAtlas('ui', 'inventory-separator').draw({
-        x: INVENTORY_X + INVENTORY_BOOKS_XOFFS + BUTTON_W - 83,
-        y: level_y,
-        z,
-        w: 83,
-        h: 2,
-      });
-      font.draw({
-        style: style_inventory,
-        x: x0 - 2,
-        y: level_y + 1,
-        z,
-        align: ALIGN.HRIGHT,
-        text: `Floor L${floor_level}`,
-      });
-    }
-
-    for (let ii = 0; ii < MAX_LEVEL; ++ii) {
-      let x = x0;
-      let y = y0 + (BUTTON_W + INVENTORY_PAD) * ii;
-      let idx = MAX_LEVEL - ii - 1;
-      let item = hats[idx];
-      let param = {
-        x, y, z, w: BUTTON_W, h: BUTTON_W,
-      };
-      if (!item) {
-        drawBox(param, autoAtlas('ui', idx < level ? 'inventory-fillable-hat' : 'inventory-locked'));
-        if (idx >= level) {
-          font.draw({
-            color: palette_font[4],
-            x: x0 + BUTTON_W,
-            y: param.y,
-            z,
-            w: INVENTORY_BETWEEN_ITEM_COLUMNS,
-            h: param.h,
-            align: ALIGN.HCENTER | ALIGN.VCENTER,
-            text: `L${idx + 1}`
-          });
-          font.draw({
-            color: palette_font[4],
-            x: x0 + 3,
-            y: param.y,
-            z,
-            h: param.h,
-            align: ALIGN.HRIGHT | ALIGN.VCENTER,
-            text: 'Unlocks at'
-          });
-        }
-      } else {
-        let is_selected = selected_idx[0] === 'hats' && selected_idx[1] === idx;
-        if (inventoryButton({
-          x, y, z,
-          item,
-          show_count: false,
-          selected: is_selected,
-        })) {
-          this.selected_idx = selected_idx = ['hats', idx];
-          if (buttonLastSpotRet().double_click) {
-            do_action = true;
-          } else if (is_selected) {
-            this.selected_idx = selected_idx = ['null', 0];
-          }
-        }
-      }
-    }
-
-    x0 = INVENTORY_X + INVENTORY_BOOKS_XOFFS;
-    for (let ii = 0; ii < MAX_LEVEL; ++ii) {
-      let x = x0;
-      let y = y0 + (BUTTON_W + INVENTORY_PAD) * ii;
-      let idx = MAX_LEVEL - ii - 1;
-      let item = books[idx];
-      let param = {
-        x, y, z, w: BUTTON_W, h: BUTTON_W,
-      };
-      if (!item) {
-        drawBox(param, autoAtlas('ui', idx < level ? 'inventory-fillable-book' : 'inventory-locked'));
-      } else {
-        let is_selected = selected_idx[0] === 'books' && selected_idx[1] === idx;
-        if (inventoryButton({
-          x, y, z,
-          item,
-          show_count: false,
-          selected: is_selected,
-        })) {
-          this.selected_idx = selected_idx = ['books', idx];
-          if (buttonLastSpotRet().double_click) {
-            do_action = true;
-          } else if (is_selected) {
-            this.selected_idx = selected_idx = ['null', 0];
-          }
-        }
-      }
-    }
-
-    let idx = 0;
-    x0 = INVENTORY_X + INVENTORY_GRID_XOFFS;
-    y0 = INVENTORY_Y + INVENTORY_GRID_YOFFS;
-
-    this.scroll_area.begin({
-      x: x0, y: y0 - 4, z,
-      h: INVENTORY_GRID_H_PX + 8,
-      w: INVENTORY_GRID_W_PX + 16,
-    });
-    x0 = 0;
-    y0 = 4;
-
-    let ymax = 0;
-    for (let yy = 0; yy < (INVENTORY_GRID_H - 1) || idx < inventory.length; ++yy) {
-      let y = y0 + yy * (BUTTON_W + INVENTORY_PAD);
-      ymax = y + BUTTON_W + INVENTORY_PAD;
-      for (let xx = 0; xx < INVENTORY_GRID_W; ++xx, ++idx) {
-        let x = x0 + xx * (BUTTON_W + INVENTORY_PAD);
-        let item = inventory[idx];
-        let param = {
-          x, y, z, w: BUTTON_W, h: BUTTON_W,
-        };
-        if (!item) {
-          autoAtlas('ui', 'inventory-empty').draw(param);
-        } else {
-          let is_selected = selected_idx[0] === 'inv' && selected_idx[1] === idx;
-          if (inventoryButton({
-            x, y, z,
-            item,
-            show_count: true,
-            selected: is_selected,
-          })) {
-            this.selected_idx = selected_idx = ['inv', idx];
-            if (buttonLastSpotRet().double_click) {
-              do_action = true;
-            } else if (is_selected) {
-              this.selected_idx = selected_idx = ['null', 0];
-            }
-          }
-        }
-      }
-    }
-    let sort_button_w = BUTTON_W * 4;
-    if (buttonText({
-      x: floor((INVENTORY_GRID_W_PX - sort_button_w) / 2),
-      y: ymax, z,
-      w: sort_button_w, h: BUTTON_W,
-      text: 'Sort',
-    })) {
-      sortInventory();
-    }
-    ymax += BUTTON_W;
-    this.scroll_area.end(ymax);
-    x0 = INVENTORY_X + INVENTORY_GRID_XOFFS;
-    y0 = INVENTORY_Y + INVENTORY_GRID_YOFFS;
-
-    drawBox({
-      x: x0 - INVENTORY_PAD6,
-      y: y0 - INVENTORY_PAD6,
-      z: z - 0.5,
-      w: INVENTORY_GRID_W_PX + INVENTORY_PAD6 * 2,
-      h: INVENTORY_GRID_H_PX + INVENTORY_PAD6 * 2,
-    }, autoAtlas('ui', 'panel-overlay'));
-
-    let sel_loc = selected_idx[0];
-    let base_array = sel_loc === 'inv' ? inventory :
-      sel_loc === 'hats' ? hats :
-      sel_loc === 'books' ? books :
-      [];
-    let item: Item | null = base_array[selected_idx[1]] || null;
-
-    x0 = INVENTORY_X + INVENTORY_GRID_XOFFS;
-    y0 = INVENTORY_Y + INVENTORY_INFO_YOFFS;
-    if (item) {
-      let x = x0;
-      let y = y0;
-      inventoryIconDraw({
-        x, y: y - 2, z,
-        item,
-        double_brim: false,
-      });
-      title_font.draw({
-        style: style_inventory,
-        size: TITLE_FONT_H,
-        x: x + BUTTON_W + 2,
-        y,
-        z,
-        text: `${itemName(item)}${sel_loc === 'inv' ? ` (${item.count})` : ''}`,
-      });
-      y += TITLE_FONT_H + 2;
-      let hide_lines = false;
-      function line(text: string): void {
-        if (hide_lines) {
-          return;
-        }
-        y += markdownAuto({
-          font_style: style_inventory,
-          x, y, z,
-          w: INVENTORY_GRID_WITHSCROLL_W,
-          align: ALIGN.HWRAP,
-          text,
-        }).h + 2;
-      }
-      itemInfo(item, line);
-
-      y += 2;
-
-      let x1 = x0 + INVENTORY_GRID_WITHSCROLL_W;
-      function action(text: string): boolean {
-        return Boolean(button({
-          x: x1 - INVENTORY_ACTION_W, y: y0, z,
-          w: INVENTORY_ACTION_W,
-          text,
-        }) || do_action);
-      }
-
-      function disabledAction(text: string): void {
-        if (hide_lines) {
-          return;
-        }
-        button({
-          x, y, z,
-          disabled: true,
-          text,
-        });
-      }
-
-      if (shop_type !== 'inventory') {
-        hide_lines = true;
-      }
-
-      if (item.type === 'hat' || item.type === 'book') {
-        // equipable
-        if (sel_loc === 'inv') {
-          const target_loc = `${item.type}s` as const;
-          let target_list = my_ent.getData<Item[]>(target_loc, []);
-          let swap_target_idx: number | null = null;
-          let swap_target: Item | null = null;
-          for (let ii = 0; ii < target_list.length; ++ii) {
-            let elem = target_list[ii];
-            if (
-              elem.level === item.level ||
-              !swap_target ||
-              swap_target.level !== item.level && elem.level < swap_target.level
-            ) {
-              swap_target = elem;
-              swap_target_idx = ii;
-            }
-          }
-          let is_at_player_level = target_list.length >= level;
-          let is_at_floor_level = target_list.length >= floor_level;
-
-          if (!is_at_player_level && swap_target && swap_target.level !== item.level) {
-            swap_target = null;
-          }
-
-          if (swap_target) {
-            if (swap_target.subtype === item.subtype) {
-              line('This is currently equipped');
-              if (action('Unequip')) {
-                unequip(target_loc, swap_target_idx!, selected_idx[1]);
-              }
-            } else if (item.count > 1 && inventoryIndexForItemPickup(swap_target) === -1) {
-              line('CANNOT unequip for swap: inventory full');
-              disabledAction('Swap');
-            } else {
-              if (action('Swap')) {
-                let new_idx = equip(selected_idx[1], swap_target_idx);
-                this.selected_idx = selected_idx = [target_loc, new_idx];
-              }
-            }
-          } else if (!is_at_player_level) {
-            // allow equipping
-            if (is_at_floor_level) {
-              line('Note: You can equip this, however you will be wielding more' +
-                ` ${item.type}s than the current Floor Level, so only the bottom (best) item(s) will be used.`);
-            }
-            if (action('Equip')) {
-              let new_idx = equip(selected_idx[1], null);
-              this.selected_idx = selected_idx = [target_loc, new_idx];
-            }
-          } else {
-            line(`CANNOT equip:  You can only wield smaller ${target_loc} on top` +
-              ` of larger ${target_loc}, up to your player level, unequip another first.`);
-            // disabledAction('Equip');
-          }
-        } else {
-          line('This is currently equipped');
-          assert(sel_loc === 'hats' || sel_loc === 'books');
-          let target_idx = inventoryIndexForItemPickup(item);
-          if (selected_idx[1] >= floor_level) {
-            line('Note: You are wielding more' +
-              ` ${item.type}s than the current Floor Level, so only the bottom (best) item(s) will be used.`);
-          }
-          if (target_idx === -1) {
-            line('CANNOT unequip: inventory full');
-          } else if (action('Unequip')) {
-            unequip(sel_loc, selected_idx[1], target_idx);
-            this.selected_idx = selected_idx = ['inv', target_idx];
-          }
-        }
-      }
-      hide_lines = false;
-
-      if (shop_type !== 'inventory') {
-        y = INVENTORY_Y + INVENTORY_SHOP_OPTIONS_YOFFS;
-        if (sel_loc !== 'inv') {
-          line(`Select a stack of items in your inventory to see ${shop_type.slice(0,-1)} options.`);
-        } else if (shop_type === 'upgrades') {
-          // show options
-          if (item.level === MAX_LEVEL) {
-            line('Maximum level reached.');
-          } else if (item.type !== 'hat' && item.type !== 'book') {
-            line('Cannot combine potions.');
-          } else {
-            line(`[c=level]UPGRADE[/c]: Combine 2 [c=level]L${item.level}[/c]s into a [c=level]L${item.level + 1}[/c]`);
-            y += 4;
-
-            let target_item: Item = {
-              ...item,
-              level: item.level + 1,
-              count: 0,
-            };
-            let target_idx = inventoryIndexForItemPickup(target_item);
-            if (target_idx === -1) {
-              line('Cannot combine: inventory full.');
-            } else {
-              if (inventory[target_idx]) {
-                target_item.count = inventory[target_idx].count;
-              }
-
-              let can_do = item.count >= 2;
-
-              x += 36;
-              inventoryButton({
-                x, y, z,
-                item,
-                show_count: true,
-                selected: false,
-                nointeract: true,
-              });
-              font.draw({
-                style: can_do ? style_inventory : style_mp_cost_over,
-                x, y: y + 24, z,
-                w: 20,
-                align: ALIGN.HCENTER,
-                text: 'x2',
-              });
-              x += 24;
-              autoAtlas('map', 'playerdir0').draw({
-                x: x + 4,
-                y: y + 4,
-                z,
-                w: 12,
-                h: 12,
-              });
-              x += 24;
-              inventoryButton({
-                x, y, z,
-                item: target_item,
-                show_count: true,
-                selected: false,
-                nointeract: true,
-              });
-              font.draw({
-                style: style_inventory,
-                x, y: y + 24, z,
-                w: 20,
-                align: ALIGN.HCENTER,
-                text: 'x1',
-              });
-              x += 24*1.5;
-              if (can_do) {
-                if (buttonText({
-                  x, y, z,
-                  w: INVENTORY_ACTION_W,
-                  text: 'Combine!',
-                  sound_button: 'shop',
-                })) {
-                  doCombine(selected_idx[1], target_idx);
-                }
-              } else {
-                font.draw({
-                  x, y: y - 2, z,
-                  style: style_mp_cost_over,
-                  w: x1 - x,
-                  align: ALIGN.HWRAP | ALIGN.HCENTER,
-                  text: 'Insufficient\nsource\nitems',
-                });
-              }
-            }
-          }
-        } else if (shop_type === 'trades') {
-          // show options
-          if (item.type !== 'hat' && item.type !== 'book') {
-            line('Cannot trade potions.');
-          } else {
-            // line(`[c=level]DOWNGRADE[/c]: Combine 1 [c=level]L${item.level}[/c]s into
-            y -= 12;
-
-            inventoryButton({
-              x, y, z,
-              item,
-              show_count: true,
-              selected: false,
-              nointeract: true,
-            });
-            font.draw({
-              style: style_inventory,
-              x, y: y + 22, z,
-              w: 20,
-              align: ALIGN.HCENTER,
-              text: 'x1',
-            });
-            x += 24;
-
-            for (let dsub = 0; dsub < 2; ++dsub) {
-              let subtype;
-              if (item.type === 'book') {
-                if (dsub) {
-                  // next element, same style
-                  subtype = ((item.subtype + 1) % 3) + (item.subtype >= 3 ? 3 : 0);
-                } else {
-                  // same element, different style
-                  subtype = (item.subtype + 3) % 6;
-                }
-              } else {
-                subtype = (item.subtype + 1 + dsub) % 3;
-              }
-              let target_item: Item = {
-                ...item,
-                level: item.level - 1,
-                subtype,
-                count: 0,
-              };
-              let target_idx = inventoryIndexForItemPickup(target_item);
-              if (!target_item.level) {
-                font.draw({
-                  x, y: y - 2, z,
-                  style: style_mp_cost_over,
-                  w: TRADE_ACTION_W,
-                  align: ALIGN.HWRAP | ALIGN.HCENTER,
-                  text: 'Already\nminimum\nlevel',
-                });
-              } else if (target_idx === -1) {
-                font.draw({
-                  x, y: y - 2, z,
-                  style: style_mp_cost_over,
-                  w: TRADE_ACTION_W,
-                  align: ALIGN.HWRAP | ALIGN.HCENTER,
-                  text: 'Inventory\nfull',
-                });
-              } else {
-                if (inventory[target_idx]) {
-                  target_item.count = inventory[target_idx].count;
-                }
-                autoAtlas('map', 'playerdir0').draw({
-                  x: x + 10,
-                  y: y + 4,
-                  z,
-                  w: 12,
-                  h: 12,
-                });
-
-                inventoryButton({
-                  x: x + 26, y, z,
-                  item: target_item,
-                  show_count: true,
-                  selected: false,
-                  nointeract: true,
-                });
-                font.draw({
-                  style: style_inventory,
-                  x: x + 26, y: y + 22, z,
-                  w: 20,
-                  align: ALIGN.HCENTER,
-                  text: 'x1',
-                });
-                if (buttonText({
-                  x, y: y + 24 + FONT_HEIGHT + 2, z,
-                  w: TRADE_ACTION_W,
-                  text: 'Downvert',
-                  sound_button: 'shop',
-                })) {
-                  doDownvert(selected_idx[1], target_idx, target_item.subtype);
-                }
-              }
-              x += TRADE_ACTION_W + INVENTORY_PAD;
-            } // ent for dsubtype
-            let target_item: Item = {
-              type: 'potion',
-              subtype: 0,
-              level: 1,
-              count: 0,
-            };
-            let target_idx = inventoryIndexForItemPickup(target_item);
-            if (target_idx === -1) {
-              font.draw({
-                x, y: y - 2, z,
-                style: style_mp_cost_over,
-                w: TRADE_ACTION_W,
-                align: ALIGN.HWRAP | ALIGN.HCENTER,
-                text: 'Inventory\nfull',
-              });
-            } else {
-              if (inventory[target_idx]) {
-                target_item.count = inventory[target_idx].count;
-              }
-              autoAtlas('map', 'playerdir0').draw({
-                x: x + 10,
-                y: y + 4,
-                z,
-                w: 12,
-                h: 12,
-              });
-
-              inventoryButton({
-                x: x + 26, y, z,
-                item: target_item,
-                show_count: true,
-                selected: false,
-                nointeract: true,
-              });
-              font.draw({
-                style: style_inventory,
-                x: x + 26, y: y + 22, z,
-                w: 20,
-                align: ALIGN.HCENTER,
-                text: 'x1',
-              });
-              if (buttonText({
-                x, y: y + 24 + FONT_HEIGHT + 2, z,
-                w: TRADE_ACTION_W,
-                text: 'Trade',
-                sound_button: 'shop',
-              })) {
-                doTradeForPotion(selected_idx[1], target_idx);
-              }
-              x += TRADE_ACTION_W + INVENTORY_PAD;
-            }
-
-          }
-        }
-      }
-    } else if (shop_type !== 'inventory') {
-      let y = INVENTORY_Y + INVENTORY_SHOP_OPTIONS_YOFFS - 12;
-      markdownAuto({
-        font_style: style_inventory,
-        x: x0, y, z,
-        w: INVENTORY_GRID_WITHSCROLL_W,
-        align: ALIGN.HWRAP,
-        text: shop_type === 'upgrades' ?
-          '[c=level]UPGRADE[/c]: Combine 2 items into a [c=level]higher level[/c] item.' :
-          '[c=level]DOWNVERT[/c]: Convert 1 item into a\n  [c=level]lower level[/c] item of a different\n' +
-          '  element.\n\n' +
-          '[c=level]TRADE[/c]: Trade any 1 item for a healing\n  potion.'
-      });
-    }
-
-    if (shop_type === 'inventory') {
-      let headsize = 24;
-      let colors = {
-        color: PLAYER_COLORS_VEC4[myEnt().getData('costume0', 0)],
-        color1: PLAYER_COLORS_VEC4[myEnt().getData('costume1', 0)],
-      };
-      autoAtlas('player', 'portrait0').drawDualTint({
-        x: INVENTORY_X + INVENTORY_W - INVENTORY_PAD6 - headsize,
-        y: INVENTORY_Y + INVENTORY_H - INVENTORY_PAD6 - headsize,
-        z,
-        w: headsize,
-        h: headsize,
-        ...colors,
-      });
-
-      if (selected_idx[0] === 'null') {
-        let y = INVENTORY_Y + INVENTORY_SHOP_OPTIONS_YOFFS - 12;
-        markdownAuto({
-          font_style: style_inventory,
-          x: x0, y, z,
-          w: INVENTORY_GRID_WITHSCROLL_W - 12,
-          align: ALIGN.HWRAP,
-          text:
-            'You can equip 1 Hat and 1 Book per [c=level]Player Level[/c].\n' +
-            'Each equipped item must be smaller (lower level) than the item' +
-            ' beneath it.  So, each equipped book (or hat) must be a unique level.',
-        });
-      }
-    }
-
-    x0 = INVENTORY_X + INVENTORY_GRID_XOFFS - 80 - INVENTORY_PAD;
-    y0 = INVENTORY_Y + INVENTORY_H - FONT_HEIGHT * 4 - INVENTORY_PAD - 4;
-    let y = y0;
-    title_font.draw({
-      style: style_inventory,
-      size: TITLE_FONT_H,
-      x: x0,
-      y,
-      z,
-      w: 80,
-      align: ALIGN.HCENTER,
-      text: 'Resistances',
-    });
-    y += TITLE_FONT_H;
-    (['fire', 'earth', 'ice'] as const).forEach(function (elem) {
-      markdownAuto({
-        x: x0,
-        y,
-        z,
-        w: 40,
-        align: ALIGN.HRIGHT,
-        text: `[c=dam${elem}]${capitalize(elem)}[/c]:`
-      });
-      markdownAuto({
-        x: x0 + 44,
-        y,
-        z,
-        text: `[c=dam${elem}]${my_ent.getData(`stats.r${elem}`, 0)}%[/c]`
-      });
-      y += FONT_HEIGHT;
-    });
-
-    x0 = INVENTORY_X + INVENTORY_PAD6;
-    y0 = INVENTORY_Y + INVENTORY_H - INVENTORY_PAD6 - 6;
-    drawHatDude(x0, y0, z, 1, hats, books, myEnt().getData('costume0', 0));
-
-    drawBox({
-      x: INVENTORY_X - 4,
-      y: INVENTORY_Y - 4,
-      w: INVENTORY_W + 8,
-      h: INVENTORY_H + 8,
-      z: z - 1,
-    }, autoAtlas('ui', 'panel-thick'));
-    // drawRect(0, 0, game_width, game_height, z - 1, [0, 0, 0, 0.5]);
-    menuUp();
-  }
-}
-InventoryMenuAction.prototype.name = 'InventoryMenu';
-InventoryMenuAction.prototype.is_overlay_menu = true;
-InventoryMenuAction.prototype.is_fullscreen_ui = true;
-
-function setMiscField<T extends keyof EntityDataClient>(field: T, value: EntityDataClient[T]): void {
+export function setMiscField<T extends keyof EntityDataClient>(field: T, value: EntityDataClient[T]): void {
   crawlerMyApplyBatchUpdate({
     action_id: 'misc',
     field: 'seq_player_move',
@@ -1912,654 +472,6 @@ function setMiscField<T extends keyof EntityDataClient>(field: T, value: EntityD
       [field]: value,
     },
   }, errorsToChat);
-}
-
-
-const SETUP_W = 300;
-const SETUP_H = 210;
-const SETUP_X = floor((game_width - SETUP_W)/2);
-const SETUP_Y = floor((game_height - SETUP_H)/2);
-const SETUP_EDIT_W = DISPLAY_NAME_MAX_VISUAL_SIZE.width;
-
-function setCloakColor(new_color: number): void {
-  setMiscField('costume0', new_color);
-}
-
-class SetupMenuAction extends UIAction {
-  display_name: string;
-  orig_name: string;
-  did_auto_random = false;
-  constructor() {
-    super();
-    this.display_name = myEnt().getData('display_name', '???');
-    this.orig_name = this.display_name;
-  }
-  tick(): void {
-
-    let z = Z.MODAL;
-
-    let x = SETUP_X + floor((SETUP_W - SETUP_EDIT_W)/2);
-    let y = SETUP_Y;
-
-    y += 12;
-    title_font.draw({
-      style: style_inventory,
-      size: TITLE_FONT_H,
-      x, y, z, w: SETUP_EDIT_W,
-      align: ALIGN.HCENTER,
-      text: 'Character Customization',
-    });
-
-    y += 48;
-
-    let headsize = 24;
-    let colors = {
-      color: PLAYER_COLORS_VEC4[myEnt().getData('costume0', 0)],
-      color1: PLAYER_COLORS_VEC4[myEnt().getData('costume1', 0)],
-    };
-    autoAtlas('player', 'portrait0').drawDualTint({
-      x: x - 8 - headsize,
-      y: y, z,
-      w: headsize,
-      h: headsize,
-      ...colors,
-    });
-
-
-    font.draw({
-      style: style_inventory,
-      x, y, z,
-      text: 'Name',
-    });
-    const button_w = 60;
-    if (buttonText({
-      x: x + SETUP_EDIT_W + 8,
-      y: y + 4,
-      z,
-      w: button_w,
-      text: 'Random',
-    }) || !this.did_auto_random && this.display_name.startsWith('anon')) {
-      this.did_auto_random = true;
-      netClient().send<string, null>('random_name', null, null, (ignored?: unknown, data?: string): void => {
-        if (data) {
-          while (title_font.getStringWidth(null, DISPLAY_NAME_MAX_VISUAL_SIZE.font_height, data) >
-            DISPLAY_NAME_MAX_VISUAL_SIZE.width
-          ) {
-            data = data.slice(0, -1);
-          }
-          this.display_name = data;
-        }
-      });
-    }
-    y += FONT_HEIGHT;
-    this.display_name = editBox<string>({
-      x, y: y + 2, z,
-      w: SETUP_EDIT_W,
-      type: 'text',
-      max_visual_size_font: title_font,
-      max_visual_size: DISPLAY_NAME_MAX_VISUAL_SIZE,
-      initial_select: true,
-    }, this.display_name).text;
-    y += uiButtonHeight() - 4;
-    title_font.draw({
-      x, y, z,
-      style: style_inventory,
-      size: TITLE_FONT_H,
-      text: this.display_name,
-    });
-    y += TITLE_FONT_H + 20;
-
-    let cloak = myEnt().getData('costume0', 0);
-    font.draw({
-      style: cloak === 7 ? fontStyleColored(null, palette_font[PAL_WHITE + 1]) : style_inventory,
-      x, y, z,
-      h: uiButtonHeight(),
-      w: SETUP_EDIT_W,
-      align: ALIGN.HVCENTER,
-      text: 'Cloak Color',
-    });
-    drawRect(x, y, x + SETUP_EDIT_W, y + uiButtonHeight(), z - 0.1, PLAYER_COLORS_VEC4[cloak]);
-
-    if (buttonText({
-      x: x - 8 - button_w,
-      y: y,
-      z,
-      w: button_w,
-      text: '<<',
-    })) {
-      setCloakColor((cloak + PLAYER_COLORS.length - 1) % PLAYER_COLORS.length);
-    }
-
-    if (buttonText({
-      x: x + SETUP_EDIT_W + 8,
-      y: y,
-      z,
-      w: button_w,
-      text: '>>',
-    })) {
-      setCloakColor((cloak + 1) % PLAYER_COLORS.length);
-    }
-
-    y += uiButtonHeight() + 8;
-
-    // draw avatar
-    const charsize = 28 * 2;
-    autoAtlas('player', engine.getFrameTimestamp() % 2000 > 1500 ? 'right-attack' : 'right').drawDualTint({
-      x: x - 8 - charsize, y, z, w: charsize, h: charsize,
-      ...colors,
-    });
-
-
-    font.draw({
-      color: palette_font[4],
-      x, y, z,
-      align: ALIGN.HWRAP,
-      w: 1000,
-      text: 'Note: Hat color determined\nby your largest\nequipped hat.',
-    });
-
-
-    if (buttonText({
-      x: SETUP_X + SETUP_W - 12 - button_w ,
-      y: SETUP_Y + SETUP_H - 12 - uiButtonHeight(),
-      w: button_w,
-      z,
-      text: 'Okay',
-    })) {
-      uiAction(null);
-      let new_name = this.display_name.trim();
-      if (this.orig_name !== new_name) {
-        chatUI().cmdParse(`rename ${new_name}`);
-      }
-      if (!myEnt().getData('did_setup')) {
-        setMiscField('did_setup', true);
-      }
-    }
-
-
-    drawBox({
-      x: SETUP_X - 4,
-      y: SETUP_Y - 4,
-      w: SETUP_W + 8,
-      h: SETUP_H + 8,
-      z: z - 1,
-    }, autoAtlas('ui', 'panel-thick'));
-
-    menuUp();
-  }
-}
-SetupMenuAction.prototype.name = 'SetupMenu';
-SetupMenuAction.prototype.is_overlay_menu = true;
-SetupMenuAction.prototype.is_fullscreen_ui = true;
-
-function checkForFreeHealingPotion(): void {
-  let my_ent = myEnt();
-  let inventory = my_ent.getData<(Item|null)[]>('inventory', []);
-  for (let ii = 0; ii < inventory.length; ++ii) {
-    let item = inventory[ii];
-    if (item) {
-      if (item.level <= 1) {
-        return;
-      }
-    }
-  }
-  // no potions, no L1 things to trade
-  dialog('sign', 'You seem down on your luck... have a free potion on the house!');
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  pickupOnClient({
-    type: 'potion',
-    level: 1,
-    subtype: 0,
-    count: 1,
-  });
-}
-
-export function showShop(shop_type: ShopType): void {
-  if (shop_type === 'trades') {
-    checkForFreeHealingPotion();
-  }
-  uiAction(new InventoryMenuAction(shop_type));
-}
-
-function isOnFloorList(): boolean {
-  let game_state = crawlerGameState();
-  let { floor_id } = game_state;
-  let level = game_state.levels[floor_id];
-  if (!level) {
-    return true;
-  }
-  let pos = myEnt().getData<JSVec3>('pos')!;
-  let cell = level.getCell(pos[0], pos[1]);
-  if (!cell) {
-    return true;
-  }
-  return Boolean(cell.events?.[0].param.startsWith('floorlist'));
-}
-
-function closeFloorList(): void {
-  let dir: DirType = WEST;
-  if (cur_action && (cur_action as FloorListAction).base_floor === 7) {
-    dir = SOUTH;
-  }
-  uiAction(null);
-  crawlerScriptAPI().forceMove(dir);
-}
-
-function perc(n: number): string {
-  return `${round(n * 100)}%`;
-}
-
-function fourdigit(n: number): string {
-  let s = String(n).slice(-4);
-  while (s[0] === '0' && s.length > 1) {
-    s = s.slice(1);
-  }
-  return s;
-}
-
-function displayNameForUser(user_id: string): string {
-  let room = crawlerRoom();
-  let clients = room.getChannelData<ChannelDataClients>('public.clients', {});
-  for (let client_id in clients) {
-    let { ids } = clients[client_id]!;
-    if (ids.user_id === user_id && ids.display_name) {
-      return ids.display_name;
-    }
-  }
-  return netSubs().getChannelImmediate(`user.${user_id}`).getChannelData('public.display_name', user_id);
-}
-
-function anyActive(recent_players: TSMap<FloorPlayerData>): boolean {
-  for (let user_id in recent_players) {
-    if (recent_players[user_id]!.is_active) {
-      return true;
-    }
-  }
-  return false;
-}
-
-export function joinFloorFromTown(floor_id: number): void {
-  uiAction(null);
-  let my_ent = myEnt();
-  let my_floor_id = my_ent.data.floor;
-  let my_pos = my_ent.getData<JSVec3>('pos')!;
-  setMiscField('town_leave_pos', [my_pos[0], my_pos[1], my_pos[2]]);
-  crawlerScriptAPI().floorDelta(floor_id - my_floor_id, 'stairs_in', false);
-}
-
-const FLOORLIST_W = FRAME_VERT_SPLIT - 12;
-const FLOORLIST_H = QUICKBAR_FRAME_Y - 12 - 5;
-const FLOORLIST_X = 12;
-const FLOORLIST_Y = 12;
-class FloorListAction extends UIAction {
-  scroll_area: ScrollArea;
-  constructor(public base_floor: number) {
-    super();
-    this.scroll_area = scrollAreaCreate({
-      background_color: null,
-      auto_hide: true,
-    });
-  }
-  tick(): void {
-    let room = crawlerRoom();
-    let my_ent = myEnt();
-    let my_level = my_ent.getData('stats.level', 1);
-
-    let z = Z.FLOORLIST;
-    let x = FLOORLIST_X;
-    let y = FLOORLIST_Y;
-
-    this.scroll_area.begin({
-      x, y, z,
-      h: FLOORLIST_H,
-      w: FLOORLIST_W + 13,
-    });
-    x = 0;
-    y = 0;
-
-    y += 4;
-    function titleLine(text: string, style?: FontStyle): void {
-      title_font.draw({
-        style: style || style_inventory,
-        size: TITLE_FONT_H,
-        x: 0, y, z, w: FLOORLIST_W,
-        align: ALIGN.HCENTER,
-        text,
-      });
-      y += TITLE_FONT_H + 2;
-    }
-
-    let now = walltime.seconds();
-    let floor_data: Partial<Record<number, FloorData>> = room.getChannelData('public.floors', {});
-    // example data
-    if (0) {
-      floor_data = {
-        1: {
-          rooms: {
-            10: {
-              last_active: now,
-              enemies_total: 22,
-              enemies_left: 7,
-              recent_players: {
-                anon484576: {
-                  player_level: 1,
-                  last_active: now,
-                  is_active: true,
-                },
-              },
-            },
-            11: {
-              last_active: now - 300000,
-              enemies_total: 22,
-              enemies_left: 0,
-              recent_players: {
-                jimbly: {
-                  player_level: 1,
-                  last_active: now - 300000,
-                },
-                jeff: {
-                  player_level: 2,
-                  last_active: now,
-                  is_active: true,
-                },
-              },
-            },
-          },
-        },
-        3: {
-          rooms: {
-            12: {
-              last_active: now,
-              enemies_total: 22,
-              enemies_left: 22,
-              recent_players: {
-                anon484576: {
-                  player_level: 1,
-                  last_active: now,
-                  is_active: true,
-                },
-              },
-            },
-          },
-        },
-      };
-    }
-
-    type RoomRecord = {
-      floor_level: number;
-      floor_id: number;
-      room_data: FloorRoomData;
-    };
-    let my_last_room: RoomRecord & {
-      last_active: number;
-    } | null = null;
-    let my_user_id = netUserId()!;
-    for (let floor_level_str in floor_data) {
-      let floor_level = Number(floor_level_str);
-      let by_level = floor_data[floor_level]!;
-      for (let floor_id_str in by_level.rooms) {
-        let floor_id = Number(floor_id_str);
-        let room_data = by_level.rooms[floor_id]!;
-        let my_rec = room_data.recent_players[my_user_id];
-        if (my_rec) {
-          if (!my_last_room || my_rec.last_active > my_last_room.last_active) {
-            my_last_room = {
-              last_active: my_rec.last_active,
-              floor_level,
-              floor_id,
-              room_data,
-            };
-          }
-        }
-      }
-    }
-
-    const button_w = 80; // fits 4-digit floor_ids
-    const FLOORLIST_PAD = 4;
-    const FLOORLIST_BUTTON_H2 = round(uiButtonHeight() * 1.5);
-    // const FLOORLIST_BUTTON_H3 = uiButtonHeight() * 2;
-    const CARD_W = FLOORLIST_W - 12;
-    const CARD_PAD = 6;
-    let seen_cards: Partial<Record<number, true>> = {};
-
-    function drawRoomCard(rec: RoomRecord): void {
-      seen_cards[rec.floor_id] = true;
-      x = floor((FLOORLIST_W - CARD_W) / 2);
-      let { room_data } = rec;
-      let y_start = y;
-      y += CARD_PAD;
-
-      let my_rec = room_data.recent_players[my_user_id];
-
-      let button_x = x + CARD_W - button_w - CARD_PAD;
-      if (buttonText({
-        x: button_x, y, z,
-        w: button_w,
-        h: FLOORLIST_BUTTON_H2,
-        align: ALIGN.HWRAP | ALIGN.HCENTER,
-        markdown: true,
-        text: `${my_rec ? 'RESUME' : 'JOIN'}\nLevel [c=${rec.floor_level > my_level ? 'red' : 'level'}]` +
-          `${rec.floor_level}[/c] #${fourdigit(rec.floor_id)}`,
-      })) {
-        joinFloorFromTown(rec.floor_id);
-      }
-      let ymax = y + FLOORLIST_BUTTON_H2;
-
-      if (my_rec) {
-        font.draw({
-          style: style_inventory,
-          x: x + CARD_PAD, y, z,
-          text: 'Last played ' +
-            `${secondsToFriendlyString(now - my_rec.last_active).split(',')[0]} ago`,
-        });
-        y += FONT_HEIGHT;
-      }
-      let completion_perc = 1 - room_data.enemies_left/room_data.enemies_total;
-      let completion = `${perc(completion_perc)} Complete`;
-      font.draw({
-        style: style_inventory,
-        x: x + CARD_PAD, y, z,
-        text: `${completion}`,
-      });
-      y += FONT_HEIGHT;
-      let cur_players = [];
-      for (let user_id in room_data.recent_players) {
-        if (user_id === my_user_id) {
-          continue;
-        }
-        let player_rec = room_data.recent_players[user_id]!;
-        if (player_rec.is_active) {
-          cur_players.push(displayNameForUser(user_id));
-        }
-      }
-
-      if (cur_players.length) {
-        y += font.draw({
-          style: style_inventory,
-          x: x + CARD_PAD, y, z,
-          align: ALIGN.HWRAP,
-          w: button_x - FLOORLIST_PAD - (x + CARD_PAD),
-          text: `Players: ${cur_players.join(', ')}`,
-        });
-      }
-      if (rec.floor_level > my_level) {
-        y += font.draw({
-          style: style_mp_cost_over,
-          x: x + CARD_PAD, y, z,
-          align: ALIGN.HWRAP,
-          w: button_x - FLOORLIST_PAD - (x + CARD_PAD),
-          text: `Warning: floor level (${rec.floor_level}) exceeds player level (${my_level})`,
-        });
-      }
-
-      y = max(y, ymax);
-      y += CARD_PAD;
-      drawBox({
-        x, y: y_start, z: z - 0.5,
-        w: CARD_W,
-        h: y - y_start,
-      }, autoAtlas('ui', 'panel-overlay'));
-      y += 2;
-    }
-
-    if (my_last_room) {
-      drawRoomCard(my_last_room);
-    }
-
-    let options: RoomRecord[] = [];
-    let disabled_floors: Record<number, boolean> = {};
-    for (let floor_level_str in floor_data) {
-      let floor_level = Number(floor_level_str);
-      let by_level = floor_data[floor_level]!;
-      for (let floor_id_str in by_level.rooms) {
-        let floor_id = Number(floor_id_str);
-        let room_data = by_level.rooms[floor_id]!;
-        let dt = now - room_data.last_active;
-        if (dt < 60 && (
-          room_data.enemies_left ||
-          room_data.recent_players[my_user_id] ||
-          anyActive(room_data.recent_players)
-        )) {
-          if (room_data.enemies_left > 0.75 * room_data.enemies_total) {
-            disabled_floors[floor_level] = true;
-          }
-          if (seen_cards[floor_id]) {
-            continue;
-          }
-          options.push({
-            floor_level,
-            floor_id,
-            room_data,
-          });
-        }
-      }
-    }
-
-    let skip_all = false;
-    if (this.base_floor > my_level + 1) {
-      titleLine('Please Use a Different Entrance', style_mp_cost_over);
-
-      y += font.draw({
-        style: style_inventory,
-        x: 0, y, z, w: FLOORLIST_W,
-        align: ALIGN.HWRAP | ALIGN.HCENTER,
-        text: `Warning: Your player level (${my_level}) is too low for the floor` +
-          ` levels accessible from this door (${this.base_floor}+).`,
-      });
-      y += FONT_HEIGHT;
-      titleLine('Start Fresh');
-      y += font.draw({
-        style: style_inventory,
-        x: 0, y, z, w: FLOORLIST_W,
-        align: ALIGN.HWRAP | ALIGN.HCENTER,
-        text: 'Please use a different entrance to start a fresh floor.',
-      });
-      y += FONT_HEIGHT;
-
-      if (my_level === 1) {
-        skip_all = true;
-      }
-    }
-
-    if (!skip_all) {
-      titleLine('Start Fresh');
-      x = floor((FLOORLIST_W - button_w * 3 - FLOORLIST_PAD * 2)/2);
-      for (let ii = this.base_floor; ii < this.base_floor + 3; ++ii) {
-        if (buttonText({
-          x, y, z,
-          w: button_w,
-          h: FLOORLIST_BUTTON_H2,
-          align: ALIGN.HWRAP | ALIGN.HCENTER,
-          markdown: true,
-          text: `NEW Floor\nLevel [c=${ii > my_level ? 'red' : 'level'}]${ii}[/c]`,
-          disabled: disabled_floors[ii],
-          disabled_focusable: true,
-          tooltip: disabled_floors[ii] ? 'Please join an active level instead.' : undefined,
-        })) {
-          allocateNewFloor(ii);
-        }
-        x += button_w + FLOORLIST_PAD;
-      }
-      y += FLOORLIST_BUTTON_H2 + FLOORLIST_PAD;
-    }
-
-    titleLine('Join Others');
-    if (options.length) {
-      y += 1; // that "J"...
-      for (let ii = 0; ii < options.length; ++ii) {
-        drawRoomCard(options[ii]);
-      }
-    } else {
-      y += 2;
-      font.draw({
-        color: palette_font[5],
-        x: 0, y, z, w: FLOORLIST_W,
-        align: ALIGN.HCENTER,
-        text: 'No other players currently in The Tower',
-      });
-      y += FONT_HEIGHT + 2;
-    }
-
-
-    // if (buttonText({
-    //   x: 0 + FLOORLIST_W - 12 - button_w * 2 - 4,
-    //   y: 0 + FLOORLIST_H - 12 - uiButtonHeight(),
-    //   w: button_w,
-    //   z,
-    //   text: 'Okay',
-    // })) {
-    //   uiAction(null);
-    // }
-
-    y = max(y, FLOORLIST_H - 12 - uiButtonHeight());
-    if (buttonText({
-      x: FLOORLIST_W - 12 - button_w,
-      y,
-      w: button_w,
-      z,
-      text: 'Cancel',
-    })) {
-      closeFloorList();
-    }
-    y += uiButtonHeight();
-
-    if (engine.DEBUG && false) {
-      y += font.draw({
-        color: 0x000000ff,
-        x: 6, y, z,
-        w: FLOORLIST_W - 12,
-        align: ALIGN.HWRAP,
-        text: JSON.stringify(floor_data, undefined, 2),
-      });
-    }
-
-    y += FLOORLIST_PAD;
-
-    this.scroll_area.end(y);
-
-    if (!isOnFloorList() && !(engine.DEBUG && false)) {
-      uiAction(null);
-    }
-
-    drawBox({
-      x: FLOORLIST_X - 4,
-      y: FLOORLIST_Y - 4,
-      w: FLOORLIST_W + 8,
-      h: FLOORLIST_H + 8,
-      z: z - 1,
-    }, autoAtlas('ui', 'panel-thick'));
-
-    // menuUp();
-  }
-}
-FloorListAction.prototype.name = 'FloorList';
-FloorListAction.prototype.is_overlay_menu = false;
-FloorListAction.prototype.is_fullscreen_ui = false;
-
-export function showFloorList(base_floor: number): void {
-  if (!cur_action) {
-    uiAction(new FloorListAction(base_floor));
-  }
 }
 
 function v2manhattan(a: ROVec2, b: ROVec2): number {
@@ -2841,7 +753,7 @@ function battleZonePrep(): void {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (!crawlerTurnBasedQueued() && myEnt().getData('ready') && aiStepAllowed()) {
     // no step is queued, but everyone's ready and I'm the leader, or no longer in a battle zone
-    crawlerTurnBasedScheduleStep(250);
+    crawlerTurnBasedScheduleStep(250, 'move');
   }
   if (crawlerTurnBasedQueued() && !myEnt().getData('ready')) {
     // a tick is queued, but I'm not ready, presumably not the leader, someone else
@@ -2855,7 +767,7 @@ function battleZoneDebug(): void {
   let y = 40;
   let z = Z.DEBUG;
   let my_ent = myEntOptional();
-  if (!my_ent || engine.defines.LEVEL_GEN || cur_action?.is_overlay_menu) {
+  if (!my_ent || engine.defines.LEVEL_GEN || uiActionCurrent()?.is_overlay_menu) {
     return;
   }
   const text_height = uiTextHeight();
@@ -2941,6 +853,10 @@ function aiStep(): void {
     ai_pause: Boolean(settings.ai_pause),
     script_api,
     filter: entityFilter,
+    distance_limit: Infinity,
+    payload: {
+      reason: 'move',
+    },
   });
 
   // for each player, unflag as ready
@@ -3003,7 +919,7 @@ function drawBar(
   return full_w;
 }
 
-function drawHealthBar(
+export function drawHealthBar(
   x: number, y: number, z: number,
   w: number, h: number,
   hp: number, hp_max: number,
@@ -3220,6 +1136,7 @@ let color_temp = vec4();
 const FLOATER_TIME = 750; // not including fade
 const FLOATER_FADE = 250;
 const BLINK_TIME = 250;
+let screen_shake = 0;
 function drawStatsOverViewport(): void {
   let my_ent = myEnt();
   assert(my_ent.isMe());
@@ -3268,8 +1185,15 @@ function drawStatsOverViewport(): void {
     blink = easeOut(blink, 2);
     v3copy(color_temp, palette[blink_good ? PAL_GREEN : PAL_RED]);
     color_temp[3] = 0.5 * (1 - blink);
-    drawRect(VIEWPORT_X0, VIEWPORT_Y0, VIEWPORT_X0+render_width, VIEWPORT_Y0+render_height,
-      Z.UI - 5, color_temp);
+    drawRect2({
+      x: VIEWPORT_X0,
+      y: VIEWPORT_Y0,
+      w: render_width,
+      h: render_height,
+      z: Z.UI - 5,
+      color: color_temp,
+    });
+    screen_shake = 1 - blink;
   }
 
   // draw damage floaters on nearby cells
@@ -4219,7 +2143,7 @@ function doAttack(target_ents: Entity[], action: Item | 'basic'): void {
   if (any_damage) {
     markActiveInCombat();
   }
-  crawlerTurnBasedScheduleStep(250);
+  crawlerTurnBasedScheduleStep(250, 'attack');
 }
 
 function bumpEntityCallback(target_ent_id: EntityID): void {
@@ -4415,7 +2339,7 @@ function drawQuickbarTooltip(action: Item | 'basic', hotkey?: string): void {
     title_font.draw({
       style: style_inventory,
       size: TITLE_FONT_H,
-      x: tooltip_x + BUTTON_W + 2,
+      x: tooltip_x + MOVE_BUTTON_W + 2,
       y: tooltip_y,
       z: Z.QUICKBARTOOLTIP,
       text: itemName(action),
@@ -4576,10 +2500,10 @@ function doQuickbar(): void {
     let is_attack = true;
 
     let button_param = {
-      x: QUICKBAR_X + (BUTTON_W + 4) * (ii - 1),
+      x: QUICKBAR_X + (MOVE_BUTTON_W + 4) * (ii - 1),
       y: QUICKBAR_Y,
-      w: BUTTON_W,
-      h: BUTTON_W,
+      w: MOVE_BUTTON_W,
+      h: MOVE_BUTTON_W,
       shrink: 12/16,
     };
     let hotkey = `${ii === 10 ? 0 : ii}` as '1' | '2';
@@ -4594,7 +2518,7 @@ function doQuickbar(): void {
           text: ' ',
           tooltip: 'Empty Book slot, equip new Books in the inventory',
         })) {
-          uiAction(new InventoryMenuAction('inventory'));
+          showShop('inventory');
         }
       } else {
         button({
@@ -4726,10 +2650,10 @@ function doQuickbar(): void {
   }
 
   let heal_button_param = {
-    x: QUICKBAR_X + (BUTTON_W + 4) * 10,
+    x: QUICKBAR_X + (MOVE_BUTTON_W + 4) * 10,
     y: QUICKBAR_Y,
-    w: BUTTON_W,
-    h: BUTTON_W,
+    w: MOVE_BUTTON_W,
+    h: MOVE_BUTTON_W,
   };
   if (button({
     ...heal_button_param,
@@ -4768,7 +2692,7 @@ function doQuickbar(): void {
   tiny_font.draw({
     ...heal_button_param,
     x: heal_button_param.x,
-    style: style_item_count ,
+    style: style_item_count,
     size: TINY_FONT_H,
     z: Z.UI + 2,
     align: ALIGN.VBOTTOM | ALIGN.HRIGHT,
@@ -5004,7 +2928,7 @@ function doWait(): void {
     },
     field: CrawlerController.PLAYER_MOVE_FIELD,
   }, errorsToChat);
-  crawlerTurnBasedScheduleStep(1);
+  crawlerTurnBasedScheduleStep(1, 'wait');
 }
 
 function doBackgroundTick(): void {
@@ -5026,12 +2950,13 @@ function playCrawl(): void {
     return profilerStopFunc();
   }
 
-  if (!controller.hasMoveBlocker() && !myEnt().isAlive()) {
+  const is_dead = !myEnt().isAlive();
+  if (!controller.hasMoveBlocker() && is_dead) {
     controller.setMoveBlocker(moveBlockDead);
   }
 
-  if ((!myEnt().getData('did_setup') || engine.DEBUG && false) && !cur_action) {
-    uiAction(new SetupMenuAction());
+  if ((!myEnt().getData('did_setup') || engine.DEBUG && false) && !uiActionCurrent()) {
+    setupMenuOpen();
   }
 
   let down = {
@@ -5041,22 +2966,19 @@ function playCrawl(): void {
     wait: 0,
   };
   type ValidKeys = keyof typeof down;
-  let up_edge = {
+  let up_edge: Record<ValidKeys, number> = {
     menu: 0,
     inv: 0,
     heal: 0,
     wait: 0,
-  } as Record<ValidKeys, number>;
+  };
 
   let dt = getScaledFrameDt();
 
   const frame_map_view = mapViewActive();
-  const is_fullscreen_ui = cur_action?.is_fullscreen_ui;
+  const is_fullscreen_ui = uiActionCurrent()?.is_fullscreen_ui;
   let dialog_viewport = {
-    x: VIEWPORT_X0 + 8,
-    w: render_width - 16,
-    y: VIEWPORT_Y0,
-    h: render_height - 5,
+    ...DIALOG_RECT,
     z: Z.STATUS,
     pad_top: 2,
     pad_bottom: 4,
@@ -5076,9 +2998,9 @@ function playCrawl(): void {
 
   const build_mode = buildModeActive();
   let locked_dialog = dialogMoveLocked();
-  const overlay_menu_up = cur_action?.is_overlay_menu || false;
-  let minimap_display_h = build_mode ? BUTTON_W : MINIMAP_H;
-  let show_compass = !build_mode && false;
+  const overlay_menu_up = uiActionCurrent()?.is_overlay_menu || false;
+  let minimap_display_h = build_mode ? MOVE_BUTTON_W : MINIMAP_H;
+  let show_compass = !build_mode && DO_COMPASS;
   let compass_h = show_compass ? 11 : 0;
 
   if (build_mode && !controller.ignoreGameplay()) {
@@ -5115,7 +3037,7 @@ function playCrawl(): void {
       no_visible_ui = false;
       if (frame_map_view) {
         z = Z.MAP + 1;
-      } else if (cur_action) {
+      } else if (uiActionCurrent()) {
         z = Z.MODAL + 1;
       } else {
         z = Z.MENUBUTTON;
@@ -5128,10 +3050,10 @@ function playCrawl(): void {
       }
     }
     let ret = crawlerOnScreenButton({
-      x: button_x0 + (BUTTON_W + 4) * rx,
-      y: button_y0 + (BUTTON_W + 4) * ry,
+      x: button_x0 + (MOVE_BUTTON_W + 4) * rx,
+      y: button_y0 + (MOVE_BUTTON_H + 4) * ry,
       z,
-      w: BUTTON_W, h: BUTTON_W,
+      w: MOVE_BUTTON_W, h: MOVE_BUTTON_H,
       frame,
       keys,
       pads,
@@ -5153,24 +3075,24 @@ function playCrawl(): void {
   // Escape / open/close menu button - *before* pauseMenu()
   button_x0 = 409;
   button_y0 = 16;
-  let menu_up = frame_map_view || build_mode || overlay_menu_up || cur_action?.name === 'FloorList';
+  let menu_up = frame_map_view || build_mode || overlay_menu_up || floorListActive();
   let menu_keys = [KEYS.ESC];
   let menu_pads = [PAD.START];
   if (menu_up) {
     menu_pads.push(PAD.B, PAD.BACK);
   }
-  crawlerButton(0, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, cur_action?.name === 'PauseMenu');
+  crawlerButton(0, 0, menu_up ? 10 : 6, 'menu', menu_keys, menu_pads, pauseMenuActive());
   button_x0 = 331;
   button_y0 = MOVE_BUTTONS_Y0;
-  if (!build_mode && !controller.ignoreGameplay() && cur_action?.name !== 'FloorList') {
+  if (!build_mode && !controller.ignoreGameplay() && !floorListActive()) {
     //button(0, 0, 8, 'heal', [KEYS.H], [PAD.X]);
     crawlerButton(0, 0, 11, 'wait', [KEYS.Z, KEYS.SPACE], [PAD.B]);
-    crawlerButton(0, 1, 7, 'inv', [KEYS.I], [PAD.Y], cur_action?.name === 'InventoryMenu');
+    crawlerButton(0, 1, 7, 'inv', [KEYS.I], [PAD.Y], inventoryMenuActive());
   }
 
-  cur_action?.tick();
+  uiActionTick();
 
-  locked_dialog ||= cur_action?.name === 'FloorList';
+  locked_dialog ||= floorListActive();
 
   // Note from #moraff: moved earlier so player motion doesn't interrupt it
   if (!frame_map_view) {
@@ -5193,7 +3115,7 @@ function playCrawl(): void {
     }
   }
 
-  button_x0 += BUTTON_W + 4;
+  button_x0 += MOVE_BUTTON_W + 4;
 
   // Check for intentional events
   // if (up_edge.inventory) {
@@ -5219,22 +3141,24 @@ function playCrawl(): void {
     addDamageFloater(-1, 0, '-1,0');
   }
 
+  profilerStart('doPlayerMotion');
   controller.doPlayerMotion({
     dt,
     button_x0,
-    button_y0: build_mode ? game_height - 16 : MOVE_BUTTONS_Y0,
-    no_visible_ui: frame_map_view || build_mode,
-    button_w: build_mode ? 6 : BUTTON_W,
+    button_y0: MOVE_BUTTONS_Y0,
+    no_visible_ui: frame_map_view || build_mode || !DO_MOVEMENT_BUTTONS,
+    button_w: MOVE_BUTTON_W,
     button_sprites: useNoText() ? button_sprites_notext : button_sprites,
     disable_move: moveBlocked() || overlay_menu_up || !canIssueAction(),
-    but_allow_rotate: true,
     on_disabled_action: onDisabledAction,
     disable_player_impulse: Boolean(locked_dialog),
     show_buttons: !locked_dialog,
     do_debug_move: engine.defines.LEVEL_GEN || build_mode,
     show_debug: settings.show_fps ? { x: VIEWPORT_X0, y: VIEWPORT_Y0 + (build_mode ? 3 : 0) } : null,
     show_hotkeys: false,
+    but_allow_rotate: true, // DCJAM
   });
+  profilerStop();
 
   button_y0 = MOVE_BUTTONS_Y0;
 
@@ -5255,12 +3179,12 @@ function playCrawl(): void {
       if (crawlerCommWant()) {
         return profilerStopFunc();
       }
-      uiAction(null);
+      uiActionClear();
     }
   }
 
   if (up_edge.menu) {
-    if (cur_action?.name === 'FloorList') {
+    if (floorListActive()) {
       closeFloorList();
     } else if (menu_up) {
       if (build_mode && mapViewActive()) {
@@ -5273,23 +3197,23 @@ function playCrawl(): void {
         mapViewSetActive(false);
         // inventory_up = false;
       }
-      if (cur_action?.name === 'SetupMenu') {
-        uiAction(null);
-        uiAction(new PauseMenuAction());
-      } else if (cur_action) { //?.name === 'PauseMenu') {
-        uiAction(null);
+      if (setupMenuActive()) {
+        uiActionClear();
+        pauseMenuOpen();
+      } else if (uiActionCurrent()) {
+        uiActionClear();
       }
     } else {
-      uiAction(new PauseMenuAction());
+      pauseMenuOpen();
     }
   } else if (up_edge.inv) {
     if (menu_up) {
-      uiAction(null);
+      uiActionClear();
     } else if (!canOpenInventory()) {
       playUISound('invalid_action');
       statusSet('onDisabledAction', 'Cannot open inventory - monsters lurk nearby!').counter = 2500;
     } else {
-      uiAction(new InventoryMenuAction('inventory'));
+      showShop('inventory');
     }
   }
 
@@ -5362,17 +3286,21 @@ export function play(dt: number): void {
     return;
   }
 
+  screen_shake = 0;
   battleZonePrep(); // before crawlerPlayTopOfFrame
   if (engine.DEBUG && false) {
     battleZoneDebug();
   }
 
-  let overlay_menu_up = Boolean(cur_action?.is_overlay_menu || dialogMoveLocked() || cur_action?.name === 'FloorList');
+  let overlay_menu_up = Boolean(
+    uiActionCurrent()?.is_overlay_menu ||
+    dialogMoveLocked() ||
+    floorListActive());
 
   if (!crawlerController().hasMoveBlocker()) {
     tickMusic((game_state.level?.props.music as string) || (isTown() ? 'town' : 'tower'));
   }
-  crawlerPlayTopOfFrame(overlay_menu_up, cur_action?.name === 'FloorList');
+  crawlerPlayTopOfFrame(overlay_menu_up, floorListActive());
 
   if (keyDownEdge(KEYS.F3)) {
     settingsSet('show_fps', 1 - settings.show_fps);
@@ -5393,18 +3321,18 @@ export function play(dt: number): void {
   if (0) {
     let shear = clamp(input.mousePos()[0]/game_width* 2 - 1, -1, 1);
     renderViewportShear(shear);
+    font.draw({
+      x: 100, y: 100,
+      z: 1000,
+      text: `${shear}`,
+    });
   } else {
     renderViewportShear(-0.2); // Game preference
   }
-  crawlerPrepAndRenderFrame();
 
-  // TODO
-  // if (!loading_level && !buildModeActive()) {
-  //   let script_api = crawlerScriptAPI();
-  //   script_api.is_visited = true; // Always visited for AI
-  //   aiDoFloor(game_state.floor_id, game_state, entityManager(), engine.defines,
-  //     settings.ai_pause || engine.defines.LEVEL_GEN || overlay_menu_up, script_api);
-  // }
+  renderSetScreenShake(screen_shake);
+  crawlerPrepAndRenderFrame(false);
+
 
   crawlerPlayBottomOfFrame();
 }
@@ -5422,7 +3350,7 @@ function onPlayerMove(old_pos: Vec2, new_pos: Vec2): void {
   crawlerTurnBasedMovePreStart();
 }
 
-function pickupOnClient(item: Item): boolean {
+export function pickupOnClient(item: Item): boolean {
   let my_ent = myEnt();
   let idx = inventoryIndexForItemPickup(item);
   let inventory = clone(my_ent.getData<(Item|null)[]>('inventory'));
@@ -5515,7 +3443,7 @@ function playInitShared(online: boolean): void {
   controller.setOnEnterCell(onEnterCell);
   controller.setOnInitPos(onInitPos);
 
-  uiAction(null);
+  uiActionClear();
 }
 
 
@@ -5534,7 +3462,7 @@ function playInitEarly(room: ClientChannelWorker): void {
   playInitShared(true);
 
   if (engine.DEBUG && false) {
-    cur_action = new InventoryMenuAction('upgrades');
+    showShop('upgrades');
     // cur_action = new FloorListAction(1);
   }
 }
@@ -5561,7 +3489,30 @@ settingsRegister({
     type: cmd_parse.TYPE_INT,
     range: [0, 1],
   },
+  depixel: {
+    is_toggle: true,
+    default_value: 0,
+    type: cmd_parse.TYPE_INT,
+    range: [0, 1],
+    on_change: function (is_startup: boolean): void {
+      if (!is_startup) {
+        applyAtlasSwaps(); // eslint-disable-line @typescript-eslint/no-use-before-define
+      }
+    },
+  },
 });
+
+function applyAtlasSwaps(): void {
+  let suffix = settings.depixel ? '-depixel' : '';
+  [
+    'title',
+    'dcex',
+    'ui',
+    'player',
+  ].forEach(function (base_name) {
+    autoAtlasSwap(base_name, `${base_name}${suffix}`);
+  });
+}
 
 function initLevel(): void {
   dialogReset();
@@ -5612,12 +3563,12 @@ export function playStartup(): void {
       scroll_grow: 2,
       cuddly_scroll: true,
     },
+    chat_as_message_log: false,
   });
   crawlerEntityClientStartupEarly();
-  aiTraitsClientStartup();
   let ent_factory = crawlerEntFactory<Entity>();
   gameEntityTraitsCommonStartup(ent_factory);
-  // appTraitsStartup();
+  aiTraitsClientStartup();
   crawlerEntityTraitsClientStartup({
     name: 'EntityClient',
     Ctor: EntityClient,
@@ -5636,8 +3587,8 @@ export function playStartup(): void {
   let button_param = {
     filter_min: gl.NEAREST,
     filter_mag: gl.NEAREST,
-    ws: [BUTTON_W, BUTTON_W, BUTTON_W],
-    hs: [BUTTON_W, BUTTON_W, BUTTON_W, BUTTON_W],
+    ws: [MOVE_BUTTON_W, MOVE_BUTTON_W, MOVE_BUTTON_W],
+    hs: [MOVE_BUTTON_W, MOVE_BUTTON_W, MOVE_BUTTON_W, MOVE_BUTTON_W],
   };
   button_sprites = {
     regular: spriteCreate({
@@ -5845,4 +3796,6 @@ export function playStartup(): void {
   });
 
   markdownImageRegisterAutoAtlas('ui');
+
+  applyAtlasSwaps();
 }
