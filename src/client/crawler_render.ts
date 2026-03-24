@@ -119,7 +119,7 @@ import {
 } from '../common/crawler_state';
 import { billboardBias, BillboardBiasOpts } from './crawler_billboard_bias';
 import type { CrawlerScriptAPIClient } from './crawler_script_api_client';
-import { isBattleZone } from './play';
+import { isBattleZone } from './play'; // DCJAM
 
 type Geom = ReturnType<typeof geomCreateQuads>;
 type Shader = ReturnType<typeof shaderCreate>;
