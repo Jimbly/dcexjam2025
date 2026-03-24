@@ -63,5 +63,5 @@ module.exports = function (config) {
     zip: true,
   }];
 
-  // config.extra_server_tasks.push('server_fsdata'); - causes server to restart, why was this here?
+  config.autoatlas_input.push('client/atlases-autogen/**/*.png');
 };
