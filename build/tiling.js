@@ -155,8 +155,8 @@ exports.tilingExpand = function (param) {
         let vleft;
         let vright;
         if (horz === 'wrap') {
-          vleft = source_use[(source_row + (xx - pix * 4) + width * pix * 4) % (width * 4)];
-          vright = source_use[(source_row + xx) % (width * 4)];
+          vleft = source_use[source_row + (((xx - pix * 4) + width * pix * 4) % (width * 4))];
+          vright = source_use[source_row + (xx % (width * 4))];
         } else if (horz === 'clamp') {
           vleft = source_use[source_row + (xx % 4)];
           vright = source_use[source_row + (width - 1) * 4 + (xx % 4)];
