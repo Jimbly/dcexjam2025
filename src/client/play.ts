@@ -3516,7 +3516,7 @@ settingsRegister({
   },
 });
 
-function applyAtlasSwaps(): void {
+export function applyAtlasSwaps(): void {
   let suffix = settings.depixel ? '-depixel' : '';
   [
     'title',

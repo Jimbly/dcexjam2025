@@ -73,7 +73,7 @@ gb.task(asyncHashed(8, {
   name: 'depixel-proc',
   input: ['depixel-alphafix:**'],
   type: gb.SINGLE,
-  version: [depixelScale],
+  version: [depixelScale, scale],
   async: gb.ASYNC_FORK,
   func: function (job, done) {
     let file = job.getFile();

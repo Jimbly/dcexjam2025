@@ -1,6 +1,7 @@
 const assert = require('assert');
 const gb = require('glov-build');
 const micromatch = require('micromatch');
+const { encode9Patch, parse9Patch } = require('./9patch');
 const { pngAlloc, pngRead, pngWrite } = require('./png.js');
 
 const { floor } = Math;
@@ -45,14 +46,11 @@ exports.tilingExpand = function (param) {
   }
   function imgproc(job, done) {
     let file = job.getFile();
-    if (file.relative.endsWith('.9.png')) { // not yet handled
-      job.out(file);
-      return void done();
-    }
     let horz;
     let vert;
+    let { relative } = file;
     for (let ii = 0; ii < rules.length; ++ii) {
-      if (micromatch(file.relative, rules[ii]).length) {
+      if (micromatch(relative, rules[ii]).length) {
         let mode = modes[ii];
         horz = horz || mode.horz;
         vert = vert || mode.vert;
@@ -66,6 +64,15 @@ exports.tilingExpand = function (param) {
     let { err, img: pngin } = pngRead(file.contents);
     if (err) {
       return void done(err);
+    }
+    let nine_info = '';
+    if (relative.endsWith('.9.png')) {
+      let ret = parse9Patch(job, pngin, relative, false);
+      pngin = ret.img;
+      relative = relative.replace('.9.png', '.png');
+      nine_info = `-nine${ret.ws.join(',')}-${ret.hs.join(',')}` +
+        `-${ret.padh ? ret.padh.join(',') : ''}` +
+        `-${ret.padv ? ret.padv.join(',') : ''}nine`;
     }
     let { width, height, data } = pngin;
     assert.equal(width * height * 4, data.length);
@@ -161,10 +168,10 @@ exports.tilingExpand = function (param) {
         outdata[target_row + (pix + width) * 4 + xx] = vright;
       }
     }
-    let suffix = `-tile-${width}-${height}-${pix}.png`;
+    let suffix = `-tile-${width}-${height}-${pix}${nine_info}.png`;
     let buffer = pngWrite(pngout);
     job.out({
-      relative: file.relative.replace('.png', suffix),
+      relative: relative.replace('.png', suffix),
       contents: buffer,
     });
     done();
@@ -175,6 +182,7 @@ exports.tilingExpand = function (param) {
     version: [
       imgproc,
       param,
+      parse9Patch,
     ],
   };
 };
@@ -191,7 +199,19 @@ exports.tilingContract = function () {
       job.out(file);
       return void done();
     }
-    let relative = `${m[1]}${m[5]}`;
+    let extra = m[5];
+    let m9 = extra.match(/^-nine([^-]+)-([^-]+)-([^-]*)-(.*)nine(.*)/);
+    let nine_info;
+    if (m9) {
+      nine_info = {
+        ws: m9[1].split(',').map(Number),
+        hs: m9[2].split(',').map(Number),
+        padh: m9[3] ? m9[3].split(',').map(Number) : undefined,
+        padv: m9[4] ? m9[4].split(',').map(Number) : undefined,
+      };
+      extra = `.9${m9[5]}`;
+    }
+    let relative = `${m[1]}${extra}`;
     let orig_width = Number(m[2]);
     let orig_height = Number(m[3]);
     let orig_pix = Number(m[4]);
@@ -224,6 +244,21 @@ exports.tilingContract = function () {
       let target_row = ii * newwidth * 4;
       data.copy(outdata, target_row, source_row, source_row + newwidth * 4);
     }
+
+    if (nine_info) {
+      assert.equal(scalex, scaley);
+      function sc(x) {
+        return x * scalex;
+      }
+      pngout = encode9Patch({
+        ws: nine_info.ws.map(sc),
+        hs: nine_info.hs.map(sc),
+        padh: nine_info.padh ? nine_info.padh.map(sc) : undefined,
+        padv: nine_info.padv ? nine_info.padv.map(sc) : undefined,
+        img: pngout,
+      });
+    }
+
     let buffer = pngWrite(pngout);
     job.out({
       relative,
@@ -236,6 +271,7 @@ exports.tilingContract = function () {
     func: imgproc,
     version: [
       imgproc,
+      encode9Patch,
     ],
   };
 };
