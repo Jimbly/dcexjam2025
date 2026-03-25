@@ -59,6 +59,8 @@ gb.task({
       '**/*stairs*:hwrap,vclamp',
       '**/*arch*:hwrap,vclamp',
       'player/**:balpha',
+      'ui/bar-frame*:balpha',
+      'ui/minibar-frame*:balpha',
     ],
   }),
 });
