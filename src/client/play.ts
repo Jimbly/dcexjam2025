@@ -207,6 +207,7 @@ import {
   entityManager,
 } from './entity_game_client';
 import {
+  DEMO_TURN_BASED,
   FONT_HEIGHT,
   game_height,
   game_width,
@@ -3540,7 +3541,7 @@ export function playStartup(): void {
     on_broadcast: onBroadcast,
     play_init_online: playInitEarly,
     play_init_offline: playInitOffline,
-    turn_based_step: aiStep,
+    turn_based_step: DEMO_TURN_BASED ? aiStep : undefined,
     turn_based_allowed: aiStepAllowed,
     offline_data: {
       new_player_data: {
@@ -3564,6 +3565,7 @@ export function playStartup(): void {
       cuddly_scroll: true,
     },
     chat_as_message_log: false,
+    do_repeat_hasher: DEMO_TURN_BASED,
   });
   crawlerEntityClientStartupEarly();
   let ent_factory = crawlerEntFactory<Entity>();

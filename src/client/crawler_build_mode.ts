@@ -1102,7 +1102,6 @@ let level_prop_key_items: MenuItem[] = [
   'subtitle',
   'music',
   'noexplore',
-  'floorlevel', // DCJAM
   'aipause',
   'new',
 ].map((name) => ({ name, tag: name }));

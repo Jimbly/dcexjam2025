@@ -361,6 +361,9 @@ export function main(): void {
   crawlerBuildModeStartup({
     font: build_font,
     button_height: 11,
+    level_props: [
+      'floorlevel', // DCJAM
+    ],
     cell_props: [
     ],
     height_steps: 12, // DCJAM
