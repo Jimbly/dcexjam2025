@@ -11,8 +11,6 @@ export const VIEWPORT_Y0 = 8;
 export const MOVE_BUTTON_W = 20;
 export const MOVE_BUTTON_H = MOVE_BUTTON_W;
 
-export const DEMO_TURN_BASED = true;
-
 export const FONT_HEIGHT = 11;
 export const TINY_FONT_H = 8;
 
