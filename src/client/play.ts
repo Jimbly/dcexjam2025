@@ -82,6 +82,7 @@ import {
   JSVec3,
   ROVec2,
   ROVec3,
+  ROVec4,
   v3addScale,
   v3copy,
   Vec2,
@@ -331,12 +332,6 @@ let bar_sprites: {
   xpbar: BarSprite;
 };
 
-let frame_sprites: {
-  horiz: Sprite;
-  vert: Sprite;
-  horiz_red: Sprite;
-  vert_red: Sprite;
-};
 let dither128: Sprite;
 
 export function myEnt(): Entity {
@@ -2708,9 +2703,27 @@ function useNoText(): boolean {
   return input.inputTouchMode() || input.inputPadMode() || settings.turn_toggle;
 }
 
-let sprite_corner = autoAtlas('ui', 'frame-corner-silver');
+let uvs_temp = vec4();
+function scaleUVs(orig_uvs: ROVec4, eff_uvs: ROVec4): ROVec4 {
+  uvs_temp[0] = orig_uvs[0] + (orig_uvs[2] - orig_uvs[0]) * eff_uvs[0];
+  uvs_temp[1] = orig_uvs[1] + (orig_uvs[3] - orig_uvs[1]) * eff_uvs[1];
+  uvs_temp[2] = orig_uvs[0] + (orig_uvs[2] - orig_uvs[0]) * eff_uvs[2];
+  uvs_temp[3] = orig_uvs[1] + (orig_uvs[3] - orig_uvs[1]) * eff_uvs[3];
+  return uvs_temp;
+}
+
 function drawFrames(): void {
+  let sprite_corner = autoAtlas('ui', 'frame-corner-silver');
   let z = Z.FRAMES;
+
+  let frame_horiz = autoAtlas('ui', 'frame-h');
+  let horiz_uvs = (frame_horiz.uidata!.rects as ROVec4[])[0];
+  let frame_vert = autoAtlas('ui', 'frame-v');
+  let vert_uvs = (frame_vert.uidata!.rects as ROVec4[])[0];
+  let frame_horiz_red = autoAtlas('ui', 'frame-h-red');
+  let horiz_red_uvs = (frame_horiz_red.uidata!.rects as ROVec4[])[0];
+  let frame_vert_red = autoAtlas('ui', 'frame-v-red');
+  let vert_red_uvs = (frame_vert_red.uidata!.rects as ROVec4[])[0];
 
   // full-height bars
   [0, FRAME_HORIZ_SPLIT, game_height - 12].forEach(function (y) {
@@ -2724,13 +2737,13 @@ function drawFrames(): void {
         w: 12, h: 12,
       });
     }
-    frame_sprites.horiz.draw({
+    frame_horiz.draw({
       x: 12,
       y,
       z,
       w: game_width - 24,
       h: 12,
-      uvs: [0, 0, (game_width - 24)/512, 1],
+      uvs: scaleUVs(horiz_uvs, [0, 0, (game_width - 24)/512, 1]),
     });
   });
   // partial-width bars
@@ -2749,13 +2762,13 @@ function drawFrames(): void {
         w: 12, h: 12,
       });
     }
-    frame_sprites.horiz.draw({
+    frame_horiz.draw({
       x: coords[0],
       y: coords[1],
       z,
       w: coords[2],
       h: 12,
-      uvs: [0, 0, (coords[2])/512, 1],
+      uvs: scaleUVs(horiz_uvs, [0, 0, (coords[2])/512, 1]),
     });
   });
   // partial- and full-height bars
@@ -2767,13 +2780,13 @@ function drawFrames(): void {
     [MINIMAP_X - 8, MINIMAP_Y + 2, MINIMAP_H - 4],
     [MINIMAP_X + MINIMAP_W - 4, MINIMAP_Y + 2, MINIMAP_H - 4],
   ].forEach(function (coords) {
-    frame_sprites.vert.draw({
+    frame_vert.draw({
       x: coords[0],
       y: coords[1],
       z,
       w: 12,
       h: coords[2],
-      uvs: [0, coords[3] || 0, 1, coords[2]/512],
+      uvs: scaleUVs(vert_uvs, [0, coords[3] || 0, 1, coords[2]/512]),
     });
   });
 
@@ -2845,13 +2858,13 @@ function drawFrames(): void {
   if (!canIssueAction()) {
     z++;
     [0, QUICKBAR_FRAME_Y].forEach(function (y) {
-      frame_sprites.horiz_red.draw({
+      frame_horiz_red.draw({
         x: 12,
         y,
         z,
         w: render_width,
         h: 12,
-        uvs: [0, 0, (render_width)/512, 1],
+        uvs: scaleUVs(horiz_red_uvs, [0, 0, (render_width)/512, 1]),
       });
     });
 
@@ -2859,13 +2872,13 @@ function drawFrames(): void {
       [0, 12, render_height],
       [FRAME_VERT_SPLIT, 12, render_height],
     ].forEach(function (coords) {
-      frame_sprites.vert_red.draw({
+      frame_vert_red.draw({
         x: coords[0],
         y: coords[1],
         z,
         w: 12,
         h: coords[2],
-        uvs: [0, coords[3] || 0, 1, coords[2]/512],
+        uvs: scaleUVs(vert_red_uvs, [0, coords[3] || 0, 1, coords[2]/512]),
       });
     });
 
@@ -3510,6 +3523,7 @@ function applyAtlasSwaps(): void {
     'dcex',
     'ui',
     'player',
+    'map',
   ].forEach(function (base_name) {
     autoAtlasSwap(base_name, `${base_name}${suffix}`);
   });
@@ -3672,32 +3686,6 @@ export function playStartup(): void {
       bg: autoAtlas('ui', 'minibar-frame'),
       hp: autoAtlas('ui', 'minibar-fill-yellow'),
     },
-  };
-
-  let frame_param = {
-    filter_min: gl.NEAREST,
-    filter_mag: gl.NEAREST,
-    wrap_s: gl.CLAMP_TO_EDGE,
-    wrap_t: gl.CLAMP_TO_EDGE,
-    force_mipmaps: false,
-  };
-  frame_sprites = {
-    horiz: spriteCreate({
-      ...frame_param,
-      name: 'frame-h',
-    }),
-    vert: spriteCreate({
-      ...frame_param,
-      name: 'frame-v',
-    }),
-    horiz_red: spriteCreate({
-      ...frame_param,
-      name: 'frame-h-red',
-    }),
-    vert_red: spriteCreate({
-      ...frame_param,
-      name: 'frame-v-red',
-    }),
   };
 
   dither128 = spriteCreate({

@@ -21,6 +21,7 @@ const depixel_input = [
   'title/*.png',
   'ui/*.png',
   'player/*.png',
+  'map/*.png',
 ];
 
 const targets = {
