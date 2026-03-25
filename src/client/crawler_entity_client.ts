@@ -317,8 +317,6 @@ function lookToDir(angle_idx: number): string {
   return REL_DIRS[dir];
 }
 
-const shadow_origin = vec2(0.5, 0.5);
-
 function drawableSpriteUpdateAnim(this: EntityDrawableSprite, dt: number): number {
   let ent = this;
   let { anim } = ent.drawable_sprite_state;
@@ -394,6 +392,8 @@ function drawableSpriteUpdateAnim(this: EntityDrawableSprite, dt: number): numbe
   assert(typeof frame === 'number');
   return frame;
 }
+
+const shadow_origin = vec2(0.5, 0.5);
 
 function lookupGLDefines(
   sprite_data: (TextureOptions | TextureOptionsAsStrings) & SpriteSpec
