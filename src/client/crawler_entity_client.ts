@@ -5,7 +5,7 @@ export enum OnlineMode {
 }
 
 import assert from 'assert';
-import { autoAtlas, autoAtlasSwapGeneration } from 'glov/client/autoatlas';
+import { autoAtlas } from 'glov/client/autoatlas';
 import { cmd_parse } from 'glov/client/cmds';
 import { dynGeomForward } from 'glov/client/dyn_geom';
 import { getFrameIndex } from 'glov/client/engine';
@@ -346,18 +346,10 @@ function drawableSpriteUpdateAnim(this: EntityDrawableSprite, dt: number): numbe
   }
   let frame = anim.getFrame();
 
-  let gen = autoAtlasSwapGeneration();
-  let gen_change = ent.drawable_sprite_state.atlas_swap_generation !== gen;
-  if (gen_change) {
-    ent.drawable_sprite_state.atlas_swap_generation = gen;
-  }
   if (isAutoAtlasSpec(sprite_data)) {
     assert(typeof frame === 'string');
     if (frame === ent.drawable_sprite_state.autoatlas_last_frame) {
       do_update = false;
-    }
-    if (gen_change) {
-      do_update = true;
     }
     if (do_update || !ent.drawable_sprite_state.sprite) {
       ent.drawable_sprite_state.autoatlas_last_frame = frame;
@@ -397,13 +389,6 @@ function drawableSpriteUpdateAnim(this: EntityDrawableSprite, dt: number): numbe
 
     }
     frame = 0;
-  }
-
-  if (opts.shadow) {
-    if (gen_change) {
-      ent.drawable_sprite_state.sprite_shadow = autoAtlas(opts.shadow.atlas, opts.shadow.name)
-        .withOrigin(shadow_origin);
-    }
   }
 
   assert(typeof frame === 'number');
