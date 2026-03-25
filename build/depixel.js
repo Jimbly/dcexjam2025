@@ -1,9 +1,9 @@
 const path = require('path');
 const { scaleImage: depixelScale } = require('depixel');
 const gb = require('glov-build');
-const alphaborder = require('./alphaborder.js');
 const alphafix = require('./alphafix.js');
 const asyncHashed = require('./asynchashed.js');
+const autoatlas = require('./autoatlas_build.js');
 const {
   drawImageBilinear,
   pngAlloc,
@@ -35,37 +35,42 @@ gb.configure({
 });
 
 gb.task({
+  ...autoatlas({
+    name: 'depixel-atlas-prep',
+    only_prep: true,
+    inputs: depixel_input,
+  }),
+});
+
+gb.task({
   name: 'depixel-tiling-expand',
-  input: depixel_input,
+  input: ['depixel-atlas-prep:**'],
   ...tilingExpand({
     pix: 4,
-    horiz: [
-      '**/*wall*',
-      '**/*door*',
-    ],
-    vert: [
-    ],
-    both: [
+    // auto rules:
+    //   if alpha on all 4 sides, do both alpha (will break with UI frames)
+    //   otherwise, if alpha on either vert side, do vert_clamp; same for horiz
+    //   otherwise, repeat
+    rules: [
+      '**/*chest*:balpha',
+      '**/*wall*:hwrap,vclamp',
+      '**/*door*:hwrap,vclamp',
+      '**/*stairs*:hwrap,vclamp',
+      '**/*arch*:hwrap,vclamp',
+      'player/**:balpha',
     ],
   }),
 });
 
 gb.task({
-  name: 'depixel-alphaborder',
+  name: 'depixel-alphafix',
   input: ['depixel-tiling-expand:**'],
-  ...alphaborder([
-    '!**/*door*',
-  ]),
-});
-gb.task({
-  name: 'depixel-alphaborderfix',
-  input: ['depixel-alphaborder:**'],
   ...alphafix(depixel_input),
 });
 
 gb.task(asyncHashed(8, {
   name: 'depixel-proc',
-  input: ['depixel-alphaborderfix:**'],
+  input: ['depixel-alphafix:**'],
   type: gb.SINGLE,
   version: [depixelScale],
   async: gb.ASYNC_FORK,
@@ -74,6 +79,17 @@ gb.task(asyncHashed(8, {
     let { img, err } = pngRead(file.contents);
     if (err) {
       return void done(err);
+    }
+    let m = file.relative.match(/^([^/]+)\/.*\.png/);
+    let new_name = file.relative.replace(`${m[1]}/`, `${m[1]}-depixel/`);
+    if (file.relative.endsWith('.9.png')) {
+      if (0) { // not doing this: the original will just be used instead
+        job.out({
+          relative: new_name,
+          contents: file.contents,
+        });
+      }
+      return void done();
     }
     let scale1 = scale * 2;
     let intermed = depixelScale(img, {
@@ -87,9 +103,8 @@ gb.task(asyncHashed(8, {
     drawImageBilinear(
       dst, 4, 0, 0, dst.width, dst.height, intermed, 4, 0, 0, intermed.width, intermed.height, 0xf);
 
-    let m = file.relative.match(/^([^/]+)\/.*\.png/);
     job.out({
-      relative: file.relative.replace(`${m[1]}/`, `${m[1]}-depixel/`),
+      relative: new_name,
       contents: pngWrite(dst),
     });
     done();

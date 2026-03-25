@@ -25,6 +25,8 @@
     "cache": "node build build.prod.png client_autosound --cache-rebuild",
     "build_watch": "nodemon -w build -- build build --watch",
     "prod": "node build build && node dist/game/build.prod/server/index.js --master",
+    "depixel": "node build/depixel",
+    "depixel_watch": "nodemon -w build -- build/depixel --watch",
     "test_watch": "nodemon -w build -- build test --watch",
     "test": "node build lint test"
   },

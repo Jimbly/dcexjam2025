@@ -317,6 +317,8 @@ function lookToDir(angle_idx: number): string {
   return REL_DIRS[dir];
 }
 
+const shadow_origin = vec2(0.5, 0.5);
+
 function drawableSpriteUpdateAnim(this: EntityDrawableSprite, dt: number): number {
   let ent = this;
   let { anim } = ent.drawable_sprite_state;
@@ -344,15 +346,18 @@ function drawableSpriteUpdateAnim(this: EntityDrawableSprite, dt: number): numbe
   }
   let frame = anim.getFrame();
 
+  let gen = autoAtlasSwapGeneration();
+  let gen_change = ent.drawable_sprite_state.atlas_swap_generation !== gen;
+  if (gen_change) {
+    ent.drawable_sprite_state.atlas_swap_generation = gen;
+  }
   if (isAutoAtlasSpec(sprite_data)) {
     assert(typeof frame === 'string');
     if (frame === ent.drawable_sprite_state.autoatlas_last_frame) {
       do_update = false;
     }
-    let gen = autoAtlasSwapGeneration();
-    if (ent.drawable_sprite_state.atlas_swap_generation !== gen) {
+    if (gen_change) {
       do_update = true;
-      ent.drawable_sprite_state.atlas_swap_generation = gen;
     }
     if (do_update || !ent.drawable_sprite_state.sprite) {
       ent.drawable_sprite_state.autoatlas_last_frame = frame;
@@ -394,11 +399,16 @@ function drawableSpriteUpdateAnim(this: EntityDrawableSprite, dt: number): numbe
     frame = 0;
   }
 
+  if (opts.shadow) {
+    if (gen_change) {
+      ent.drawable_sprite_state.sprite_shadow = autoAtlas(opts.shadow.atlas, opts.shadow.name)
+        .withOrigin(shadow_origin);
+    }
+  }
+
   assert(typeof frame === 'number');
   return frame;
 }
-
-const shadow_origin = vec2(0.5, 0.5);
 
 function lookupGLDefines(
   sprite_data: (TextureOptions | TextureOptionsAsStrings) & SpriteSpec
